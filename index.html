@@ -1,4 +1,6 @@
-<!-- Site universal: compatível com Chrome 109 e Firefox 115 ESR no Windows 7 e com navegadores modernos. Internet Explorer não é suportado. -->
+<!-- PEDE MAIS GRÃO — versão limpa para publicação no GitHub Pages.
+Compatível com navegadores modernos e com Chrome 49+/Firefox 52+ no Windows 7, desde que o site seja aberto por HTTPS.
+Internet Explorer não é suportado. Nenhum backup ou dado operacional está incorporado neste arquivo. -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -6,7 +8,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#2f7d4c" />
-  <title>PEDE MAIS GRÃO — Gestão Operacional Universal</title>
+  <title>PEDE MAIS GRÃO — Gestão Operacional</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%23fff8ec'/%3E%3Cpath d='M9 38C15 16 35 8 52 14C45 28 31 39 9 38Z' fill='%232f7d4c'/%3E%3Cpath d='M22 45C31 23 47 20 57 25C52 39 39 47 22 45Z' fill='%23f28c28' opacity='.92'/%3E%3Cpath d='M13 41C26 34 36 26 49 17' stroke='%231d5b37' stroke-width='3' fill='none'/%3E%3C/svg%3E" />
   <style>
     :root {
@@ -770,19 +772,6 @@
       .modal-backdrop { background: rgba(3, 12, 15, .82); }
     }
 
-
-    /* Sincronização universal local-first */
-    .sync-status-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin-bottom:14px; }
-    .sync-status-grid .mini-stat { min-height:88px; }
-    .sync-actions { display:flex; gap:9px; flex-wrap:wrap; align-items:center; }
-    .sync-dot { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:7px; background:var(--muted); }
-    .sync-dot.ok { background:var(--success); }
-    .sync-dot.warning { background:var(--warning); }
-    .sync-dot.alert { background:var(--danger); }
-    .sync-code { word-break:break-all; font-family:Consolas,"Courier New",monospace; font-size:12px; }
-    @media (max-width:900px) { .sync-status-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
-    @media (max-width:560px) { .sync-status-grid { grid-template-columns:1fr; } }
-
   </style>
 </head>
 <body>
@@ -816,7 +805,7 @@
             <button class="btn primary full" type="submit">Criar acesso protegido</button>
             <div id="setupError" class="auth-error"></div>
           </form>
-          <div class="auth-note">A senha não é salva em texto. Os dados ficam criptografados neste navegador. Em caso de esquecimento, a redefinição exige a senha do programador.</div>
+          <div class="auth-note">A senha não é salva em texto. Os dados ficam criptografados neste navegador. Guarde sua senha e mantenha um arquivo de backup; não existe senha oculta de recuperação.</div>
         </div>
 
         <div id="loginPanel" class="hidden">
@@ -868,7 +857,6 @@
       <div class="nav-label">Desenvolvimento</div>
       <button class="nav-btn" data-section="academy"><span class="nav-icon">07</span> Academia de gestão</button>
       <button class="nav-btn" data-section="backup"><span class="nav-icon">08</span> Backup e segurança</button>
-      <button class="nav-btn" data-section="cloudSync"><span class="nav-icon">☁</span> Sincronização em nuvem</button>
       <button class="nav-btn" data-section="settings"><span class="nav-icon">09</span> Configurações</button>
       <button class="nav-btn" data-section="innovation"><span class="nav-icon">10</span> Inovação da aplicação</button>
 
@@ -904,7 +892,6 @@
         <section id="notes" class="section"></section>
         <section id="academy" class="section"></section>
         <section id="backup" class="section"></section>
-        <section id="cloudSync" class="section"></section>
         <section id="settings" class="section"></section>
         <section id="innovation" class="section"></section>
       </div>
@@ -1034,17 +1021,14 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
       element.scrollIntoView(true);
     }
   }
-  var PROGRAMMER_PASSWORD = '1144866';
   var AUTO_BACKUP_SLOTS = ['10:00', '13:00', '17:00'];
-  var BACKUP_FORMAT_VERSION = 3;
-  var BACKUP_SCHEMA_VERSION = 2;
   var STORAGE = {
-    SALT: 'rc_gestao_universal_nuvem_v1_salt_v1',
-    BLOB: 'rc_gestao_universal_nuvem_v1_blob_v1',
-    VERSION: 'rc_gestao_universal_nuvem_v1_version',
-    RECOVERY_SALT: 'rc_gestao_universal_nuvem_v1_recovery_salt_v1',
-    RECOVERY_BLOB: 'rc_gestao_universal_nuvem_v1_recovery_blob_v1',
-    AUTO_BACKUPS: 'rc_gestao_universal_nuvem_v1_auto_backups_v1'
+    SALT: 'rc_gestao_salt_v1',
+    BLOB: 'rc_gestao_blob_v1',
+    VERSION: 'rc_gestao_version',
+    RECOVERY_SALT: 'rc_gestao_recovery_salt_v1',
+    RECOVERY_BLOB: 'rc_gestao_recovery_blob_v1',
+    AUTO_BACKUPS: 'rc_gestao_auto_backups_v1'
   };
   var pageMeta = {
     dashboard: ['Painel principal', 'PEDE MAIS GRÃO · controle diário da operação'],
@@ -1057,7 +1041,6 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     notes: ['Registro de gestão', 'Decisões, ocorrências e melhorias'],
     academy: ['Academia de gestão', 'Liderança e gestão de materiais'],
     backup: ['Backup e segurança', 'Proteção e portabilidade dos dados'],
-    cloudSync: ['Sincronização em nuvem', 'Dados locais com cópia compartilhada no Google Drive'],
     settings: ['Configurações', 'Preferências e alteração de senha'],
     innovation: ['Inovação da aplicação', 'Ideias, ajustes e solicitações para o programador']
   };
@@ -1141,8 +1124,12 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
   var autoLockTimer = null;
   var autoBackupTimer = null;
   var recoveryKey = null;
-  var $ = (sel, root = document) => root.querySelector(sel);
-  var $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+  var $ = function (sel, root) {
+    return (root || document).querySelector(sel);
+  };
+  var $$ = function (sel, root) {
+    return Array.prototype.slice.call((root || document).querySelectorAll(sel));
+  };
   var uid = () => crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
   var todayISO = () => new Date().toISOString().slice(0, 10);
   var nowISO = () => new Date().toISOString();
@@ -1342,74 +1329,19 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     return _decryptState.apply(this, arguments);
   }
   function ensureRecoveryKey() {
-    return _ensureRecoveryKey.apply(this, arguments);
-  }
-  function _ensureRecoveryKey() {
-    _ensureRecoveryKey = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee71() {
-      var saltB64, salt;
-      return _regenerator().w(function (_context71) {
-        while (1) switch (_context71.n) {
-          case 0:
-            saltB64 = localStorage.getItem(STORAGE.RECOVERY_SALT);
-            if (!saltB64) {
-              salt = crypto.getRandomValues(new Uint8Array(16));
-              saltB64 = bytesToB64(salt);
-              localStorage.setItem(STORAGE.RECOVERY_SALT, saltB64);
-            }
-            if (recoveryKey) {
-              _context71.n = 2;
-              break;
-            }
-            _context71.n = 1;
-            return deriveKey(PROGRAMMER_PASSWORD, b64ToBytes(saltB64));
-          case 1:
-            recoveryKey = _context71.v;
-          case 2:
-            return _context71.a(2, recoveryKey);
-        }
-      }, _callee71);
-    }));
-    return _ensureRecoveryKey.apply(this, arguments);
+    /* Mantido apenas para compatibilidade com chamadas antigas. Não existe chave mestra. */
+    return Promise.resolve(null);
   }
   function persist() {
-    return _persist.apply(this, arguments);
-  }
-  function _persist() {
-    _persist = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee72() {
-      var programmerKey, _t0, _t1, _t10, _t11;
-      return _regenerator().w(function (_context72) {
-        while (1) switch (_context72.n) {
-          case 0:
-            if (!(!state || !cryptoKey)) {
-              _context72.n = 1;
-              break;
-            }
-            return _context72.a(2);
-          case 1:
-            state.meta.updatedAt = nowISO();
-            _t0 = localStorage;
-            _t1 = STORAGE.BLOB;
-            _context72.n = 2;
-            return encryptState(state, cryptoKey);
-          case 2:
-            _t0.setItem.call(_t0, _t1, _context72.v);
-            localStorage.setItem(STORAGE.VERSION, '2');
-            _context72.n = 3;
-            return ensureRecoveryKey();
-          case 3:
-            programmerKey = _context72.v;
-            _t10 = localStorage;
-            _t11 = STORAGE.RECOVERY_BLOB;
-            _context72.n = 4;
-            return encryptState(state, programmerKey);
-          case 4:
-            _t10.setItem.call(_t10, _t11, _context72.v);
-          case 5:
-            return _context72.a(2);
-        }
-      }, _callee72);
-    }));
-    return _persist.apply(this, arguments);
+    if (!state || !cryptoKey) return Promise.resolve();
+    state.meta.updatedAt = nowISO();
+    return encryptState(state, cryptoKey).then(function (encryptedBlob) {
+      localStorage.setItem(STORAGE.BLOB, encryptedBlob);
+      localStorage.setItem(STORAGE.VERSION, '3');
+      /* Remove resíduos de versões antigas que usavam uma chave fixa de recuperação. */
+      localStorage.removeItem(STORAGE.RECOVERY_SALT);
+      localStorage.removeItem(STORAGE.RECOVERY_BLOB);
+    });
   }
   function showToast(message, type = '') {
     var el = document.createElement('div');
@@ -1460,7 +1392,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
   function setupAuthScreen() {
     var _window$crypto;
     if (!((_window$crypto = window.crypto) !== null && _window$crypto !== void 0 && _window$crypto.subtle)) {
-      $('#authScreen').innerHTML = '<div class="auth-card"><div class="auth-body"><h2>Navegador incompatível</h2><p>Este site precisa de um navegador moderno com suporte à Web Crypto, como Edge, Chrome, Samsung Internet ou Firefox atualizado.</p></div></div>';
+      $('#authScreen').innerHTML = '<div class="auth-card"><div class="auth-body"><h2>Navegador incompatível</h2><p>Este site precisa de suporte à Web Crypto. No Windows 7, use Chrome 49 ou superior, ou Firefox 52 ou superior; em sistemas atuais, use Chrome, Edge ou Firefox atualizado.</p></div></div>';
       return;
     }
     var hasData = localStorage.getItem(STORAGE.SALT) && localStorage.getItem(STORAGE.BLOB);
@@ -1569,101 +1501,27 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
   }());
   $('#forgotBtn').addEventListener('click', openPasswordRecoveryModal);
   function openPasswordRecoveryModal() {
-    openModal('Redefinir senha', `
-        <form id="recoveryForm">
-          <p class="muted" style="margin-top:0">A redefinição preserva os dados e exige a senha fixa do programador.</p>
-          <div class="field"><label>Senha do programador</label><input id="programmerPassword" type="password" required autocomplete="off"></div>
-          <div class="field"><label>Nova senha de acesso</label><input id="recoveryNewPassword" type="password" minlength="6" required></div>
-          <div class="field"><label>Confirmar nova senha</label><input id="recoveryConfirmPassword" type="password" minlength="6" required></div>
-          <div id="recoveryError" class="auth-error"></div>
-          <div class="form-actions"><button type="button" class="btn" data-close-modal>Cancelar</button><button class="btn primary">Redefinir senha</button></div>
-        </form>`, 'small');
-    $$('[data-close-modal]').forEach(b => b.onclick = closeModal);
-    $('#recoveryForm').onsubmit = recoverPassword;
-  }
-  function recoverPassword(_x9) {
-    return _recoverPassword.apply(this, arguments);
-  }
-  function _recoverPassword() {
-    _recoverPassword = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee73(e) {
-      var error, programmerPassword, newPassword, confirmPassword, recoverySalt, recoveryBlob, newSalt, _t12, _t13;
-      return _regenerator().w(function (_context73) {
-        while (1) switch (_context73.p = _context73.n) {
-          case 0:
-            e.preventDefault();
-            error = $('#recoveryError');
-            programmerPassword = $('#programmerPassword').value;
-            newPassword = $('#recoveryNewPassword').value;
-            confirmPassword = $('#recoveryConfirmPassword').value;
-            error.textContent = 'Verificando...';
-            if (!(programmerPassword !== PROGRAMMER_PASSWORD)) {
-              _context73.n = 1;
-              break;
-            }
-            error.textContent = 'Senha do programador incorreta.';
-            return _context73.a(2);
-          case 1:
-            if (!(newPassword.length < 6)) {
-              _context73.n = 2;
-              break;
-            }
-            error.textContent = 'A nova senha precisa ter pelo menos 6 caracteres.';
-            return _context73.a(2);
-          case 2:
-            if (!(newPassword !== confirmPassword)) {
-              _context73.n = 3;
-              break;
-            }
-            error.textContent = 'A confirmação da nova senha não coincide.';
-            return _context73.a(2);
-          case 3:
-            recoverySalt = localStorage.getItem(STORAGE.RECOVERY_SALT);
-            recoveryBlob = localStorage.getItem(STORAGE.RECOVERY_BLOB);
-            if (!(!recoverySalt || !recoveryBlob)) {
-              _context73.n = 4;
-              break;
-            }
-            error.textContent = 'A recuperação ainda não foi ativada neste navegador. É necessário ter acessado esta versão do site ao menos uma vez com a senha atual.';
-            return _context73.a(2);
-          case 4:
-            _context73.p = 4;
-            _context73.n = 5;
-            return deriveKey(PROGRAMMER_PASSWORD, b64ToBytes(recoverySalt));
-          case 5:
-            recoveryKey = _context73.v;
-            _t12 = ensureShape;
-            _context73.n = 6;
-            return decryptState(recoveryBlob, recoveryKey);
-          case 6:
-            state = _t12(_context73.v);
-            newSalt = crypto.getRandomValues(new Uint8Array(16));
-            _context73.n = 7;
-            return deriveKey(newPassword, newSalt);
-          case 7:
-            cryptoKey = _context73.v;
-            localStorage.setItem(STORAGE.SALT, bytesToB64(newSalt));
-            _context73.n = 8;
-            return persist();
-          case 8:
-            closeModal();
-            $('#loginPassword').value = '';
-            $('#loginError').textContent = 'Senha redefinida. Use a nova senha para entrar.';
-            state = null;
-            cryptoKey = null;
-            recoveryKey = null;
-            _context73.n = 10;
-            break;
-          case 9:
-            _context73.p = 9;
-            _t13 = _context73.v;
-            console.error(_t13);
-            error.textContent = 'Não foi possível recuperar os dados locais.';
-          case 10:
-            return _context73.a(2);
-        }
-      }, _callee73, null, [[4, 9]]);
-    }));
-    return _recoverPassword.apply(this, arguments);
+    openModal('Recuperar acesso', `
+        <p class="muted" style="margin-top:0;line-height:1.55">
+          Por segurança, não existe senha mestra. Sem a senha atual, os dados locais não podem ser descriptografados.
+          Caso possua um backup, apague somente esta base local, crie uma nova senha e importe o arquivo na área <strong>Backup e segurança</strong>.
+        </p>
+        <div class="status-callout alert">Esta ação apaga os dados armazenados neste navegador. O arquivo de backup salvo no computador não será apagado.</div>
+        <div class="field" style="margin-top:14px"><label>Digite APAGAR para preparar a restauração</label><input id="recoveryResetText" autocomplete="off" placeholder="APAGAR"></div>
+        <div id="recoveryError" class="auth-error"></div>
+        <div class="form-actions"><button type="button" class="btn" data-close-modal>Cancelar</button><button type="button" class="btn danger" id="resetForBackupBtn">Apagar base local</button></div>`, 'small');
+    $$('[data-close-modal]').forEach(function (b) { b.onclick = closeModal; });
+    $('#resetForBackupBtn').onclick = function () {
+      var typed = String($('#recoveryResetText').value || '').trim().toUpperCase();
+      if (typed !== 'APAGAR') {
+        $('#recoveryError').textContent = 'Digite APAGAR para confirmar.';
+        return;
+      }
+      Object.keys(STORAGE).forEach(function (key) {
+        localStorage.removeItem(STORAGE[key]);
+      });
+      location.reload();
+    };
   }
   function unlockApp() {
     var _state$employees$;
@@ -2213,7 +2071,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
         <form id="inventoryForm">
           <div class="field"><label>Material</label><input id="invName" required value="${esc(item.name)}" placeholder="Ex.: Etiqueta térmica"></div>
           <div class="form-grid">
-            <div class="field"><label>Categoria</label><select id="invCategory">${['Embalagem', 'Matéria-prima', 'Expedição', 'Escritório', 'Limpeza', 'Equipamento', 'Outros'].map(v => `<option ${item.category === v ? 'selected' : ''}>${v}</option>`).join('')}</select></div>
+            <div class="field"><label>Categoria</label><select id="invCategory">${['Temperos', 'Sementes', 'Chá', 'Embalagem', 'Matéria-prima', 'Expedição', 'Escritório', 'Limpeza', 'Equipamento', 'Outros'].map(v => `<option ${item.category === v ? 'selected' : ''}>${v}</option>`).join('')}</select></div>
             <div class="field"><label>Unidade</label><input id="invUnit" value="${esc(item.unit || 'un.')}" placeholder="un., kg, rolo, pacote"></div>
             <div class="field"><label>Quantidade atual</label><input id="invQty" type="number" step="0.01" min="0" value="${num(item.quantity)}"></div>
             <div class="field"><label>Estoque mínimo</label><input id="invMin" type="number" step="0.01" min="0" value="${num(item.minimum)}"></div>
@@ -2828,106 +2686,111 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
   function getAutoBackups() {
     try {
       return JSON.parse(localStorage.getItem(STORAGE.AUTO_BACKUPS) || '[]');
-    } catch (err) {
+    } catch (_unused) {
       return [];
     }
   }
   function saveAutoBackups(items) {
     localStorage.setItem(STORAGE.AUTO_BACKUPS, JSON.stringify(items.slice(-60)));
   }
-  function cloneBackupData(data) {
-    return JSON.parse(JSON.stringify(data));
+  function createAutoBackup(_x16) {
+    return _createAutoBackup.apply(this, arguments);
   }
-  function buildPortableBackup(data, source, extra) {
-    var payload = {
-      app: 'PEDE MAIS GRÃO — Gestão Rennan Cotta Pavão',
-      appId: 'pede-mais-grao',
-      version: BACKUP_FORMAT_VERSION,
-      backupFormat: BACKUP_FORMAT_VERSION,
-      schemaVersion: BACKUP_SCHEMA_VERSION,
-      encrypted: false,
-      exportedAt: nowISO(),
-      source: source || 'manual',
-      data: cloneBackupData(ensureShape(data))
-    };
-    if (extra) {
-      Object.keys(extra).forEach(function (key) {
-        payload[key] = extra[key];
-      });
-    }
-    return payload;
-  }
-  function downloadBackupFile(payload, filename) {
-    var blob = new Blob([JSON.stringify(payload, null, 2)], {
-      type: 'application/json;charset=utf-8'
-    });
-    var a = document.createElement('a');
-    var url = URL.createObjectURL(blob);
-    a.href = url;
-    a.download = filename;
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(function () {
-      URL.revokeObjectURL(url);
-      if (a.parentNode) a.parentNode.removeChild(a);
-    }, 2000);
-  }
-  function readImportedBackup(parsed) {
-    if (parsed && parsed.backupFormat === BACKUP_FORMAT_VERSION && parsed.encrypted === false && parsed.data) {
-      return Promise.resolve(ensureShape(parsed.data));
-    }
-    if (parsed && parsed.data && (parsed.backupFormat === 3 || parsed.version === 3)) {
-      return Promise.resolve(ensureShape(parsed.data));
-    }
-    if (parsed && parsed.salt && parsed.blob) {
-      var backupPassword = prompt('Backup antigo criptografado detectado. Digite a senha usada quando ele foi criado:');
-      if (backupPassword === null) return Promise.resolve(null);
-      return deriveKey(backupPassword, b64ToBytes(parsed.salt)).then(function (key) {
-        return decryptState(parsed.blob, key);
-      }).then(function (data) {
-        return ensureShape(data);
-      });
-    }
-    if (parsed && parsed.meta && Array.isArray(parsed.tasks)) {
-      return Promise.resolve(ensureShape(parsed));
-    }
-    return Promise.reject(new Error('Formato de backup não reconhecido'));
-  }
-  function createAutoBackup(slot, force) {
-    if (!state || !cryptoKey) return Promise.resolve();
-    force = !!force;
-    return persist().then(function () {
-      var date = todayISO();
-      var id = date + '-' + slot;
-      var items = getAutoBackups();
-      if (!force && items.some(function (b) { return b.id === id; })) return;
-      var backup = {
-        id: force ? id + '-' + Date.now() : id,
-        scheduledFor: date + ' ' + slot,
-        createdAt: nowISO(),
-        internalEncrypted: true,
-        salt: localStorage.getItem(STORAGE.SALT),
-        blob: localStorage.getItem(STORAGE.BLOB)
-      };
-      items.push(backup);
-      saveAutoBackups(items);
-      if (currentSection === 'backup') renderBackup();
-      showToast('Cópia automática protegida de ' + slot + ' concluída.');
-    });
+  function _createAutoBackup() {
+    _createAutoBackup = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee74(slot, force = false) {
+      var date, id, items, backup;
+      return _regenerator().w(function (_context74) {
+        while (1) switch (_context74.n) {
+          case 0:
+            if (!(!state || !cryptoKey)) {
+              _context74.n = 1;
+              break;
+            }
+            return _context74.a(2);
+          case 1:
+            _context74.n = 2;
+            return persist();
+          case 2:
+            date = todayISO();
+            id = `${date}-${slot}`;
+            items = getAutoBackups();
+            if (!(!force && items.some(b => b.id === id))) {
+              _context74.n = 3;
+              break;
+            }
+            return _context74.a(2);
+          case 3:
+            backup = {
+              id: force ? `${id}-${Date.now()}` : id,
+              scheduledFor: `${date} ${slot}`,
+              createdAt: nowISO(),
+              salt: localStorage.getItem(STORAGE.SALT),
+              blob: localStorage.getItem(STORAGE.BLOB)
+            };
+            items.push(backup);
+            saveAutoBackups(items);
+            if (currentSection === 'backup') renderBackup();
+            showToast(`Backup automático criptografado de ${slot} concluído.`);
+          case 4:
+            return _context74.a(2);
+        }
+      }, _callee74);
+    }));
+    return _createAutoBackup.apply(this, arguments);
   }
   function runDueAutoBackups() {
-    if (!state) return Promise.resolve();
-    var now = new Date();
-    var currentMinutes = now.getHours() * 60 + now.getMinutes();
-    var chain = Promise.resolve();
-    AUTO_BACKUP_SLOTS.forEach(function (slot) {
-      var parts = slot.split(':').map(Number);
-      if (currentMinutes >= parts[0] * 60 + parts[1]) {
-        chain = chain.then(function () { return createAutoBackup(slot); });
-      }
-    });
-    return chain;
+    return _runDueAutoBackups.apply(this, arguments);
+  }
+  function _runDueAutoBackups() {
+    _runDueAutoBackups = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee75() {
+      var now, currentMinutes, _iterator14, _step14, slot, _slot$split$map, _slot$split$map2, h, m, _t14;
+      return _regenerator().w(function (_context75) {
+        while (1) switch (_context75.p = _context75.n) {
+          case 0:
+            if (state) {
+              _context75.n = 1;
+              break;
+            }
+            return _context75.a(2);
+          case 1:
+            now = new Date();
+            currentMinutes = now.getHours() * 60 + now.getMinutes();
+            _iterator14 = _createForOfIteratorHelper(AUTO_BACKUP_SLOTS);
+            _context75.p = 2;
+            _iterator14.s();
+          case 3:
+            if ((_step14 = _iterator14.n()).done) {
+              _context75.n = 5;
+              break;
+            }
+            slot = _step14.value;
+            _slot$split$map = slot.split(':').map(Number), _slot$split$map2 = _slicedToArray(_slot$split$map, 2), h = _slot$split$map2[0], m = _slot$split$map2[1];
+            if (!(currentMinutes >= h * 60 + m)) {
+              _context75.n = 4;
+              break;
+            }
+            _context75.n = 4;
+            return createAutoBackup(slot);
+          case 4:
+            _context75.n = 3;
+            break;
+          case 5:
+            _context75.n = 7;
+            break;
+          case 6:
+            _context75.p = 6;
+            _t14 = _context75.v;
+            _iterator14.e(_t14);
+          case 7:
+            _context75.p = 7;
+            _iterator14.f();
+            return _context75.f(7);
+          case 8:
+            return _context75.a(2);
+        }
+      }, _callee75, null, [[2, 6, 7, 8]]);
+    }));
+    return _runDueAutoBackups.apply(this, arguments);
   }
   function startAutoBackupScheduler() {
     clearInterval(autoBackupTimer);
@@ -2937,134 +2800,239 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
   function renderBackup() {
     var backups = getAutoBackups().slice().reverse();
     $('#backup').innerHTML = `
-        <div class="section-head"><div><h2>Backup e segurança</h2><p>Os dados salvos no sistema continuam criptografados neste navegador. Os arquivos de backup são portáteis, sem criptografia e funcionam neste site único em navegadores modernos e nos navegadores compatíveis do Windows 7.</p></div></div>
+        <div class="section-head"><div><h2>Backup e segurança</h2><p>Os dados ficam criptografados neste navegador e são preservados após fechar ou recarregar a página.</p></div></div>
         <div class="grid-2">
-          <div class="card"><div class="card-head"><h3>Exportar backup portátil</h3></div><div class="card-body"><p class="muted">Gera um arquivo universal que pode ser importado em qualquer aparelho que utilize este site universal, sem solicitar senha do backup.</p><button class="btn primary" id="exportBackupBtn">Baixar backup portátil</button></div></div>
-          <div class="card"><div class="card-head"><h3>Importar backup</h3></div><div class="card-body"><p class="muted">Aceita o novo backup portátil e também backups antigos criptografados. Após importar, os dados são protegidos pela senha local deste navegador.</p><input id="backupFile" type="file" accept=".rcbackup,.json"><button class="btn" id="importBackupBtn" style="margin-top:10px">Importar arquivo</button></div></div>
+          <div class="card"><div class="card-head"><h3>Exportar backup</h3></div><div class="card-body"><p class="muted">O backup simples é o mais fácil para transferir e restaurar. O backup criptografado exige a senha usada no momento da exportação.</p><div class="section-actions" style="justify-content:flex-start"><button class="btn primary" id="exportSimpleBackupBtn">Baixar backup simples</button><button class="btn" id="exportEncryptedBackupBtn">Baixar criptografado</button></div><p class="help" style="margin-bottom:0">O backup simples contém os dados em formato legível. Guarde-o em local privado.</p></div></div>
+          <div class="card"><div class="card-head"><h3>Importar backup</h3></div><div class="card-body"><p class="muted">Substitui os dados locais pelos dados do arquivo selecionado.</p><input id="backupFile" type="file" accept=".rcbackup,.json"><button class="btn" id="importBackupBtn" style="margin-top:10px">Importar arquivo</button></div></div>
         </div>
         <div class="card" style="margin-top:16px">
-          <div class="card-head"><div><h3>Cópias automáticas internas</h3><div class="muted" style="font-size:12px;margin-top:4px">Horários: 10h, 13h e 17h. Permanecem protegidas dentro deste navegador. Ao baixar, são convertidas para o formato portátil sem senha.</div></div><button class="btn small" id="createAutoBackupNow">Criar agora</button></div>
-          <div class="card-body"><div class="list">${backups.length ? backups.slice(0, 15).map(function (b) { return `<div class="item"><div class="item-row"><div><div class="item-title">Backup ${esc(b.scheduledFor || '')}</div><div class="item-meta"><span class="badge">Gerado: ${formatDateTime(b.createdAt)}</span><span class="badge ${b.data ? 'ok' : b.internalEncrypted ? 'info' : 'warning'}">${b.data ? 'Portátil local' : b.internalEncrypted ? 'Protegido no navegador' : 'Legado criptografado'}</span></div></div><div class="item-actions"><button class="btn small" data-auto-download="${esc(b.id)}">Baixar</button><button class="btn small" data-auto-restore="${esc(b.id)}">Restaurar</button><button class="btn small danger" data-auto-delete="${esc(b.id)}">Excluir</button></div></div></div>`; }).join('') : '<div class="list-empty">Nenhum backup automático registrado ainda.</div>'}</div></div>
+          <div class="card-head"><div><h3>Backups automáticos criptografados</h3><div class="muted" style="font-size:12px;margin-top:4px">Horários: 10h, 13h e 17h. São gerados automaticamente enquanto o site estiver aberto; horários vencidos são registrados ao abrir a página.</div></div><button class="btn small" id="createAutoBackupNow">Criar agora</button></div>
+          <div class="card-body"><div class="list">${backups.length ? backups.slice(0, 15).map(b => `<div class="item"><div class="item-row"><div><div class="item-title">Backup ${esc(b.scheduledFor || '')}</div><div class="item-meta"><span class="badge">Gerado: ${formatDateTime(b.createdAt)}</span></div></div><div class="item-actions"><button class="btn small" data-auto-download="${esc(b.id)}">Baixar</button><button class="btn small" data-auto-restore="${esc(b.id)}">Restaurar</button><button class="btn small danger" data-auto-delete="${esc(b.id)}">Excluir</button></div></div></div>`).join('') : '<div class="list-empty">Nenhum backup automático registrado ainda.</div>'}</div></div>
         </div>
         <div class="card" style="margin-top:16px"><div class="card-head"><h3>Informações locais</h3></div><div class="card-body"><div class="grid-3"><div class="mini-stat"><span>Criado em</span><strong>${formatDateTime(state.meta.createdAt)}</strong></div><div class="mini-stat"><span>Última alteração</span><strong>${formatDateTime(state.meta.updatedAt)}</strong></div><div class="mini-stat"><span>Registros totais</span><strong>${state.tasks.length + state.inventory.length + state.production.length + state.employees.length + state.notes.length + state.innovationNotes.length}</strong></div></div></div></div>
-        <div class="status-callout alert" style="margin-top:16px"><strong>Atenção:</strong> o arquivo de backup contém os dados em formato legível e não possui senha. Guarde-o em local seguro e não o envie a pessoas não autorizadas.</div>
-        <div class="danger-zone" style="margin-top:16px"><h3 style="margin-top:0">Apagar dados locais</h3><p>Esta ação continua protegida pela senha de acesso cadastrada.</p><button class="btn danger" id="wipeDataBtn">Apagar todos os dados locais</button></div>`;
-    $('#exportBackupBtn').onclick = exportBackup;
+        <div class="danger-zone" style="margin-top:16px"><h3 style="margin-top:0">Atenção</h3><p>Apagar todos os dados locais exige a senha de acesso cadastrada. A exclusão individual continua disponível com confirmação.</p><button class="btn danger" id="wipeDataBtn">Apagar todos os dados locais</button></div>`;
+    $('#exportSimpleBackupBtn').onclick = exportBackupSimple;
+    $('#exportEncryptedBackupBtn').onclick = exportBackupEncrypted;
     $('#importBackupBtn').onclick = importBackup;
-    $('#createAutoBackupNow').onclick = function () { return createAutoBackup('manual', true); };
+    $('#createAutoBackupNow').onclick = () => createAutoBackup('manual', true);
     $('#wipeDataBtn').onclick = openWipeDataModal;
-    $$('[data-auto-download]').forEach(function (button) {
-      button.onclick = function () { return downloadAutoBackup(button.dataset.autoDownload); };
-    });
-    $$('[data-auto-restore]').forEach(function (button) {
-      button.onclick = function () { return openRestoreAutoBackupModal(button.dataset.autoRestore); };
-    });
-    $$('[data-auto-delete]').forEach(function (button) {
-      button.onclick = function () {
-        confirmAction('Excluir este backup automático?', function () {
-          saveAutoBackups(getAutoBackups().filter(function (item) { return item.id !== button.dataset.autoDelete; }));
-          renderBackup();
-          return Promise.resolve();
-        }, 'Excluir');
-      };
-    });
-  }
-  function readInternalAutoBackup(b) {
-    if (b.data) return Promise.resolve(ensureShape(cloneBackupData(b.data)));
-    if (!b.blob || !b.salt) return Promise.reject(new Error('Cópia automática inválida'));
-    if (b.salt === localStorage.getItem(STORAGE.SALT) && cryptoKey) {
-      return decryptState(b.blob, cryptoKey).then(function (data) { return ensureShape(data); });
-    }
-    var backupPassword = prompt('Esta cópia automática foi criada com uma senha anterior. Digite essa senha:');
-    if (backupPassword === null) return Promise.resolve(null);
-    return deriveKey(backupPassword, b64ToBytes(b.salt)).then(function (key) {
-      return decryptState(b.blob, key);
-    }).then(function (data) {
-      return ensureShape(data);
-    });
+    $$('[data-auto-download]').forEach(b => b.onclick = () => downloadAutoBackup(b.dataset.autoDownload));
+    $$('[data-auto-restore]').forEach(b => b.onclick = () => openRestoreAutoBackupModal(b.dataset.autoRestore));
+    $$('[data-auto-delete]').forEach(b => b.onclick = () => confirmAction('Excluir este backup automático?', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee27() {
+      return _regenerator().w(function (_context27) {
+        while (1) switch (_context27.n) {
+          case 0:
+            saveAutoBackups(getAutoBackups().filter(x => x.id !== b.dataset.autoDelete));
+            renderBackup();
+          case 1:
+            return _context27.a(2);
+        }
+      }, _callee27);
+    })), 'Excluir'));
   }
   function downloadAutoBackup(id) {
-    var b = getAutoBackups().find(function (item) { return item.id === id; });
+    var b = getAutoBackups().find(x => x.id === id);
     if (!b) return;
-    readInternalAutoBackup(b).then(function (snapshot) {
-      if (!snapshot) return;
-      var safeId = String(id).split(':').join('-');
-      downloadBackupFile(buildPortableBackup(snapshot, 'automatic', {
-        backupCreatedAt: b.createdAt,
-        scheduledFor: b.scheduledFor
-      }), 'backup-automatico-pede-mais-grao-' + safeId + '.rcbackup');
-      showToast('Cópia automática baixada como backup portátil sem senha.');
-    }).catch(function (err) {
-      console.error(err);
-      showToast('Não foi possível abrir esta cópia automática.', 'error');
+    var payload = {
+      app: 'PEDE MAIS GRÃO — Gestão Rennan Cotta Pavão',
+      version: 2,
+      exportedAt: nowISO(),
+      salt: b.salt,
+      blob: b.blob
+    };
+    var blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: 'application/json'
     });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `backup-automatico-pede-mais-grao-${String(id).split(':').join('-')}.rcbackup`;
+    a.click();
+    URL.revokeObjectURL(a.href);
   }
   function openRestoreAutoBackupModal(id) {
-    var b = getAutoBackups().find(function (item) { return item.id === id; });
-    if (!b) return;
-    readInternalAutoBackup(b).then(function (restored) {
-      if (!restored) return;
-      confirmAction('Substituir os dados atuais por esta cópia automática?', function () {
-        state = restored;
-        return persist().then(function () {
-          renderAll();
-          showToast('Cópia automática restaurada e protegida pela senha local.');
-        });
-      }, 'Restaurar');
-    }).catch(function (err) {
-      console.error(err);
-      showToast('Senha anterior incorreta ou cópia automática inválida.', 'error');
-    });
+    openModal('Restaurar backup automático', `<form id="restoreAutoForm"><p class="muted" style="margin-top:0">Digite a senha utilizada quando este backup foi criado.</p><div class="field"><label>Senha do backup</label><input id="restoreAutoPassword" type="password" required></div><div id="restoreAutoError" class="auth-error"></div><div class="form-actions"><button type="button" class="btn" data-close-modal>Cancelar</button><button class="btn primary">Validar e restaurar</button></div></form>`, 'small');
+    $$('[data-close-modal]').forEach(b => b.onclick = closeModal);
+    $('#restoreAutoForm').onsubmit = /*#__PURE__*/function () {
+      var _ref28 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee29(e) {
+        var out, b, restored, _t3, _t4, _t5, _t6;
+        return _regenerator().w(function (_context29) {
+          while (1) switch (_context29.p = _context29.n) {
+            case 0:
+              e.preventDefault();
+              out = $('#restoreAutoError');
+              out.textContent = 'Verificando...';
+              b = getAutoBackups().find(x => x.id === id);
+              _context29.p = 1;
+              _t3 = ensureShape;
+              _t4 = decryptState;
+              _t5 = b.blob;
+              _context29.n = 2;
+              return deriveKey($('#restoreAutoPassword').value, b64ToBytes(b.salt));
+            case 2:
+              _context29.n = 3;
+              return _t4(_t5, _context29.v);
+            case 3:
+              restored = _t3(_context29.v);
+              confirmAction('Substituir os dados atuais por este backup?', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee28() {
+                return _regenerator().w(function (_context28) {
+                  while (1) switch (_context28.n) {
+                    case 0:
+                      state = restored;
+                      _context28.n = 1;
+                      return persist();
+                    case 1:
+                      renderAll();
+                      showToast('Backup restaurado.');
+                    case 2:
+                      return _context28.a(2);
+                  }
+                }, _callee28);
+              })), 'Restaurar');
+              _context29.n = 5;
+              break;
+            case 4:
+              _context29.p = 4;
+              _t6 = _context29.v;
+              console.error(_t6);
+              out.textContent = 'Senha incorreta ou backup inválido.';
+            case 5:
+              return _context29.a(2);
+          }
+        }, _callee29, null, [[1, 4]]);
+      }));
+      return function (_x17) {
+        return _ref28.apply(this, arguments);
+      };
+    }();
   }
-
   function openWipeDataModal() {
     openModal('Apagar todos os dados locais', `<form id="wipeDataForm"><p class="muted" style="margin-top:0">Esta ação remove todos os registros, backups e a senha deste navegador. Digite a senha de acesso cadastrada para confirmar.</p><div class="field"><label>Senha atual</label><input id="wipePassword" type="password" required></div><div id="wipeError" class="auth-error"></div><div class="form-actions"><button type="button" class="btn" data-close-modal>Cancelar</button><button class="btn danger">Apagar definitivamente</button></div></form>`, 'small');
-    $$('[data-close-modal]').forEach(function (button) { button.onclick = closeModal; });
-    $('#wipeDataForm').onsubmit = function (e) {
-      e.preventDefault();
-      var out = $('#wipeError');
-      out.textContent = 'Verificando...';
-      deriveKey($('#wipePassword').value, b64ToBytes(localStorage.getItem(STORAGE.SALT))).then(function (key) {
-        return decryptState(localStorage.getItem(STORAGE.BLOB), key);
-      }).then(function () {
-        Object.keys(STORAGE).forEach(function (key) { localStorage.removeItem(STORAGE[key]); });
-        location.reload();
-      }).catch(function (err) {
-        console.error(err);
-        out.textContent = 'Senha incorreta. Nenhum dado foi apagado.';
-      });
-    };
+    $$('[data-close-modal]').forEach(b => b.onclick = closeModal);
+    $('#wipeDataForm').onsubmit = /*#__PURE__*/function () {
+      var _ref30 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee30(e) {
+        var out, key, _t7;
+        return _regenerator().w(function (_context30) {
+          while (1) switch (_context30.p = _context30.n) {
+            case 0:
+              e.preventDefault();
+              out = $('#wipeError');
+              out.textContent = 'Verificando...';
+              _context30.p = 1;
+              _context30.n = 2;
+              return deriveKey($('#wipePassword').value, b64ToBytes(localStorage.getItem(STORAGE.SALT)));
+            case 2:
+              key = _context30.v;
+              _context30.n = 3;
+              return decryptState(localStorage.getItem(STORAGE.BLOB), key);
+            case 3:
+              Object.values(STORAGE).forEach(k => localStorage.removeItem(k));
+              location.reload();
+              _context30.n = 5;
+              break;
+            case 4:
+              _context30.p = 4;
+              _t7 = _context30.v;
+              console.error(_t7);
+              out.textContent = 'Senha incorreta. Nenhum dado foi apagado.';
+            case 5:
+              return _context30.a(2);
+          }
+        }, _callee30, null, [[1, 4]]);
+      }));
+      return function (_x18) {
+        return _ref30.apply(this, arguments);
+      };
+    }();
   }
+  function downloadJsonFile(payload, filename) {
+    var fileBlob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    var link = document.createElement('a');
+    link.href = URL.createObjectURL(fileBlob);
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(function () { URL.revokeObjectURL(link.href); }, 1000);
+  }
+  function exportBackupSimple() {
+    var payload = {
+      app: 'PEDE MAIS GRÃO — Gestão Rennan Cotta Pavão',
+      appId: 'pede-mais-grao',
+      version: 3,
+      backupFormat: 3,
+      schemaVersion: state && state.meta ? state.meta.schemaVersion || 6 : 6,
+      encrypted: false,
+      exportedAt: nowISO(),
+      source: 'manual',
+      data: state
+    };
+    downloadJsonFile(payload, 'backup-pede-mais-grao-' + todayISO() + '.rcbackup');
+    showToast('Backup simples exportado. Guarde o arquivo em local privado.');
+  }
+  function exportBackupEncrypted() {
+    var payload = {
+      app: 'PEDE MAIS GRÃO — Gestão Rennan Cotta Pavão',
+      appId: 'pede-mais-grao',
+      version: 2,
+      encrypted: true,
+      exportedAt: nowISO(),
+      salt: localStorage.getItem(STORAGE.SALT),
+      blob: localStorage.getItem(STORAGE.BLOB)
+    };
+    downloadJsonFile(payload, 'backup-criptografado-pede-mais-grao-' + todayISO() + '.rcbackup');
+    showToast('Backup criptografado exportado.');
+  }
+  /* Nome antigo preservado para compatibilidade interna. */
   function exportBackup() {
-    var payload = buildPortableBackup(state, 'manual');
-    downloadBackupFile(payload, 'backup-pede-mais-grao-' + todayISO() + '.rcbackup');
-    showToast('Backup portátil exportado. Ele não possui senha.');
+    exportBackupSimple();
   }
   function importBackup() {
-    var file = $('#backupFile').files[0];
+    var input = $('#backupFile');
+    var file = input && input.files ? input.files[0] : null;
     if (!file) {
       showToast('Selecione um arquivo de backup.', 'error');
-      return;
+      return Promise.resolve();
     }
-    readFileTextCompat(file).then(function (text) {
-      return JSON.parse(text);
-    }).then(function (parsed) {
-      return readImportedBackup(parsed);
+    return readFileTextCompat(file).then(function (rawText) {
+      var parsed = JSON.parse(rawText);
+
+      /* Formato simples v3, inclusive o backup fornecido em 21/07/2026. */
+      if (parsed && parsed.data && typeof parsed.data === 'object' && parsed.encrypted !== true) {
+        return ensureShape(parsed.data);
+      }
+
+      /* Também aceita um estado bruto exportado por versões experimentais. */
+      if (parsed && parsed.meta && Array.isArray(parsed.inventory)) {
+        return ensureShape(parsed);
+      }
+
+      /* Formato criptografado legado e atual. */
+      if (parsed && parsed.salt && parsed.blob) {
+        var backupPassword = prompt('Digite a senha usada neste backup criptografado:');
+        if (backupPassword === null) throw new Error('IMPORT_CANCELLED');
+        return deriveKey(backupPassword, b64ToBytes(parsed.salt)).then(function (backupKey) {
+          return decryptState(parsed.blob, backupKey);
+        }).then(function (decryptedData) {
+          return ensureShape(decryptedData);
+        });
+      }
+
+      throw new Error('Formato de backup não reconhecido.');
     }).then(function (importedState) {
       if (!importedState) return;
       confirmAction('O backup é válido. Substituir os dados atuais por este arquivo?', function () {
         state = importedState;
         return persist().then(function () {
           renderAll();
-          showToast('Backup importado e protegido pela senha local deste navegador.');
+          showToast('Backup importado e salvo com a senha atual.');
         });
       }, 'Importar e substituir');
-    }).catch(function (err) {
-      console.error(err);
-      showToast('Backup inválido, corrompido ou com senha antiga incorreta.', 'error');
+    }).catch(function (error) {
+      if (error && error.message === 'IMPORT_CANCELLED') return;
+      console.error(error);
+      showToast('Backup inválido, corrompido ou com senha incorreta.', 'error');
     });
   }
-
   function renderInnovation() {
     var items = state.innovationNotes || [];
     $('#innovation').innerHTML = `
@@ -3352,7 +3320,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
             return createAutoBackup('senha-alterada', true);
           case 19:
             e.target.reset();
-            msg.textContent = 'Senha alterada com sucesso. Os backups portáteis não dependem da senha; backups antigos compatíveis foram atualizados.';
+            msg.textContent = 'Senha alterada com sucesso. Os backups automáticos compatíveis também foram atualizados.';
             showToast('Senha alterada.');
             _context78.n = 21;
             break;
@@ -3376,6 +3344,10 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     'Sementes': {
       sizes: [50, 100, 250, 500, 1000],
       materials: ['Chia', 'Linhaça', 'Girassol', 'Gergelim Preto', 'Gergelim Branco', 'Abóbora']
+    },
+    'Chá': {
+      sizes: [50, 100, 250, 500, 1000],
+      materials: []
     }
   };
   var productionDateFilter = todayISO();
@@ -3536,7 +3508,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
         company: 'PEDE MAIS GRÃO',
         createdAt: nowISO(),
         updatedAt: nowISO(),
-        schemaVersion: 5
+        schemaVersion: 6
       },
       tasks: [],
       checklist: [{
@@ -3606,7 +3578,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     return _objectSpread(_objectSpread(_objectSpread({}, base), raw), {}, {
       meta: _objectSpread(_objectSpread(_objectSpread({}, base.meta), raw.meta || {}), {}, {
         company: 'PEDE MAIS GRÃO',
-        schemaVersion: 5
+        schemaVersion: 6
       }),
       tasks: Array.isArray(raw.tasks) ? raw.tasks.map(t => _objectSpread({
         employeeId: '',
@@ -4149,13 +4121,14 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     }[code] || code || '—';
   }
   function renderMaterialControlHTML() {
-    var productionItems = state.inventory.filter(i => ['Temperos', 'Sementes'].includes(i.category) && (i.unit || 'kg') === 'kg');
+    var productionItems = state.inventory.filter(i => ['Temperos', 'Sementes', 'Chá'].includes(i.category) && (i.unit || 'kg') === 'kg');
     var totalKg = productionItems.reduce((sum, i) => sum + num(i.quantity), 0);
     var temperosKg = productionItems.filter(i => i.category === 'Temperos').reduce((sum, i) => sum + num(i.quantity), 0);
     var sementesKg = productionItems.filter(i => i.category === 'Sementes').reduce((sum, i) => sum + num(i.quantity), 0);
+    var chaKg = productionItems.filter(i => i.category === 'Chá').reduce((sum, i) => sum + num(i.quantity), 0);
     var replenishment = state.inventory.filter(i => suggestedPurchaseQuantity(i) > 0).sort((a, b) => suggestedPurchaseQuantity(b) - suggestedPurchaseQuantity(a));
     var recentAlerts = state.inventoryAlerts.slice(0, 25);
-    return `<div class="material-control-grid"><div class="material-control-card"><span>Estoque total de insumos</span><strong>${formatQty(totalKg, 3)} kg</strong></div><div class="material-control-card"><span>Temperos em estoque</span><strong>${formatQty(temperosKg, 3)} kg</strong></div><div class="material-control-card"><span>Sementes em estoque</span><strong>${formatQty(sementesKg, 3)} kg</strong></div><div class="material-control-card"><span>Materiais para comprar</span><strong>${replenishment.length}</strong></div></div>
+    return `<div class="material-control-grid"><div class="material-control-card"><span>Estoque total de insumos</span><strong>${formatQty(totalKg, 3)} kg</strong></div><div class="material-control-card"><span>Temperos em estoque</span><strong>${formatQty(temperosKg, 3)} kg</strong></div><div class="material-control-card"><span>Sementes em estoque</span><strong>${formatQty(sementesKg, 3)} kg</strong></div><div class="material-control-card"><span>Chás em estoque</span><strong>${formatQty(chaKg, 3)} kg</strong></div><div class="material-control-card"><span>Materiais para comprar</span><strong>${replenishment.length}</strong></div></div>
       ${replenishment.length ? `<div class="table-wrap"><table><thead><tr><th>Material</th><th>Estoque atual</th><th>Nível</th><th>Compra sugerida</th><th>Sacos</th><th>Ação</th></tr></thead><tbody>${replenishment.map(i => {
       var st = inventoryStatus(i),
         qty = suggestedPurchaseQuantity(i),
@@ -4318,7 +4291,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
         <form id="inventoryForm">
           <div class="field"><label>Material</label><input id="invName" required value="${esc(item.name)}" placeholder="Ex.: Páprica Defumada"></div>
           <div class="form-grid">
-            <div class="field"><label>Categoria</label><select id="invCategory">${['Temperos', 'Sementes', 'Embalagem', 'Matéria-prima', 'Expedição', 'Escritório', 'Limpeza', 'Equipamento', 'Outros'].map(v => `<option ${item.category === v ? 'selected' : ''}>${v}</option>`).join('')}</select></div>
+            <div class="field"><label>Categoria</label><select id="invCategory">${['Temperos', 'Sementes', 'Chá', 'Embalagem', 'Matéria-prima', 'Expedição', 'Escritório', 'Limpeza', 'Equipamento', 'Outros'].map(v => `<option ${item.category === v ? 'selected' : ''}>${v}</option>`).join('')}</select></div>
             <div class="field"><label>Unidade de controle</label><input id="invUnit" value="${esc(item.unit || 'un.')}" placeholder="kg, un., rolo, pacote"></div>
             <div class="field"><label>Quantidade atual</label><input id="invQty" type="number" step="0.001" value="${num(item.quantity)}"></div>
             <div class="field"><label>Peso do saco / embalagem de compra (kg)</label><input id="invPackageWeight" type="number" step="0.01" min="0" value="${num(item.packageWeightKg)}"></div>
@@ -4357,7 +4330,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
               payload = {
                 name: $('#invName').value.trim(),
                 category: $('#invCategory').value,
-                itemType: ['Temperos', 'Sementes'].includes($('#invCategory').value) ? 'Insumo de produção' : item.itemType || '',
+                itemType: ['Temperos', 'Sementes', 'Chá'].includes($('#invCategory').value) ? 'Insumo de produção' : item.itemType || '',
                 unit: $('#invUnit').value.trim() || 'un.',
                 quantity: num($('#invQty').value),
                 minimum: min,
@@ -4792,11 +4765,40 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     plan.updatedAt = nowISO();
     if (plan.status !== 'Fechado') plan.status = planComputedStatus(plan);
   }
-  function productionGoalOptions(category, selectedMaterial = '', selectedSize = 0) {
+  function productionCategoryNames(selectedCategory = '') {
+    var categories = Object.keys(PRODUCTION_CATALOG);
+    state.inventory.forEach(item => {
+      if (!item || !item.name || !item.category) return;
+      if (!categories.some(category => normalizeKey(category) === normalizeKey(item.category))) categories.push(item.category);
+    });
+    if (selectedCategory && !categories.some(category => normalizeKey(category) === normalizeKey(selectedCategory))) categories.push(selectedCategory);
+    return categories;
+  }
+  function productionMaterialsForCategory(category) {
+    var cfg = PRODUCTION_CATALOG[category] || {
+      materials: []
+    };
+    var materials = [...cfg.materials];
+    state.inventory.forEach(item => {
+      if (!item || !item.name || normalizeKey(item.category) !== normalizeKey(category)) return;
+      if (!materials.some(material => normalizeKey(material) === normalizeKey(item.name))) materials.push(item.name);
+    });
+    return materials.sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  }
+  function productionSizesForCategory(category, selectedSize = 0) {
     var cfg = PRODUCTION_CATALOG[category];
+    var sizes = cfg && Array.isArray(cfg.sizes) && cfg.sizes.length ? [...cfg.sizes] : [50, 100, 250, 500, 1000];
+    var current = num(selectedSize);
+    if (current > 0 && !sizes.includes(current)) sizes.push(current);
+    return sizes.sort((a, b) => a - b);
+  }
+  function productionGoalOptions(category, selectedMaterial = '', selectedSize = 0) {
+    var materials = productionMaterialsForCategory(category);
+    if (selectedMaterial && !materials.some(material => normalizeKey(material) === normalizeKey(selectedMaterial))) materials.unshift(selectedMaterial);
+    var sizes = productionSizesForCategory(category, selectedSize);
     return {
-      materials: cfg.materials.map(m => `<option ${normalizeKey(m) === normalizeKey(selectedMaterial) ? 'selected' : ''}>${esc(m)}</option>`).join(''),
-      sizes: cfg.sizes.map(s => `<option value="${s}" ${num(selectedSize) === s ? 'selected' : ''}>${s === 1000 ? '1 kg' : s + ' g'}</option>`).join('')
+      materials: materials.map(m => `<option value="${esc(m)}" ${normalizeKey(m) === normalizeKey(selectedMaterial) ? 'selected' : ''}>${esc(m)}</option>`).join(''),
+      sizes: sizes.map(s => `<option value="${s}" ${num(selectedSize) === s ? 'selected' : ''}>${s === 1000 ? '1 kg' : s + ' g'}</option>`).join('')
     };
   }
   function openProductionGoalModal(planId = '', goalId = '') {
@@ -4815,7 +4817,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
       notes: ''
     };
     var opts = productionGoalOptions(goal.category, goal.material, goal.packSizeG);
-    openModal(goalId ? 'Editar objetivo de produção' : 'Adicionar objetivo de produção', `<form id="productionGoalForm"><div class="form-grid"><div class="field"><label>Data da produção</label><input id="goalDate" type="date" required value="${esc((plan === null || plan === void 0 ? void 0 : plan.date) || productionDateFilter || todayISO())}" ${goalId ? 'disabled' : ''}></div><div class="field"><label>Funcionário</label><select id="goalEmployee" required ${goalId ? 'disabled' : ''}><option value="">Selecione</option>${employeeOptions((plan === null || plan === void 0 ? void 0 : plan.employeeId) || '', false)}</select></div><div class="field"><label>Categoria</label><select id="goalCategory"><option ${goal.category === 'Temperos' ? 'selected' : ''}>Temperos</option><option ${goal.category === 'Sementes' ? 'selected' : ''}>Sementes</option></select></div><div class="field"><label>Material</label><select id="goalMaterial">${opts.materials}</select></div><div class="field"><label>Tamanho do pacote</label><select id="goalSize">${opts.sizes}</select></div><div class="field"><label>Meta de pacotes</label><input id="goalPlanned" type="number" min="1" step="1" required value="${num(goal.plannedQty) || ''}"></div><div class="field"><label>Já produzido</label><input id="goalCompleted" type="number" min="0" step="1" value="${num(goal.completedQty)}"></div></div><div class="field"><label>Observação do objetivo</label><textarea id="goalNotes" placeholder="Ex.: prioridade do turno, lote ou padrão de embalagem">${esc(goal.notes || '')}</textarea></div><div class="status-callout">A matéria-prima consumida será calculada pelo peso do pacote e pela quantidade produzida. O estoque será atualizado conforme o andamento.</div><div class="form-actions"><button type="button" class="btn" data-close-modal>Cancelar</button><button class="btn primary">Salvar objetivo</button></div></form>`);
+    openModal(goalId ? 'Editar objetivo de produção' : 'Adicionar objetivo de produção', `<form id="productionGoalForm"><div class="form-grid"><div class="field"><label>Data da produção</label><input id="goalDate" type="date" required value="${esc((plan === null || plan === void 0 ? void 0 : plan.date) || productionDateFilter || todayISO())}" ${goalId ? 'disabled' : ''}></div><div class="field"><label>Funcionário</label><select id="goalEmployee" required ${goalId ? 'disabled' : ''}><option value="">Selecione</option>${employeeOptions((plan === null || plan === void 0 ? void 0 : plan.employeeId) || '', false)}</select></div><div class="field"><label>Categoria</label><select id="goalCategory">${productionCategoryNames(goal.category).map(category => `<option value="${esc(category)}" ${normalizeKey(goal.category) === normalizeKey(category) ? 'selected' : ''}>${esc(category)}</option>`).join('')}</select></div><div class="field"><label>Material</label><select id="goalMaterial" required>${opts.materials}</select></div><div class="field"><label>Tamanho do pacote</label><select id="goalSize">${opts.sizes}</select></div><div class="field"><label>Meta de pacotes</label><input id="goalPlanned" type="number" min="1" step="1" required value="${num(goal.plannedQty) || ''}"></div><div class="field"><label>Já produzido</label><input id="goalCompleted" type="number" min="0" step="1" value="${num(goal.completedQty)}"></div></div><div class="field"><label>Observação do objetivo</label><textarea id="goalNotes" placeholder="Ex.: prioridade do turno, lote ou padrão de embalagem">${esc(goal.notes || '')}</textarea></div><div class="status-callout">A matéria-prima consumida será calculada pelo peso do pacote e pela quantidade produzida. O estoque será atualizado conforme o andamento.</div><div class="form-actions"><button type="button" class="btn" data-close-modal>Cancelar</button><button class="btn primary">Salvar objetivo</button></div></form>`);
     $$('[data-close-modal]').forEach(b => b.onclick = closeModal);
     var refreshOptions = () => {
       var category = $('#goalCategory').value;
@@ -5396,7 +5398,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
   }
   function renderProduction() {
     var openShipments = state.production.filter(p => p.status !== 'Despachado').length;
-    $('#production').innerHTML = `<div class="section-head"><div><h2>Produção diária e despacho</h2><p>Defina quantos pacotes cada funcionário fará, acompanhe o avanço durante o dia e confirme o resultado final.</p></div><div class="section-actions"><button class="btn" id="repeatDailyGoalsBtn">Repetir objetivos de outra data</button><button class="btn primary" id="addDailyGoalBtn">Adicionar objetivo diário</button><button class="btn" id="addProductionBtn">Novo lote para despacho</button></div></div><div class="card"><div class="card-head"><div><h3>Produção do dia por funcionário</h3><div class="muted" style="font-size:12px;margin-top:4px">Temperos: 100 g, 250 g e 500 g. Sementes: 50 g, 100 g, 250 g, 500 g e 1 kg.</div></div><div class="field" style="margin:0;min-width:170px"><label>Data acompanhada</label><input id="productionDateFilter" type="date" value="${productionDateFilter}"></div></div><div class="card-body">${renderProductionPlanCards(productionDateFilter)}</div></div><div class="card" style="margin-top:16px"><div class="card-head"><h3>Análise da produção dos funcionários</h3><span class="badge info">Diária · semanal · mensal</span></div><div class="card-body">${renderProductionAnalyticsHTML()}</div></div><div class="subsection-title"><h3>Lotes, pedidos e despacho</h3><span class="badge">${openShipments} em aberto</span></div><div class="kanban">${productionStatuses.map(status => {
+    $('#production').innerHTML = `<div class="section-head"><div><h2>Produção diária e despacho</h2><p>Defina quantos pacotes cada funcionário fará, acompanhe o avanço durante o dia e confirme o resultado final.</p></div><div class="section-actions"><button class="btn" id="repeatDailyGoalsBtn">Repetir objetivos de outra data</button><button class="btn primary" id="addDailyGoalBtn">Adicionar objetivo diário</button><button class="btn" id="addProductionBtn">Novo lote para despacho</button></div></div><div class="card"><div class="card-head"><div><h3>Produção do dia por funcionário</h3><div class="muted" style="font-size:12px;margin-top:4px">Materiais sincronizados automaticamente com o estoque. Temperos: 100 g, 250 g e 500 g. Sementes e chás: 50 g, 100 g, 250 g, 500 g e 1 kg.</div></div><div class="field" style="margin:0;min-width:170px"><label>Data acompanhada</label><input id="productionDateFilter" type="date" value="${productionDateFilter}"></div></div><div class="card-body">${renderProductionPlanCards(productionDateFilter)}</div></div><div class="card" style="margin-top:16px"><div class="card-head"><h3>Análise da produção dos funcionários</h3><span class="badge info">Diária · semanal · mensal</span></div><div class="card-body">${renderProductionAnalyticsHTML()}</div></div><div class="subsection-title"><h3>Lotes, pedidos e despacho</h3><span class="badge">${openShipments} em aberto</span></div><div class="kanban">${productionStatuses.map(status => {
       var items = state.production.filter(p => p.status === status).sort((a, b) => String(a.deadline || '9999').localeCompare(String(b.deadline || '9999')));
       return `<div class="kanban-col"><div class="kanban-head"><span>${status}</span><span class="badge">${items.length}</span></div><div class="kanban-body">${items.length ? items.map(p => `<div class="kanban-card"><h4>${esc(p.name)}</h4><p>${num(p.quantity)} ${esc(p.unit || 'un.')} · ${esc(p.platform || 'Sem canal')} · ${p.deadline ? formatDate(p.deadline) : 'Sem prazo'}</p>${p.notes ? `<p style="margin-top:6px">${esc(p.notes)}</p>` : ''}<div class="item-actions"><button class="btn small" data-prod-move="${p.id}">Avançar</button><button class="btn small" data-prod-edit="${p.id}">Editar</button><button class="btn small danger" data-prod-delete="${p.id}">Excluir</button></div></div>`).join('') : '<div class="list-empty" style="padding:14px">Vazio</div>'}</div></div>`;
     }).join('')}</div>`;
@@ -6432,705 +6434,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
       }, _callee67);
     })), 'Excluir'));
   };
-
-
-  function buildPortableBackup(data, source, extra) {
-    var cleanData = cloneBackupData(ensureShape(data));
-    if (cleanData.settings && cleanData.settings.cloudSync) delete cleanData.settings.cloudSync;
-    var payload = {
-      app: 'PEDE MAIS GRÃO — Gestão Rennan Cotta Pavão',
-      appId: 'pede-mais-grao',
-      version: BACKUP_FORMAT_VERSION,
-      backupFormat: BACKUP_FORMAT_VERSION,
-      schemaVersion: BACKUP_SCHEMA_VERSION,
-      encrypted: false,
-      exportedAt: nowISO(),
-      source: source || 'manual',
-      data: cleanData
-    };
-    if (extra) Object.keys(extra).forEach(function (key) { payload[key] = extra[key]; });
-    return payload;
-  }
-
-  /* ===== SINCRONIZAÇÃO LOCAL-FIRST UNIVERSAL ===== */
-  STORAGE.DEVICE_ID = 'rc_gestao_universal_nuvem_v1_device_id';
-  var cloudSyncTimer = null;
-  var cloudSyncBusy = false;
-  var cloudSyncSnapshot = null;
-  var localOnlyPersistDepth = 0;
-  var CLOUD_SYNC_CHANNEL = 'pede-mais-grao-cloud-sync-v1';
-  var CLOUD_COLLECTIONS = [
-    'tasks', 'checklist', 'inventory', 'inventoryMovements', 'inventoryAlerts',
-    'purchases', 'production', 'dailyProductionPlans', 'machines', 'machineEvents',
-    'employees', 'notes', 'innovationNotes'
-  ];
-
-  function jsonClone(value) {
-    return value == null ? value : JSON.parse(JSON.stringify(value));
-  }
-
-  function getCloudDeviceId() {
-    var id = localStorage.getItem(STORAGE.DEVICE_ID);
-    if (!id) {
-      id = uid();
-      localStorage.setItem(STORAGE.DEVICE_ID, id);
-    }
-    return id;
-  }
-
-  function defaultDeviceName() {
-    var platform = navigator.platform || 'Computador';
-    return platform + ' · ' + String(getCloudDeviceId()).slice(0, 8);
-  }
-
-  function ensureCloudSyncConfig() {
-    if (!state) return null;
-    state.settings = state.settings || {};
-    var current = state.settings.cloudSync || {};
-    state.settings.cloudSync = {
-      endpoint: current.endpoint || '',
-      token: current.token || '',
-      deviceName: current.deviceName || defaultDeviceName(),
-      autoSync: current.autoSync === true,
-      intervalMinutes: Math.max(1, num(current.intervalMinutes) || 2),
-      lastServerRevision: num(current.lastServerRevision),
-      lastSyncedAt: current.lastSyncedAt || '',
-      lastStatus: current.lastStatus || 'Ainda não configurada',
-      lastError: current.lastError || '',
-      dirty: current.dirty === true,
-      localChangedAt: current.localChangedAt || ''
-    };
-    return state.settings.cloudSync;
-  }
-
-  function comparableJson(value) {
-    return JSON.stringify(value, function (key, item) {
-      if (key === '_syncUpdatedAt' || key === 'cloudSync') return undefined;
-      return item;
-    });
-  }
-
-  function buildCloudSnapshot(source) {
-    var snap = {};
-    CLOUD_COLLECTIONS.forEach(function (name) {
-      var map = {};
-      var list = Array.isArray(source && source[name]) ? source[name] : [];
-      list.forEach(function (item) {
-        if (!item || typeof item !== 'object') return;
-        if (!item.id) item.id = uid();
-        map[item.id] = comparableJson(item);
-      });
-      snap[name] = map;
-    });
-    snap.learning = comparableJson(source && source.learning ? {
-      completed: source.learning.completed || {},
-      leadershipNotes: source.learning.leadershipNotes || '',
-      materialsNotes: source.learning.materialsNotes || ''
-    } : {});
-    return snap;
-  }
-
-  function ensureTombstoneShape() {
-    state.syncMeta = state.syncMeta || {};
-    state.syncMeta.tombstones = state.syncMeta.tombstones || {};
-    CLOUD_COLLECTIONS.forEach(function (name) {
-      state.syncMeta.tombstones[name] = state.syncMeta.tombstones[name] || {};
-    });
-  }
-
-  function captureCloudChanges(timestamp) {
-    ensureTombstoneShape();
-    var previous = cloudSyncSnapshot || {};
-    CLOUD_COLLECTIONS.forEach(function (name) {
-      var oldMap = previous[name] || {};
-      var currentMap = {};
-      var list = Array.isArray(state[name]) ? state[name] : [];
-      list.forEach(function (item) {
-        if (!item || typeof item !== 'object') return;
-        if (!item.id) item.id = uid();
-        var clean = comparableJson(item);
-        if (!Object.prototype.hasOwnProperty.call(oldMap, item.id) || oldMap[item.id] !== clean) {
-          item._syncUpdatedAt = timestamp;
-        }
-        currentMap[item.id] = true;
-        var deletedAt = state.syncMeta.tombstones[name][item.id];
-        if (deletedAt && String(item._syncUpdatedAt || '') > String(deletedAt)) {
-          delete state.syncMeta.tombstones[name][item.id];
-        }
-      });
-      Object.keys(oldMap).forEach(function (id) {
-        if (!currentMap[id]) state.syncMeta.tombstones[name][id] = timestamp;
-      });
-    });
-    var learningComparable = comparableJson(state.learning || {});
-    if (!previous.learning || previous.learning !== learningComparable) {
-      state.learning = state.learning || {};
-      state.learning._syncUpdatedAt = timestamp;
-    }
-    cloudSyncSnapshot = buildCloudSnapshot(state);
-  }
-
-  function persist() {
-    if (!state || !cryptoKey) return Promise.resolve();
-    var localOnly = localOnlyPersistDepth > 0;
-    var timestamp = nowISO();
-    var config = ensureCloudSyncConfig();
-    if (!localOnly) {
-      state.meta.updatedAt = timestamp;
-      captureCloudChanges(timestamp);
-      config.dirty = true;
-      config.localChangedAt = timestamp;
-    } else {
-      cloudSyncSnapshot = buildCloudSnapshot(state);
-    }
-    return encryptState(state, cryptoKey).then(function (encrypted) {
-      localStorage.setItem(STORAGE.BLOB, encrypted);
-      localStorage.setItem(STORAGE.VERSION, '3');
-      return ensureRecoveryKey();
-    }).then(function (programmerKey) {
-      return encryptState(state, programmerKey);
-    }).then(function (recoveryEncrypted) {
-      localStorage.setItem(STORAGE.RECOVERY_BLOB, recoveryEncrypted);
-    });
-  }
-
-  function persistCloudLocalOnly() {
-    localOnlyPersistDepth += 1;
-    return persist().then(function (result) {
-      localOnlyPersistDepth -= 1;
-      return result;
-    }, function (error) {
-      localOnlyPersistDepth -= 1;
-      throw error;
-    });
-  }
-
-  function buildCloudState() {
-    var copy = jsonClone(state);
-    copy.settings = copy.settings || {};
-    delete copy.settings.cloudSync;
-    return copy;
-  }
-
-  function recordTimestamp(item, fallback) {
-    if (!item || typeof item !== 'object') return fallback || '';
-    return item._syncUpdatedAt || item.updatedAt || item.createdAt || item.date || fallback || '';
-  }
-
-  function mergeTombstones(localState, remoteState) {
-    var result = {};
-    var left = localState && localState.syncMeta && localState.syncMeta.tombstones || {};
-    var right = remoteState && remoteState.syncMeta && remoteState.syncMeta.tombstones || {};
-    CLOUD_COLLECTIONS.forEach(function (name) {
-      result[name] = {};
-      var ids = {};
-      Object.keys(left[name] || {}).forEach(function (id) { ids[id] = true; });
-      Object.keys(right[name] || {}).forEach(function (id) { ids[id] = true; });
-      Object.keys(ids).forEach(function (id) {
-        var a = String((left[name] || {})[id] || '');
-        var b = String((right[name] || {})[id] || '');
-        result[name][id] = a > b ? a : b;
-      });
-    });
-    return result;
-  }
-
-  function mergeRecordArray(localList, remoteList, tombstones, localFallback, remoteFallback) {
-    var localMap = {};
-    var remoteMap = {};
-    (Array.isArray(localList) ? localList : []).forEach(function (item) {
-      if (!item || typeof item !== 'object') return;
-      if (!item.id) item.id = uid();
-      localMap[item.id] = item;
-    });
-    (Array.isArray(remoteList) ? remoteList : []).forEach(function (item) {
-      if (!item || typeof item !== 'object') return;
-      if (!item.id) item.id = uid();
-      remoteMap[item.id] = item;
-    });
-    var ids = {};
-    Object.keys(localMap).forEach(function (id) { ids[id] = true; });
-    Object.keys(remoteMap).forEach(function (id) { ids[id] = true; });
-    var merged = [];
-    Object.keys(ids).forEach(function (id) {
-      var localItem = localMap[id];
-      var remoteItem = remoteMap[id];
-      var selected;
-      if (localItem && remoteItem) {
-        var localTs = String(recordTimestamp(localItem, localFallback));
-        var remoteTs = String(recordTimestamp(remoteItem, remoteFallback));
-        selected = localTs >= remoteTs ? localItem : remoteItem;
-      } else {
-        selected = localItem || remoteItem;
-      }
-      var selectedTs = String(recordTimestamp(selected, selected === localItem ? localFallback : remoteFallback));
-      var deletedAt = String((tombstones || {})[id] || '');
-      if (!deletedAt || selectedTs > deletedAt) merged.push(jsonClone(selected));
-    });
-    return merged;
-  }
-
-  function mergeCloudStates(localRaw, remoteRaw) {
-    var localState = ensureShape(jsonClone(localRaw || initialState()));
-    var remoteState = ensureShape(jsonClone(remoteRaw || initialState()));
-    var localUpdated = String(localState.meta && localState.meta.updatedAt || '');
-    var remoteUpdated = String(remoteState.meta && remoteState.meta.updatedAt || '');
-    var base = jsonClone(localUpdated >= remoteUpdated ? localState : remoteState);
-    var tombstones = mergeTombstones(localState, remoteState);
-    CLOUD_COLLECTIONS.forEach(function (name) {
-      base[name] = mergeRecordArray(localState[name], remoteState[name], tombstones[name], localUpdated, remoteUpdated);
-    });
-    base.syncMeta = base.syncMeta || {};
-    base.syncMeta.tombstones = tombstones;
-    base.learning = base.learning || {};
-    var localLearning = localState.learning || {};
-    var remoteLearning = remoteState.learning || {};
-    var localLearningTs = String(localLearning._syncUpdatedAt || localUpdated);
-    var remoteLearningTs = String(remoteLearning._syncUpdatedAt || remoteUpdated);
-    var newerLearning = localLearningTs >= remoteLearningTs ? localLearning : remoteLearning;
-    base.learning.completed = jsonClone(newerLearning.completed || {});
-    base.learning.leadershipNotes = newerLearning.leadershipNotes || '';
-    base.learning.materialsNotes = newerLearning.materialsNotes || '';
-    base.learning._syncUpdatedAt = localLearningTs >= remoteLearningTs ? localLearningTs : remoteLearningTs;
-    base.learning.leadershipEntries = jsonClone(newerLearning.leadershipEntries || []);
-    base.learning.materialsEntries = jsonClone(newerLearning.materialsEntries || []);
-    base.settings = jsonClone(localState.settings || {});
-    base.meta = base.meta || {};
-    base.meta.owner = localState.meta && localState.meta.owner || remoteState.meta && remoteState.meta.owner || 'Rennan Cotta Pavão';
-    base.meta.createdAt = String(localState.meta && localState.meta.createdAt || '') < String(remoteState.meta && remoteState.meta.createdAt || '') ? localState.meta.createdAt : remoteState.meta.createdAt;
-    base.meta.updatedAt = localUpdated >= remoteUpdated ? localUpdated : remoteUpdated;
-    return ensureShape(base);
-  }
-
-  function validateCloudConfig(config) {
-    if (!config || !config.endpoint || !config.token) throw new Error('Informe o endereço do Apps Script e a chave de sincronização.');
-    if (!/^https:\/\//i.test(config.endpoint)) throw new Error('O endereço da nuvem precisa começar com https://.');
-  }
-
-  function cloudIframeRequest(payload) {
-    var config = ensureCloudSyncConfig();
-    validateCloudConfig(config);
-    return new Promise(function (resolve, reject) {
-      var requestId = 'req-' + Date.now() + '-' + Math.random().toString(16).slice(2);
-      var iframe = document.createElement('iframe');
-      var form = document.createElement('form');
-      var timer;
-      iframe.name = 'cloud-frame-' + requestId;
-      iframe.style.display = 'none';
-      form.method = 'POST';
-      form.action = config.endpoint.trim();
-      form.target = iframe.name;
-      form.style.display = 'none';
-
-      function addField(name, value) {
-        var input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = name;
-        input.value = value;
-        form.appendChild(input);
-      }
-
-      function cleanup() {
-        clearTimeout(timer);
-        window.removeEventListener('message', onMessage, false);
-        if (form.parentNode) form.parentNode.removeChild(form);
-        setTimeout(function () {
-          if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
-        }, 500);
-      }
-
-      function onMessage(event) {
-        var message = event && event.data;
-        if (!message || message.channel !== CLOUD_SYNC_CHANNEL || message.requestId !== requestId) return;
-        cleanup();
-        if (message.result && message.result.ok) resolve(message.result);
-        else reject(new Error(message.result && message.result.error || 'A nuvem recusou a solicitação.'));
-      }
-
-      payload.token = config.token;
-      payload.requestId = requestId;
-      addField('requestId', requestId);
-      addField('request', JSON.stringify(payload));
-      window.addEventListener('message', onMessage, false);
-      document.body.appendChild(iframe);
-      document.body.appendChild(form);
-      timer = setTimeout(function () {
-        cleanup();
-        reject(new Error('A nuvem não respondeu. Confira a implantação e a conexão com a internet.'));
-      }, 45000);
-      try {
-        form.submit();
-      } catch (error) {
-        cleanup();
-        reject(error);
-      }
-    });
-  }
-
-  function setCloudStatus(message, error) {
-    var config = ensureCloudSyncConfig();
-    config.lastStatus = message;
-    config.lastError = error ? String(error.message || error) : '';
-    return persistCloudLocalOnly().then(function () {
-      if (currentSection === 'cloudSync') renderCloudSync();
-    });
-  }
-
-  function applyRemoteState(remoteState, revision, statusText) {
-    var localConfig = jsonClone(ensureCloudSyncConfig());
-    state = ensureShape(jsonClone(remoteState));
-    state.settings = state.settings || {};
-    state.settings.cloudSync = localConfig;
-    var config = ensureCloudSyncConfig();
-    config.lastServerRevision = num(revision);
-    config.lastSyncedAt = nowISO();
-    config.lastStatus = statusText || 'Dados recebidos da nuvem';
-    config.lastError = '';
-    config.dirty = false;
-    cloudSyncSnapshot = buildCloudSnapshot(state);
-    return persistCloudLocalOnly().then(function () {
-      renderAll();
-    });
-  }
-
-  function pushCloudState(baseRevision, force) {
-    var config = ensureCloudSyncConfig();
-    return cloudIframeRequest({
-      action: force ? 'forcePush' : 'push',
-      baseRevision: num(baseRevision),
-      deviceId: getCloudDeviceId(),
-      deviceName: config.deviceName,
-      state: buildCloudState()
-    });
-  }
-
-  function finishCloudSuccess(result, message) {
-    var config = ensureCloudSyncConfig();
-    config.lastServerRevision = num(result && result.revision);
-    config.lastSyncedAt = nowISO();
-    config.lastStatus = message || 'Sincronização concluída';
-    config.lastError = '';
-    config.dirty = false;
-    cloudSyncSnapshot = buildCloudSnapshot(state);
-    return persistCloudLocalOnly().then(function () {
-      if (currentSection === 'cloudSync') renderCloudSync();
-      renderDashboard();
-      showToast(config.lastStatus);
-    });
-  }
-
-  function syncCloudNow(mode) {
-    mode = mode || 'merge';
-    if (cloudSyncBusy) {
-      showToast('Já existe uma sincronização em andamento.', 'error');
-      return Promise.resolve();
-    }
-    var config = ensureCloudSyncConfig();
-    try { validateCloudConfig(config); } catch (error) {
-      showToast(error.message, 'error');
-      return Promise.reject(error);
-    }
-    cloudSyncBusy = true;
-    config.lastStatus = 'Conectando à nuvem...';
-    config.lastError = '';
-    if (currentSection === 'cloudSync') renderCloudSync();
-
-    var localConfig = jsonClone(config);
-    var flow;
-    if (mode === 'upload') {
-      flow = pushCloudState(config.lastServerRevision, true).then(function (result) {
-        return finishCloudSuccess(result, 'Nuvem substituída pelos dados deste aparelho');
-      });
-    } else {
-      flow = cloudIframeRequest({ action: 'pull', deviceId: getCloudDeviceId(), deviceName: config.deviceName }).then(function (remote) {
-        if (!remote.exists || !remote.state) {
-          return pushCloudState(0, false).then(function (created) {
-            return finishCloudSuccess(created, 'Primeira cópia criada na nuvem');
-          });
-        }
-        if (mode === 'download') {
-          return applyRemoteState(remote.state, remote.revision, 'Dados locais substituídos pela nuvem').then(function () {
-            showToast('Dados baixados da nuvem.');
-          });
-        }
-
-        var localWasDirty = config.dirty === true;
-        var remoteChanged = num(remote.revision) !== num(config.lastServerRevision);
-        var merged = mergeCloudStates(state, remote.state);
-        state = merged;
-        state.settings = state.settings || {};
-        state.settings.cloudSync = localConfig;
-        config = ensureCloudSyncConfig();
-        config.lastServerRevision = num(remote.revision);
-        cloudSyncSnapshot = buildCloudSnapshot(state);
-
-        if (!localWasDirty && remoteChanged) {
-          config.lastSyncedAt = nowISO();
-          config.lastStatus = 'Alterações da nuvem recebidas';
-          config.lastError = '';
-          config.dirty = false;
-          return persistCloudLocalOnly().then(function () {
-            renderAll();
-            showToast('Alterações da nuvem recebidas.');
-          });
-        }
-
-        if (!localWasDirty && !remoteChanged) {
-          config.lastSyncedAt = nowISO();
-          config.lastStatus = 'Tudo já estava sincronizado';
-          config.lastError = '';
-          return persistCloudLocalOnly().then(function () {
-            if (currentSection === 'cloudSync') renderCloudSync();
-            showToast('Tudo já estava sincronizado.');
-          });
-        }
-
-        return persistCloudLocalOnly().then(function () {
-          return pushCloudState(remote.revision, false);
-        }).then(function (pushed) {
-          if (pushed.conflict && pushed.state) {
-            var retryMerged = mergeCloudStates(state, pushed.state);
-            var retryConfig = jsonClone(ensureCloudSyncConfig());
-            state = retryMerged;
-            state.settings = state.settings || {};
-            state.settings.cloudSync = retryConfig;
-            cloudSyncSnapshot = buildCloudSnapshot(state);
-            return persistCloudLocalOnly().then(function () {
-              return pushCloudState(pushed.revision, false);
-            });
-          }
-          return pushed;
-        }).then(function (finalResult) {
-          if (finalResult.conflict) throw new Error('A nuvem mudou novamente durante a sincronização. Repita a operação.');
-          return finishCloudSuccess(finalResult, 'Alterações mescladas e sincronizadas');
-        });
-      });
-    }
-
-    return flow.catch(function (error) {
-      console.error(error);
-      return setCloudStatus('Falha na sincronização', error).then(function () {
-        showToast(error.message || 'Falha na sincronização.', 'error');
-        throw error;
-      });
-    }).then(function (result) {
-      cloudSyncBusy = false;
-      return result;
-    }, function (error) {
-      cloudSyncBusy = false;
-      throw error;
-    });
-  }
-
-  function startCloudSyncScheduler() {
-    clearInterval(cloudSyncTimer);
-    if (!state) return;
-    var config = ensureCloudSyncConfig();
-    if (!config.autoSync || !config.endpoint || !config.token) return;
-    var interval = Math.max(1, num(config.intervalMinutes) || 2) * 60 * 1000;
-    cloudSyncTimer = setInterval(function () {
-      if (!state || cloudSyncBusy || !navigator.onLine) return;
-      syncCloudNow('merge').catch(function () {});
-    }, interval);
-    setTimeout(function () {
-      if (state && navigator.onLine && !cloudSyncBusy) syncCloudNow('merge').catch(function () {});
-    }, 3500);
-  }
-
-  function cloudStatusClass(config) {
-    if (config.lastError) return 'alert';
-    if (!config.endpoint || !config.token) return 'warning';
-    if (config.dirty) return 'warning';
-    return 'ok';
-  }
-
-  function importBackup() {
-    var file = $('#backupFile').files[0];
-    if (!file) {
-      showToast('Selecione um arquivo de backup.', 'error');
-      return;
-    }
-    var preservedCloudConfig = jsonClone(ensureCloudSyncConfig());
-    readFileTextCompat(file).then(function (text) {
-      return JSON.parse(text);
-    }).then(function (parsed) {
-      return readImportedBackup(parsed);
-    }).then(function (importedState) {
-      if (!importedState) return;
-      confirmAction('O backup é válido. Substituir os dados atuais por este arquivo?', function () {
-        state = ensureShape(importedState);
-        state.settings = state.settings || {};
-        state.settings.cloudSync = preservedCloudConfig;
-        var config = ensureCloudSyncConfig();
-        config.dirty = true;
-        config.localChangedAt = nowISO();
-        config.lastStatus = 'Backup importado; sincronização pendente';
-        config.lastError = '';
-        cloudSyncSnapshot = buildCloudSnapshot(state);
-        return persistCloudLocalOnly().then(function () {
-          renderAll();
-          startCloudSyncScheduler();
-          showToast('Backup importado. A conexão com a nuvem foi preservada.');
-        });
-      }, 'Importar e substituir');
-    }).catch(function (error) {
-      console.error(error);
-      showToast('Backup inválido, corrompido ou com senha antiga incorreta.', 'error');
-    });
-  }
-
-  function renderCloudSync() {
-    var config = ensureCloudSyncConfig();
-    var statusClass = cloudStatusClass(config);
-    $('#cloudSync').innerHTML = `
-      <div class="section-head"><div><h2>Sincronização em nuvem</h2><p>O sistema continua funcionando offline. O Google Apps Script guarda uma cópia JSON no seu Google Drive e sincroniza os aparelhos quando houver internet.</p></div></div>
-      <div class="sync-status-grid">
-        <div class="mini-stat"><span>Situação</span><strong><i class="sync-dot ${statusClass}"></i>${esc(config.lastStatus)}</strong></div>
-        <div class="mini-stat"><span>Alterações locais</span><strong>${config.dirty ? 'Aguardando envio' : 'Sincronizadas'}</strong></div>
-        <div class="mini-stat"><span>Revisão da nuvem</span><strong>${num(config.lastServerRevision)}</strong></div>
-        <div class="mini-stat"><span>Última sincronização</span><strong>${config.lastSyncedAt ? formatDateTime(config.lastSyncedAt) : 'Nunca'}</strong></div>
-      </div>
-      ${config.lastError ? `<div class="status-callout alert" style="margin-bottom:14px"><strong>Erro:</strong> ${esc(config.lastError)}</div>` : ''}
-      <div class="grid-2">
-        <div class="card"><div class="card-head"><h3>Conexão com o Google</h3></div><div class="card-body">
-          <form id="cloudConfigForm">
-            <div class="field"><label>URL do aplicativo da Web do Google Apps Script</label><input id="cloudEndpoint" type="url" required placeholder="https://script.google.com/macros/s/.../exec" value="${esc(config.endpoint)}"></div>
-            <div class="field"><label>Chave de sincronização</label><input id="cloudToken" type="password" required autocomplete="off" placeholder="A mesma chave definida no Apps Script" value="${esc(config.token)}"></div>
-            <div class="field"><label>Nome deste aparelho</label><input id="cloudDeviceName" required value="${esc(config.deviceName)}"></div>
-            <div class="form-grid">
-              <div class="field"><label>Sincronização automática</label><select id="cloudAutoSync"><option value="false" ${!config.autoSync ? 'selected' : ''}>Desativada</option><option value="true" ${config.autoSync ? 'selected' : ''}>Ativada</option></select></div>
-              <div class="field"><label>Intervalo</label><select id="cloudInterval">${[1,2,5,10,15,30].map(function (v) { return `<option value="${v}" ${num(config.intervalMinutes) === v ? 'selected' : ''}>${v} minuto${v > 1 ? 's' : ''}</option>`; }).join('')}</select></div>
-            </div>
-            <div class="sync-actions"><button class="btn primary" type="submit">Salvar conexão</button><button class="btn" type="button" id="cloudTestBtn">Testar conexão</button><button class="btn primary" type="button" id="cloudSyncNowBtn">Sincronizar agora</button></div>
-          </form>
-        </div></div>
-        <div class="card"><div class="card-head"><h3>Como a sincronização funciona</h3></div><div class="card-body">
-          <div class="status-callout ok"><strong>Local-first:</strong> cada aparelho mantém uma cópia criptografada no navegador. A nuvem guarda o estado compartilhado para sincronização.</div>
-          <div class="divider"></div>
-          <p class="muted">Quando os dois aparelhos alteram registros, o sistema compara os identificadores e as datas de mudança. Exclusões também são registradas para evitar que itens antigos reapareçam.</p>
-          <p class="muted">Identificador deste aparelho:</p><div class="sync-code">${esc(getCloudDeviceId())}</div>
-          <div class="divider"></div>
-          <div class="sync-actions"><button class="btn" id="cloudDownloadBtn">Baixar e substituir este aparelho</button><button class="btn danger" id="cloudUploadBtn">Enviar e substituir a nuvem</button></div>
-          <p class="help" style="margin-top:10px">Use as duas ações acima apenas para recuperação. No uso normal, clique em “Sincronizar agora”.</p>
-        </div></div>
-      </div>`;
-
-    $('#cloudConfigForm').onsubmit = function (event) {
-      event.preventDefault();
-      config.endpoint = $('#cloudEndpoint').value.trim();
-      config.token = $('#cloudToken').value.trim();
-      config.deviceName = $('#cloudDeviceName').value.trim();
-      config.autoSync = $('#cloudAutoSync').value === 'true';
-      config.intervalMinutes = Math.max(1, num($('#cloudInterval').value));
-      config.dirty = true;
-      config.lastStatus = 'Conexão salva; sincronização pendente';
-      config.lastError = '';
-      persistCloudLocalOnly().then(function () {
-        startCloudSyncScheduler();
-        renderCloudSync();
-        showToast('Configuração da nuvem salva.');
-      });
-    };
-    $('#cloudTestBtn').onclick = function () {
-      config.endpoint = $('#cloudEndpoint').value.trim();
-      config.token = $('#cloudToken').value.trim();
-      config.deviceName = $('#cloudDeviceName').value.trim();
-      persistCloudLocalOnly().then(function () {
-        config.lastStatus = 'Testando conexão...';
-        renderCloudSync();
-        return cloudIframeRequest({ action: 'ping', deviceId: getCloudDeviceId(), deviceName: config.deviceName });
-      }).then(function () {
-        config.lastStatus = 'Conexão com a nuvem confirmada';
-        config.lastError = '';
-        return persistCloudLocalOnly();
-      }).then(function () {
-        renderCloudSync();
-        showToast('Conexão confirmada.');
-      }).catch(function (error) {
-        setCloudStatus('Falha no teste de conexão', error);
-        showToast(error.message, 'error');
-      });
-    };
-    $('#cloudSyncNowBtn').onclick = function () { syncCloudNow('merge').catch(function () {}); };
-    $('#cloudDownloadBtn').onclick = function () {
-      confirmAction('Substituir todos os dados deste aparelho pelos dados atuais da nuvem?', function () {
-        return syncCloudNow('download').catch(function () {});
-      }, 'Baixar e substituir');
-    };
-    $('#cloudUploadBtn').onclick = function () {
-      confirmAction('Substituir a cópia da nuvem pelos dados atuais deste aparelho? Os outros aparelhos receberão esta versão na próxima sincronização.', function () {
-        return syncCloudNow('upload').catch(function () {});
-      }, 'Enviar e substituir');
-    };
-  }
-
-  function unlockApp() {
-    var firstEmployee = state.employees && state.employees[0];
-    var firstMachine = state.machines && state.machines[0];
-    $('#authScreen').classList.add('hidden');
-    $('#appShell').classList.remove('hidden');
-    ensureCloudSyncConfig();
-    setTheme(state.settings.theme || 'light', false);
-    selectedEmployeeId = firstEmployee ? firstEmployee.id : null;
-    machineSelectedId = firstMachine ? firstMachine.id : null;
-    cloudSyncSnapshot = buildCloudSnapshot(state);
-    initializeInventoryStatuses(false);
-    (state.machines || []).forEach(recomputeMachineDates);
-    persist();
-    renderAll();
-    resetAutoLock();
-    startAutoBackupScheduler();
-    startCloudSyncScheduler();
-  }
-
-  function lockApp() {
-    state = null;
-    cryptoKey = null;
-    selectedEmployeeId = null;
-    clearTimeout(autoLockTimer);
-    clearInterval(autoBackupTimer);
-    clearInterval(cloudSyncTimer);
-    cloudSyncSnapshot = null;
-    cloudSyncBusy = false;
-    recoveryKey = null;
-    closeModal();
-    $('#appShell').classList.add('hidden');
-    $('#authScreen').classList.remove('hidden');
-    $('#loginPanel').classList.remove('hidden');
-    $('#setupPanel').classList.add('hidden');
-    setTimeout(function () {
-      var input = $('#loginPassword');
-      if (input) input.focus();
-    }, 100);
-  }
-
-  function renderSection(section) {
-    var map = {
-      dashboard: renderDashboard,
-      tasks: renderTasks,
-      inventory: renderInventory,
-      production: renderProduction,
-      performance: renderPerformance,
-      machines: renderMachines,
-      employees: renderEmployees,
-      notes: renderNotes,
-      academy: renderAcademy,
-      backup: renderBackup,
-      cloudSync: renderCloudSync,
-      settings: renderSettings,
-      innovation: renderInnovation
-    };
-    if (map[section]) map[section]();
-  }
-
-  window.addEventListener('online', function () {
-    if (state) {
-      var config = ensureCloudSyncConfig();
-      if (config.autoSync && config.endpoint && config.token) syncCloudNow('merge').catch(function () {});
-    }
-  }, false);
-
-
+  window.PEDE_MAIS_GRAO_BUILD = 'public-clean-dual-backup-2026-07-21';
   setupAuthScreen();
 })();
 
