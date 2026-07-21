@@ -1030,6 +1030,11 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     RECOVERY_BLOB: 'rc_gestao_recovery_blob_v1',
     AUTO_BACKUPS: 'rc_gestao_auto_backups_v1'
   };
+  var UI_STORAGE = {
+    SESSION_KEY: 'rc_gestao_session_key_v1',
+    LAST_SECTION: 'rc_gestao_last_section_v1',
+    SCROLL_PREFIX: 'rc_gestao_scroll_v1_'
+  };
   var pageMeta = {
     dashboard: ['Painel principal', 'PEDE MAIS GRÃO · controle diário da operação'],
     tasks: ['Tarefas e rotinas', 'Planejamento, prioridades e checklists'],
@@ -1272,7 +1277,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
             }, material, {
               name: 'AES-GCM',
               length: 256
-            }, false, ['encrypt', 'decrypt']));
+            }, true, ['encrypt', 'decrypt']));
         }
       }, _callee68);
     }));
@@ -1331,6 +1336,76 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
   function ensureRecoveryKey() {
     /* Mantido apenas para compatibilidade com chamadas antigas. Não existe chave mestra. */
     return Promise.resolve(null);
+  }
+  function rememberSessionKey(key) {
+    if (!key || !window.sessionStorage || !crypto.subtle || !crypto.subtle.exportKey) return Promise.resolve();
+    return crypto.subtle.exportKey('raw', key).then(function (raw) {
+      sessionStorage.setItem(UI_STORAGE.SESSION_KEY, bytesToB64(new Uint8Array(raw)));
+    }).catch(function (error) {
+      console.warn('Não foi possível manter a sessão após atualização.', error);
+    });
+  }
+  function importRememberedSessionKey() {
+    var encoded = window.sessionStorage ? sessionStorage.getItem(UI_STORAGE.SESSION_KEY) : '';
+    if (!encoded) return Promise.reject(new Error('Sessão não encontrada.'));
+    return crypto.subtle.importKey('raw', b64ToBytes(encoded), {
+      name: 'AES-GCM'
+    }, true, ['encrypt', 'decrypt']);
+  }
+  function validSection(section) {
+    return section && Object.prototype.hasOwnProperty.call(pageMeta, section) ? section : 'dashboard';
+  }
+  function getRememberedSection() {
+    try {
+      return validSection(localStorage.getItem(UI_STORAGE.LAST_SECTION));
+    } catch (error) {
+      return 'dashboard';
+    }
+  }
+  function getCurrentScrollTop() {
+    return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+  }
+  function saveCurrentLocation() {
+    if (!currentSection) return;
+    try {
+      localStorage.setItem(UI_STORAGE.LAST_SECTION, validSection(currentSection));
+      if (window.sessionStorage) sessionStorage.setItem(UI_STORAGE.SCROLL_PREFIX + validSection(currentSection), String(getCurrentScrollTop()));
+    } catch (error) {
+      console.warn('Não foi possível salvar a posição atual.', error);
+    }
+  }
+  function getRememberedScroll(section) {
+    try {
+      var value = window.sessionStorage ? sessionStorage.getItem(UI_STORAGE.SCROLL_PREFIX + validSection(section)) : '0';
+      var parsed = Number(value || 0);
+      return isFinite(parsed) && parsed >= 0 ? parsed : 0;
+    } catch (error) {
+      return 0;
+    }
+  }
+  function restoreSessionIfPossible() {
+    var hasData = localStorage.getItem(STORAGE.SALT) && localStorage.getItem(STORAGE.BLOB);
+    var hasSession = window.sessionStorage && sessionStorage.getItem(UI_STORAGE.SESSION_KEY);
+    if (!hasData || !hasSession) return Promise.resolve(false);
+    $('#loginError').textContent = 'Restaurando sessão...';
+    return importRememberedSessionKey().then(function (candidate) {
+      return decryptState(localStorage.getItem(STORAGE.BLOB), candidate).then(function (data) {
+        cryptoKey = candidate;
+        state = ensureShape(data);
+        $('#loginError').textContent = '';
+        unlockApp();
+        return true;
+      });
+    }).catch(function (error) {
+      console.warn('Sessão anterior inválida; a senha será solicitada.', error);
+      sessionStorage.removeItem(UI_STORAGE.SESSION_KEY);
+      $('#loginError').textContent = '';
+      return false;
+    });
+  }
+  function initializeApplication() {
+    setupAuthScreen();
+    restoreSessionIfPossible();
   }
   function persist() {
     if (!state || !cryptoKey) return Promise.resolve();
@@ -1529,11 +1604,15 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     $('#appShell').classList.remove('hidden');
     setTheme(state.settings.theme || 'light', false);
     selectedEmployeeId = ((_state$employees$ = state.employees[0]) === null || _state$employees$ === void 0 ? void 0 : _state$employees$.id) || null;
+    rememberSessionKey(cryptoKey);
     renderAll();
+    navigate(getRememberedSection(), { restoreScroll: true });
     resetAutoLock();
     startAutoBackupScheduler();
   }
   function lockApp() {
+    saveCurrentLocation();
+    if (window.sessionStorage) sessionStorage.removeItem(UI_STORAGE.SESSION_KEY);
     state = null;
     cryptoKey = null;
     selectedEmployeeId = null;
@@ -1557,6 +1636,14 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     if (minutes > 0) autoLockTimer = setTimeout(lockApp, minutes * 60 * 1000);
   }
   ['click', 'keydown', 'pointerdown', 'touchstart'].forEach(evt => document.addEventListener(evt, () => state && resetAutoLock(), false));
+  var locationSaveTimer = null;
+  window.addEventListener('scroll', function () {
+    if (!state) return;
+    clearTimeout(locationSaveTimer);
+    locationSaveTimer = setTimeout(saveCurrentLocation, 120);
+  }, false);
+  window.addEventListener('beforeunload', saveCurrentLocation, false);
+  window.addEventListener('pagehide', saveCurrentLocation, false);
   $('#lockBtn').addEventListener('click', lockApp);
   $('#themeBtn').addEventListener('click', () => setTheme(document.body.dataset.theme === 'dark' ? 'light' : 'dark'));
   $('#quickTaskBtn').addEventListener('click', () => openTaskModal());
@@ -1570,18 +1657,37 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     $('#overlay').classList.remove('show');
   }
   $$('.nav-btn').forEach(btn => btn.addEventListener('click', () => navigate(btn.dataset.section)));
-  function navigate(section) {
+  function navigate(section, options) {
+    options = options || {};
+    section = validSection(section);
+    if (state && currentSection && currentSection !== section) saveCurrentLocation();
     currentSection = section;
+    try {
+      localStorage.setItem(UI_STORAGE.LAST_SECTION, section);
+    } catch (error) {}
     $$('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.section === section));
     $$('.section').forEach(s => s.classList.toggle('active', s.id === section));
     $('#pageTitle').textContent = pageMeta[section][0];
     $('#pageSubtitle').textContent = pageMeta[section][1];
     closeSidebar();
     renderSection(section);
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
+    if (options.restoreScroll) {
+      setTimeout(function () {
+        window.scrollTo(0, getRememberedScroll(section));
+      }, 0);
+    } else {
+      try {
+        if (window.sessionStorage) sessionStorage.setItem(UI_STORAGE.SCROLL_PREFIX + section, '0');
+      } catch (error) {}
+      try {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      } catch (error) {
+        window.scrollTo(0, 0);
+      }
+    }
   }
   function renderAll() {
     Object.keys(pageMeta).forEach(renderSection);
@@ -3661,7 +3767,9 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     initializeInventoryStatuses(false);
     state.machines.forEach(recomputeMachineDates);
     persist();
+    rememberSessionKey(cryptoKey);
     renderAll();
+    navigate(getRememberedSection(), { restoreScroll: true });
     resetAutoLock();
     startAutoBackupScheduler();
   }
@@ -6434,8 +6542,8 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
       }, _callee67);
     })), 'Excluir'));
   };
-  window.PEDE_MAIS_GRAO_BUILD = 'public-clean-dual-backup-2026-07-21';
-  setupAuthScreen();
+  window.PEDE_MAIS_GRAO_BUILD = 'public-clean-session-location-2026-07-21';
+  initializeApplication();
 })();
 
   
