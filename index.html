@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#2f7d4c" />
-  <title>PEDE MAIS GRÃO — Gestão Operacional (Windows 7)</title>
+  <title>PEDE MAIS GRÃO — Gestão Operacional V5</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%23fff8ec'/%3E%3Cpath d='M9 38C15 16 35 8 52 14C45 28 31 39 9 38Z' fill='%232f7d4c'/%3E%3Cpath d='M22 45C31 23 47 20 57 25C52 39 39 47 22 45Z' fill='%23f28c28' opacity='.92'/%3E%3Cpath d='M13 41C26 34 36 26 49 17' stroke='%231d5b37' stroke-width='3' fill='none'/%3E%3C/svg%3E" />
   <style>
     :root {
@@ -852,7 +852,7 @@
             <div id="loginError" class="auth-error"></div>
           </form>
           <button id="forgotBtn" class="btn full" type="button" style="margin-top:8px">Esqueci a senha</button>
-          <div class="auth-note">O acesso permanece aberto enquanto a página estiver em uso. Ao recarregar, fechar ou bloquear, a senha será solicitada novamente.</div>
+          <div class="auth-note">Ao atualizar a página, o acesso e a área atual serão mantidos. A senha será solicitada ao bloquear, após o tempo de inatividade configurado ou ao iniciar uma nova sessão do navegador.</div>
         </div>
       </div>
     </div>
@@ -1067,6 +1067,11 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     RECOVERY_SALT: 'rc_gestao_recovery_salt_backup_20260721_v1',
     RECOVERY_BLOB: 'rc_gestao_recovery_blob_backup_20260721_v1',
     AUTO_BACKUPS: 'rc_gestao_auto_backups_backup_20260721_v1'
+  };
+  var SESSION = {
+    KEY: 'rc_gestao_active_session_key_v1',
+    SECTION: 'rc_gestao_active_section_v1',
+    LAST_ACTIVITY: 'rc_gestao_last_activity_v1'
   };
   var pageMeta = {
     dashboard: ['Painel principal', 'PEDE MAIS GRÃO · controle diário da operação'],
@@ -1288,6 +1293,63 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     var binary = atob(b64);
     return Uint8Array.from(binary, c => c.charCodeAt(0));
   }
+  function clearActiveSession() {
+    try {
+      sessionStorage.removeItem(SESSION.KEY);
+      sessionStorage.removeItem(SESSION.LAST_ACTIVITY);
+    } catch (err) {
+      console.warn('Não foi possível limpar a sessão temporária.', err);
+    }
+  }
+  function rememberActiveSession(key) {
+    if (!key || !window.crypto || !window.crypto.subtle) return Promise.resolve(false);
+    return crypto.subtle.exportKey('raw', key).then(function (rawKey) {
+      sessionStorage.setItem(SESSION.KEY, bytesToB64(new Uint8Array(rawKey)));
+      sessionStorage.setItem(SESSION.LAST_ACTIVITY, String(Date.now()));
+      return true;
+    }).catch(function (err) {
+      console.warn('Não foi possível preservar a sessão após a atualização.', err);
+      return false;
+    });
+  }
+  function tryRestoreActiveSession() {
+    if (!window.crypto || !window.crypto.subtle) return Promise.resolve(false);
+    var encodedKey = '';
+    try {
+      encodedKey = sessionStorage.getItem(SESSION.KEY) || '';
+    } catch (err) {
+      return Promise.resolve(false);
+    }
+    var encryptedData = localStorage.getItem(STORAGE.BLOB);
+    if (!encodedKey || !encryptedData) return Promise.resolve(false);
+    var restoredKey = null;
+    return crypto.subtle.importKey('raw', b64ToBytes(encodedKey), {
+      name: 'AES-GCM'
+    }, true, ['encrypt', 'decrypt']).then(function (key) {
+      restoredKey = key;
+      return decryptState(encryptedData, key);
+    }).then(function (data) {
+      cryptoKey = restoredKey;
+      state = ensureShape(data);
+      var minutes = num(state.settings && state.settings.autoLockMinutes);
+      var lastActivity = Number(sessionStorage.getItem(SESSION.LAST_ACTIVITY) || 0);
+      if (minutes > 0 && lastActivity > 0 && Date.now() - lastActivity >= minutes * 60 * 1000) {
+        throw new Error('Sessão expirada por inatividade.');
+      }
+      return ensureRecoveryKey();
+    }).then(function () {
+      unlockApp();
+      return true;
+    }).catch(function (err) {
+      console.warn('A sessão temporária não pôde ser restaurada.', err);
+      state = null;
+      cryptoKey = null;
+      recoveryKey = null;
+      clearActiveSession();
+      setupAuthScreen();
+      return false;
+    });
+  }
   function deriveKey(_x, _x2) {
     return _deriveKey.apply(this, arguments);
   }
@@ -1309,7 +1371,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
             }, material, {
               name: 'AES-GCM',
               length: 256
-            }, false, ['encrypt', 'decrypt']));
+            }, true, ['encrypt', 'decrypt']));
         }
       }, _callee68);
     }));
@@ -1672,6 +1734,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
             closeModal();
             $('#loginPassword').value = '';
             $('#loginError').textContent = 'Senha redefinida. Use a nova senha para entrar.';
+            clearActiveSession();
             state = null;
             cryptoKey = null;
             recoveryKey = null;
@@ -1700,6 +1763,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     startAutoBackupScheduler();
   }
   function lockApp() {
+    clearActiveSession();
     state = null;
     cryptoKey = null;
     selectedEmployeeId = null;
@@ -1719,6 +1783,9 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
   function resetAutoLock() {
     clearTimeout(autoLockTimer);
     if (!state) return;
+    try {
+      sessionStorage.setItem(SESSION.LAST_ACTIVITY, String(Date.now()));
+    } catch (err) {}
     var minutes = num(state.settings.autoLockMinutes);
     if (minutes > 0) autoLockTimer = setTimeout(lockApp, minutes * 60 * 1000);
   }
@@ -1738,6 +1805,11 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
   $$('.nav-btn').forEach(btn => btn.addEventListener('click', () => navigate(btn.dataset.section)));
   function navigate(section) {
     currentSection = section;
+    try {
+      sessionStorage.setItem(SESSION.SECTION, section);
+    } catch (err) {
+      console.warn('Não foi possível salvar a seção atual.', err);
+    }
     $$('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.section === section));
     $$('.section').forEach(s => s.classList.toggle('active', s.id === section));
     $('#pageTitle').textContent = pageMeta[section][0];
@@ -3159,6 +3231,8 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
               return decryptState(localStorage.getItem(STORAGE.BLOB), key);
             case 3:
               Object.values(STORAGE).forEach(k => localStorage.removeItem(k));
+              clearActiveSession();
+              try { sessionStorage.removeItem(SESSION.SECTION); } catch (err) {}
               location.reload();
               _context30.n = 5;
               break;
@@ -3549,6 +3623,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
           case 17:
             saveAutoBackups(migratedBackups);
             cryptoKey = newKey;
+            rememberActiveSession(cryptoKey);
             localStorage.setItem(STORAGE.SALT, bytesToB64(newSalt));
             _context78.n = 18;
             return persist();
@@ -3897,8 +3972,14 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     machineSelectedId = ((_state$machines$ = state.machines[0]) === null || _state$machines$ === void 0 ? void 0 : _state$machines$.id) || null;
     initializeInventoryStatuses(false);
     state.machines.forEach(recomputeMachineDates);
+    rememberActiveSession(cryptoKey);
     persist();
     renderAll();
+    var savedSection = '';
+    try {
+      savedSection = sessionStorage.getItem(SESSION.SECTION) || '';
+    } catch (err) {}
+    navigate(savedSection && pageMeta[savedSection] && document.getElementById(savedSection) ? savedSection : 'dashboard');
     resetAutoLock();
     startAutoBackupScheduler();
   }
@@ -7554,6 +7635,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
 
 
   setupAuthScreen();
+  tryRestoreActiveSession();
 })();
 
   
