@@ -1,6 +1,4 @@
-<!-- PEDE MAIS GRÃO — versão limpa para publicação no GitHub Pages.
-Compatível com navegadores modernos e com Chrome 49+/Firefox 52+ no Windows 7, desde que o site seja aberto por HTTPS.
-Internet Explorer não é suportado. Nenhum backup ou dado operacional está incorporado neste arquivo. -->
+<!-- Versão de compatibilidade para Windows 7: Chrome 49+/Firefox 52+; recomendado Chrome 109 ou Firefox 115 ESR. Internet Explorer não é suportado. -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -8,7 +6,7 @@ Internet Explorer não é suportado. Nenhum backup ou dado operacional está inc
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#2f7d4c" />
-  <title>PEDE MAIS GRÃO — Gestão Operacional</title>
+  <title>PEDE MAIS GRÃO — Gestão Operacional (Windows 7)</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%23fff8ec'/%3E%3Cpath d='M9 38C15 16 35 8 52 14C45 28 31 39 9 38Z' fill='%232f7d4c'/%3E%3Cpath d='M22 45C31 23 47 20 57 25C52 39 39 47 22 45Z' fill='%23f28c28' opacity='.92'/%3E%3Cpath d='M13 41C26 34 36 26 49 17' stroke='%231d5b37' stroke-width='3' fill='none'/%3E%3C/svg%3E" />
   <style>
     :root {
@@ -772,6 +770,40 @@ Internet Explorer não é suportado. Nenhum backup ou dado operacional está inc
       .modal-backdrop { background: rgba(3, 12, 15, .82); }
     }
 
+    /* Metas empresariais e gestão de kits */
+    .operation-summary { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-bottom:16px; }
+    .company-goal-grid, .kit-card-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(330px,1fr)); gap:14px; }
+    .company-goal-card, .kit-card { border:1px solid var(--line); border-radius:16px; background:var(--surface); overflow:hidden; }
+    .company-goal-head, .kit-card-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:14px 15px; border-bottom:1px solid var(--line); background:var(--surface-2); }
+    .company-goal-head h4, .kit-card-head h4 { margin:0 0 4px; font-size:16px; }
+    .company-goal-body, .kit-card-body { padding:14px 15px; }
+    .company-goal-stats, .kit-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:11px 0; }
+    .company-goal-stats .mini-stat, .kit-stats .mini-stat { padding:9px; }
+    .company-goal-actions, .kit-actions { display:flex; gap:7px; flex-wrap:wrap; margin-top:12px; }
+    .component-list { display:grid; gap:7px; margin-top:10px; }
+    .component-pill { display:flex; justify-content:space-between; gap:10px; padding:8px 10px; border:1px solid var(--line); border-radius:10px; background:var(--surface-2); font-size:12px; }
+    .kit-builder-list { display:grid; gap:10px; }
+    .kit-builder-row { display:grid; grid-template-columns:minmax(210px,1fr) 125px 105px minmax(145px,.65fr) 42px; gap:8px; align-items:end; padding:10px; border:1px solid var(--line); border-radius:12px; background:var(--surface-2); }
+    .kit-builder-row .field { margin:0; }
+    .kit-builder-unit { min-height:40px; display:flex; align-items:center; justify-content:center; border:1px solid var(--line); border-radius:10px; background:var(--surface); font-weight:800; padding:7px 9px; text-align:center; font-size:12px; line-height:1.25; }
+    .kit-builder-remove { width:40px; height:40px; border:1px solid var(--line); border-radius:10px; background:var(--danger-soft); color:var(--danger); }
+    .kit-analysis-layout { display:grid; grid-template-columns:minmax(0,1.25fr) minmax(300px,.75fr); gap:16px; align-items:start; }
+    .kit-stock-alert { border-left:4px solid var(--warning); }
+    .kit-stock-alert.critical { border-left-color:var(--danger); }
+    .goal-type-help { margin-top:7px; font-size:12px; color:var(--muted); line-height:1.45; }
+    .goal-pace { display:flex; justify-content:space-between; gap:10px; margin-top:7px; color:var(--muted); font-size:12px; }
+    .movement-preview { margin-top:12px; }
+    .movement-preview .component-pill strong { white-space:nowrap; }
+    @media (max-width:1000px) {
+      .kit-analysis-layout { grid-template-columns:1fr; }
+    }
+    @media (max-width:700px) {
+      .company-goal-grid, .kit-card-grid { grid-template-columns:1fr; }
+      .company-goal-stats, .kit-stats { grid-template-columns:1fr 1fr; }
+      .kit-builder-row { grid-template-columns:1fr 1fr; }
+      .kit-builder-row .kit-builder-material { grid-column:1 / -1; }
+    }
+
   </style>
 </head>
 <body>
@@ -792,7 +824,7 @@ Internet Explorer não é suportado. Nenhum backup ou dado operacional está inc
       <div class="auth-body">
         <div id="setupPanel" class="hidden">
           <h2 style="margin-top:0">Primeiro acesso</h2>
-          <p class="muted">Cadastre uma senha para proteger os dados registrados neste navegador.</p>
+          <p class="muted">Cadastre uma senha para proteger os dados deste backup neste navegador.</p>
           <form id="setupForm">
             <div class="field">
               <label for="setupPassword">Nova senha</label>
@@ -805,7 +837,7 @@ Internet Explorer não é suportado. Nenhum backup ou dado operacional está inc
             <button class="btn primary full" type="submit">Criar acesso protegido</button>
             <div id="setupError" class="auth-error"></div>
           </form>
-          <div class="auth-note">A senha não é salva em texto. Os dados ficam criptografados neste navegador. Guarde sua senha e mantenha um arquivo de backup; não existe senha oculta de recuperação.</div>
+          <div class="auth-note">O backup já está incorporado nesta cópia. A senha não é salva em texto e os dados passam a ficar criptografados neste navegador. Em caso de esquecimento, a redefinição exige a senha do programador.</div>
         </div>
 
         <div id="loginPanel" class="hidden">
@@ -849,6 +881,8 @@ Internet Explorer não é suportado. Nenhum backup ou dado operacional está inc
       <div class="nav-label">Operação</div>
       <button class="nav-btn" data-section="inventory"><span class="nav-icon">03</span> Estoque e compras</button>
       <button class="nav-btn" data-section="production"><span class="nav-icon">04</span> Produção e despacho</button>
+      <button class="nav-btn" data-section="companyGoals"><span class="nav-icon">G</span> Metas da empresa</button>
+      <button class="nav-btn" data-section="kits"><span class="nav-icon">K</span> Kits e estoque</button>
       <button class="nav-btn" data-section="performance"><span class="nav-icon">V</span> Visão e análises</button>
       <button class="nav-btn" data-section="machines"><span class="nav-icon">M</span> Máquinas e manutenção</button>
       <button class="nav-btn" data-section="employees"><span class="nav-icon">05</span> Funcionários</button>
@@ -886,6 +920,8 @@ Internet Explorer não é suportado. Nenhum backup ou dado operacional está inc
         <section id="tasks" class="section"></section>
         <section id="inventory" class="section"></section>
         <section id="production" class="section"></section>
+        <section id="companyGoals" class="section"></section>
+        <section id="kits" class="section"></section>
         <section id="performance" class="section"></section>
         <section id="machines" class="section"></section>
         <section id="employees" class="section"></section>
@@ -1021,19 +1057,16 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
       element.scrollIntoView(true);
     }
   }
-  var AUTO_BACKUP_SLOTS = ['10:00', '13:00', '17:00'];
+  var PROGRAMMER_PASSWORD = '1144866';
+  var DEFAULT_AUTO_BACKUP_SLOTS = ['10:00', '13:00', '17:00'];
+  var AUTO_BACKUP_SLOTS = DEFAULT_AUTO_BACKUP_SLOTS.slice();
   var STORAGE = {
-    SALT: 'rc_gestao_salt_v1',
-    BLOB: 'rc_gestao_blob_v1',
-    VERSION: 'rc_gestao_version',
-    RECOVERY_SALT: 'rc_gestao_recovery_salt_v1',
-    RECOVERY_BLOB: 'rc_gestao_recovery_blob_v1',
-    AUTO_BACKUPS: 'rc_gestao_auto_backups_v1'
-  };
-  var UI_STORAGE = {
-    SESSION_KEY: 'rc_gestao_session_key_v1',
-    LAST_SECTION: 'rc_gestao_last_section_v1',
-    SCROLL_PREFIX: 'rc_gestao_scroll_v1_'
+    SALT: 'rc_gestao_salt_backup_20260721_v1',
+    BLOB: 'rc_gestao_blob_backup_20260721_v1',
+    VERSION: 'rc_gestao_version_backup_20260721',
+    RECOVERY_SALT: 'rc_gestao_recovery_salt_backup_20260721_v1',
+    RECOVERY_BLOB: 'rc_gestao_recovery_blob_backup_20260721_v1',
+    AUTO_BACKUPS: 'rc_gestao_auto_backups_backup_20260721_v1'
   };
   var pageMeta = {
     dashboard: ['Painel principal', 'PEDE MAIS GRÃO · controle diário da operação'],
@@ -1121,6 +1154,9 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     text: 'A solicitação de compra deve indicar material, quantidade, motivo, urgência e responsável. Depois, acompanhe pedido, recebimento e entrada no estoque.',
     points: ['Necessidade identificada', 'Solicitação registrada', 'Pedido acompanhado', 'Recebimento confirmado']
   }];
+  /* Dados incorporados do backup manual de 21/07/2026.
+     São utilizados apenas no primeiro acesso desta cópia; depois, o funcionamento segue pelo armazenamento criptografado local. */
+  var PRELOADED_BACKUP_DATA = {"meta":{"owner":"Rennan Cotta Pavão","company":"PEDE MAIS GRÃO","createdAt":"2026-07-18T12:03:02.904Z","updatedAt":"2026-07-21T16:47:56.057Z","schemaVersion":5},"tasks":[],"checklist":[{"id":"d2181c88-e532-4119-b9fa-5cf3ae8307a1","title":"Conferir pedidos da Shopee e do Mercado Livre","group":"Abertura","checkedOn":"2026-07-21"},{"id":"00868c0b-7e92-4e30-90af-26d839a4b90d","title":"Verificar materiais próximos do estoque mínimo","group":"Estoque","checkedOn":""},{"id":"502f86e7-fe92-4468-9699-25b18481f112","title":"Confirmar plástico, papel, etiquetas e embalagens","group":"Embalagem","checkedOn":"2026-07-21"},{"id":"35e5a492-dcb5-4cd1-a0cc-973fdbaeaa6f","title":"Definir o que será produzido e embalado hoje","group":"Produção","checkedOn":""},{"id":"45fc4a9e-ea82-4d4a-9ede-a6f2409ab9b6","title":"Distribuir tarefas para a equipe","group":"Equipe","checkedOn":""},{"id":"38678aed-53af-4ada-9652-59bbb7196277","title":"Conferir produtos prontos para despacho","group":"Expedição","checkedOn":"2026-07-21"},{"id":"b56e88b4-a992-4669-a27f-0fe43738c371","title":"Registrar problemas e decisões do dia","group":"Encerramento","checkedOn":""}],"inventory":[{"safetyStock":0,"reorderPoint":0,"maximum":0,"packageWeightKg":10,"itemType":"Insumo de produção","levelCode":"UNCONFIGURED","id":"31e2fb4d-9eae-42fb-ad50-46881afc3cde","name":"Pega Marido","category":"Temperos","unit":"kg","quantity":170,"minimum":0,"supplier":"","location":"","notes":"Insumo de produção. Saco padrão de 10 kg.","lastCheck":"2026-07-21","createdAt":"2026-07-18T14:12:39.772Z","updatedAt":"2026-07-21T14:21:39.342Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":0,"reorderPoint":0,"maximum":0,"packageWeightKg":10,"itemType":"Insumo de produção","levelCode":"UNCONFIGURED","id":"c11b9e03-12b4-4329-ac3f-f836d876305c","name":"Edu Guedes","category":"Temperos","unit":"kg","quantity":0,"minimum":0,"supplier":"","location":"","notes":"Insumo de produção. Saco padrão de 10 kg.","lastCheck":"2026-07-21","createdAt":"2026-07-18T14:12:39.772Z","updatedAt":"2026-07-21T14:18:35.070Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":0,"reorderPoint":0,"maximum":0,"packageWeightKg":10,"itemType":"Insumo de produção","levelCode":"UNCONFIGURED","id":"d054a242-ad71-42bc-a142-bf2b03bf201c","name":"Páprica Defumada","category":"Temperos","unit":"kg","quantity":180,"minimum":0,"supplier":"","location":"","notes":"Insumo de produção. Saco padrão de 10 kg.","lastCheck":"2026-07-21","createdAt":"2026-07-18T14:12:39.772Z","updatedAt":"2026-07-21T15:22:29.022Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":0,"reorderPoint":0,"maximum":0,"packageWeightKg":10,"itemType":"Insumo de produção","levelCode":"UNCONFIGURED","id":"07397d46-1e13-4582-a605-d31590dc6cab","name":"Ana Maria","category":"Temperos","unit":"kg","quantity":320,"minimum":0,"supplier":"","location":"","notes":"Insumo de produção. Saco padrão de 10 kg.","lastCheck":"2026-07-21","createdAt":"2026-07-18T14:12:39.772Z","updatedAt":"2026-07-21T15:21:27.295Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":0,"reorderPoint":0,"maximum":0,"packageWeightKg":10,"itemType":"Insumo de produção","levelCode":"UNCONFIGURED","id":"b98c8d93-ce6e-415f-9233-f410ebcf1666","name":"Galinha","category":"Temperos","unit":"kg","quantity":210,"minimum":0,"supplier":"","location":"","notes":"Insumo de produção. Saco padrão de 10 kg.","lastCheck":"2026-07-21","createdAt":"2026-07-18T14:12:39.772Z","updatedAt":"2026-07-21T15:21:53.219Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":0,"reorderPoint":0,"maximum":0,"packageWeightKg":10,"itemType":"Insumo de produção","levelCode":"UNCONFIGURED","id":"e94e612d-8a59-4f9f-9c2d-e53be3b2dadf","name":"Carne","category":"Temperos","unit":"kg","quantity":290,"minimum":0,"supplier":"","location":"","notes":"Insumo de produção. Saco padrão de 10 kg.","lastCheck":"2026-07-21","createdAt":"2026-07-18T14:12:39.772Z","updatedAt":"2026-07-21T15:21:56.175Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":0,"reorderPoint":0,"maximum":0,"packageWeightKg":10,"itemType":"Insumo de produção","levelCode":"UNCONFIGURED","id":"e979a603-3e03-44fe-a201-094c52cb6bdc","name":"Lemon Pepper","category":"Temperos","unit":"kg","quantity":140,"minimum":0,"supplier":"","location":"","notes":"Insumo de produção. Saco padrão de 10 kg.","lastCheck":"2026-07-21","createdAt":"2026-07-18T14:12:39.772Z","updatedAt":"2026-07-21T14:43:21.900Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":0,"reorderPoint":0,"maximum":0,"packageWeightKg":10,"itemType":"Insumo de produção","levelCode":"UNCONFIGURED","id":"392e4b20-af8e-4b85-95dc-c1b75ae824ed","name":"Chimichurri","category":"Temperos","unit":"kg","quantity":85,"minimum":0,"supplier":"","location":"","notes":"Insumo de produção. Saco padrão de 10 kg.","lastCheck":"2026-07-21","createdAt":"2026-07-18T14:12:39.772Z","updatedAt":"2026-07-21T15:22:18.502Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":0,"reorderPoint":0,"maximum":0,"packageWeightKg":10,"itemType":"Insumo de produção","levelCode":"UNCONFIGURED","id":"1207c86f-e69d-409b-93d4-b764f7e9fc24","name":"Paranaense","category":"Temperos","unit":"kg","quantity":190,"minimum":0,"supplier":"","location":"","notes":"Insumo de produção. Saco padrão de 10 kg.","lastCheck":"2026-07-21","createdAt":"2026-07-18T14:12:39.772Z","updatedAt":"2026-07-21T14:21:06.526Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":0,"reorderPoint":0,"maximum":0,"packageWeightKg":10,"itemType":"Insumo de produção","levelCode":"UNCONFIGURED","id":"f3f1837e-b206-434c-903c-53466568a1fe","name":"Baiano","category":"Temperos","unit":"kg","quantity":120,"minimum":0,"supplier":"","location":"","notes":"Insumo de produção. Saco padrão de 10 kg.","lastCheck":"2026-07-21","createdAt":"2026-07-18T14:12:39.772Z","updatedAt":"2026-07-21T15:22:24.731Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":0,"reorderPoint":0,"maximum":0,"packageWeightKg":10,"itemType":"Insumo de produção","levelCode":"UNCONFIGURED","id":"5b6c00d2-a360-48c1-9841-da16c6ac63b0","name":"Curry","category":"Temperos","unit":"kg","quantity":170,"minimum":0,"supplier":"","location":"","notes":"Insumo de produção. Saco padrão de 10 kg.","lastCheck":"2026-07-21","createdAt":"2026-07-18T14:12:39.772Z","updatedAt":"2026-07-21T15:22:22.438Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":0,"reorderPoint":0,"maximum":0,"packageWeightKg":10,"itemType":"Insumo de produção","levelCode":"UNCONFIGURED","id":"50b4d399-1004-433d-aecb-69a2e80b9a05","name":"Bacon","category":"Temperos","unit":"kg","quantity":210,"minimum":0,"supplier":"","location":"","notes":"Insumo de produção. Saco padrão de 10 kg.","lastCheck":"2026-07-21","createdAt":"2026-07-18T14:12:39.772Z","updatedAt":"2026-07-21T14:22:54.038Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":0,"reorderPoint":0,"maximum":0,"packageWeightKg":25,"itemType":"Insumo de produção","levelCode":"UNCONFIGURED","id":"aae353d0-ccb0-4695-83fb-6ac3c6bc4cb8","name":"Chia","category":"Sementes","unit":"kg","quantity":3000,"minimum":0,"supplier":"","location":"","notes":"Insumo de produção. Saco padrão de 10 kg.","lastCheck":"2026-07-21","createdAt":"2026-07-18T14:12:39.772Z","updatedAt":"2026-07-21T14:23:48.840Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":0,"reorderPoint":0,"maximum":0,"packageWeightKg":25,"itemType":"Insumo de produção","levelCode":"UNCONFIGURED","id":"6a94d20a-20fa-4836-8a90-9b5742c73fc1","name":"Linhaça","category":"Sementes","unit":"kg","quantity":0,"minimum":0,"supplier":"","location":"","notes":"Insumo de produção. Saco padrão de 10 kg.","lastCheck":"2026-07-21","createdAt":"2026-07-18T14:12:39.772Z","updatedAt":"2026-07-21T14:19:59.998Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":0,"reorderPoint":0,"maximum":0,"packageWeightKg":25,"itemType":"Insumo de produção","levelCode":"UNCONFIGURED","id":"dfde3c92-00f0-4c15-ac41-74aef040a6c2","name":"Girassol","category":"Sementes","unit":"kg","quantity":75,"minimum":0,"supplier":"","location":"","notes":"Insumo de produção. Saco padrão de 10 kg.","lastCheck":"2026-07-21","createdAt":"2026-07-18T14:12:39.772Z","updatedAt":"2026-07-21T14:19:37.574Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":0,"reorderPoint":0,"maximum":0,"packageWeightKg":25,"itemType":"Insumo de produção","levelCode":"UNCONFIGURED","id":"ab737127-ec5a-406a-86f3-28fb0d9f6e88","name":"Gergelim Preto","category":"Sementes","unit":"kg","quantity":100,"minimum":0,"supplier":"","location":"","notes":"Insumo de produção. Saco padrão de 10 kg.","lastCheck":"2026-07-21","createdAt":"2026-07-18T14:12:39.772Z","updatedAt":"2026-07-21T14:19:21.455Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":0,"reorderPoint":0,"maximum":0,"packageWeightKg":25,"itemType":"Insumo de produção","levelCode":"UNCONFIGURED","id":"41f4db61-f207-4f2e-ae2f-487406c506aa","name":"Gergelim Branco","category":"Sementes","unit":"kg","quantity":0,"minimum":0,"supplier":"","location":"","notes":"Insumo de produção. Saco padrão de 10 kg.","lastCheck":"2026-07-21","createdAt":"2026-07-18T14:12:39.772Z","updatedAt":"2026-07-21T14:19:04.839Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":0,"reorderPoint":0,"maximum":0,"packageWeightKg":25,"itemType":"Insumo de produção","levelCode":"UNCONFIGURED","id":"b23804e5-2d33-46bd-aaaa-741db9d2fd7b","name":"Abóbora","category":"Sementes","unit":"kg","quantity":0,"minimum":0,"supplier":"","location":"","notes":"Insumo de produção. Saco padrão de 10 kg.","lastCheck":"2026-07-21","createdAt":"2026-07-18T14:12:39.772Z","updatedAt":"2026-07-21T14:22:25.174Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":0,"reorderPoint":0,"maximum":0,"packageWeightKg":10,"itemType":"Insumo de produção","levelCode":"UNCONFIGURED","name":"Psyllium","category":"Sementes","quantity":80,"minimum":0,"unit":"kg","supplier":"","location":"","notes":"","lastCheck":"2026-07-21","id":"6deb69ed-a4b7-4802-90e5-223091d4125a","updatedAt":"2026-07-21T14:21:50.103Z","createdAt":"2026-07-20T19:46:06.394Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":0,"reorderPoint":0,"maximum":0,"packageWeightKg":10,"itemType":"Insumo de produção","levelCode":"UNCONFIGURED","name":"Paprica picante","category":"Temperos","quantity":60,"minimum":0,"unit":"kg","supplier":"","location":"","notes":"","lastCheck":"2026-07-21","id":"18372161-e8ea-44b7-985b-3a2d78de1a47","updatedAt":"2026-07-21T15:20:47.399Z","createdAt":"2026-07-21T10:57:43.261Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":0,"reorderPoint":0,"maximum":0,"packageWeightKg":10,"itemType":"Insumo de produção","levelCode":"UNCONFIGURED","name":"Paprica doce","category":"Temperos","quantity":50,"minimum":0,"unit":"kg","supplier":"","location":"","notes":"","lastCheck":"2026-07-21","id":"abadb851-b453-43dd-9e7e-c02b4942a1a5","updatedAt":"2026-07-21T14:20:25.494Z","createdAt":"2026-07-21T10:58:08.597Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":0,"reorderPoint":0,"maximum":0,"packageWeightKg":10,"itemType":"Insumo de produção","levelCode":"UNCONFIGURED","name":"Bife acebolado","category":"Temperos","quantity":40,"minimum":0,"unit":"kg","supplier":"","location":"","notes":"","lastCheck":"2026-07-21","id":"63574dad-bff1-4f8b-a1d5-7e5fe2351bd4","updatedAt":"2026-07-21T14:16:24.366Z","createdAt":"2026-07-21T10:58:28.136Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":0,"reorderPoint":0,"maximum":0,"packageWeightKg":10,"itemType":"Insumo de produção","levelCode":"UNCONFIGURED","name":"Tempero do chef com paprica","category":"Temperos","quantity":40,"minimum":0,"unit":"kg","supplier":"","location":"","notes":"","lastCheck":"2026-07-21","id":"1e0c03aa-f22d-4489-9e87-0fed0b5d0bf1","updatedAt":"2026-07-21T15:21:02.287Z","createdAt":"2026-07-21T10:58:55.126Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":0,"reorderPoint":0,"maximum":0,"packageWeightKg":10,"itemType":"Insumo de produção","levelCode":"UNCONFIGURED","name":"chimichurri moido","category":"Temperos","quantity":120,"minimum":0,"unit":"kg","supplier":"","location":"","notes":"","lastCheck":"2026-07-21","id":"4db216be-40b2-4384-bf1d-b8205d00b148","updatedAt":"2026-07-21T14:18:00.517Z","createdAt":"2026-07-21T10:59:13.509Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":0,"reorderPoint":0,"maximum":0,"packageWeightKg":10,"itemType":"Insumo de produção","levelCode":"UNCONFIGURED","name":"Tempero para feijão","category":"Temperos","quantity":110,"minimum":0,"unit":"kg","supplier":"","location":"","notes":"","lastCheck":"2026-07-21","id":"3fdcdedc-049b-41bd-a922-a482028f80c0","updatedAt":"2026-07-21T14:22:11.423Z","createdAt":"2026-07-21T11:00:10.726Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":50,"reorderPoint":60,"maximum":100,"packageWeightKg":10,"itemType":"Insumo de produção","levelCode":"EXCESS","name":"pimenta preta","category":"Temperos","quantity":130,"minimum":30,"unit":"kg","supplier":"","location":"","notes":"","lastCheck":"2026-07-21","id":"dd8fc37d-ad9c-4539-b390-e7798d69c14d","updatedAt":"2026-07-21T14:26:18.061Z","createdAt":"2026-07-21T14:26:18.061Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":20,"reorderPoint":30,"maximum":50,"packageWeightKg":10,"itemType":"Insumo de produção","levelCode":"CRITICAL","name":"Gengibre","category":"Temperos","quantity":10,"minimum":10,"unit":"kg","supplier":"","location":"","notes":"","lastCheck":"2026-07-21","id":"25eeeaa5-f40d-4c98-88f7-9101b69a684a","updatedAt":"2026-07-21T14:26:58.528Z","createdAt":"2026-07-21T14:26:58.528Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":50,"reorderPoint":100,"maximum":200,"packageWeightKg":20,"itemType":"Insumo de produção","levelCode":"CRITICAL","name":"bicabornato","category":"Temperos","quantity":20,"minimum":40,"unit":"kg","supplier":"","location":"","notes":"","lastCheck":"2026-07-21","id":"05d3df52-aac7-487d-badf-76ff80042c5f","updatedAt":"2026-07-21T14:27:51.855Z","createdAt":"2026-07-21T14:27:51.856Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":40,"reorderPoint":50,"maximum":60,"packageWeightKg":20,"itemType":"Insumo de produção","levelCode":"SAFETY","name":"maca peruana","category":"Temperos","quantity":40,"minimum":20,"unit":"kg","supplier":"","location":"","notes":"","lastCheck":"2026-07-21","id":"fc49221f-7dca-4d65-a38b-bf8dc7548607","updatedAt":"2026-07-21T14:28:31.598Z","createdAt":"2026-07-21T14:28:31.598Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":50,"reorderPoint":100,"maximum":200,"packageWeightKg":25,"itemType":"Insumo de produção","levelCode":"ADEQUATE","name":"Farelo de aveia","category":"Sementes","quantity":150,"minimum":25,"unit":"kg","supplier":"","location":"","notes":"","lastCheck":"2026-07-21","id":"ad2ae759-f387-425e-a837-ec9f5d9d00dd","updatedAt":"2026-07-21T14:29:21.078Z","createdAt":"2026-07-21T14:29:21.078Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":50,"reorderPoint":100,"maximum":200,"packageWeightKg":25,"itemType":"Insumo de produção","levelCode":"ADEQUATE","name":"Aveia flocos grossos","category":"Sementes","quantity":125,"minimum":25,"unit":"kg","supplier":"","location":"","notes":"","lastCheck":"2026-07-21","id":"35244751-9547-47d0-aa25-70a2f9c0d510","updatedAt":"2026-07-21T14:30:38.398Z","createdAt":"2026-07-21T14:30:38.398Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":50,"reorderPoint":100,"maximum":200,"packageWeightKg":25,"itemType":"Insumo de produção","levelCode":"ADEQUATE","name":"Farinha de aveia","category":"Sementes","quantity":150,"minimum":25,"unit":"kg","supplier":"","location":"","notes":"","lastCheck":"2026-07-21","id":"6b09d822-f3b0-45ec-98fe-21db73318abd","updatedAt":"2026-07-21T14:31:11.431Z","createdAt":"2026-07-21T14:31:11.431Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":30,"reorderPoint":40,"maximum":60,"packageWeightKg":10,"itemType":"Insumo de produção","levelCode":"SAFETY","name":"Catuaba","category":"Temperos","quantity":30,"minimum":10,"unit":"kg","supplier":"","location":"","notes":"","lastCheck":"2026-07-21","id":"07252ff1-1ee3-49a3-b2e0-4aef66533387","updatedAt":"2026-07-21T14:31:55.471Z","createdAt":"2026-07-21T14:31:55.471Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":40,"reorderPoint":50,"maximum":100,"packageWeightKg":10,"itemType":"Insumo de produção","levelCode":"SAFETY","name":"Churrasco","category":"Temperos","quantity":30,"minimum":20,"unit":"kg","supplier":"","location":"","notes":"","lastCheck":"2026-07-21","id":"2d61ccc9-592e-4c55-a4cc-f09daeb257df","updatedAt":"2026-07-21T14:32:56.304Z","createdAt":"2026-07-21T14:32:56.304Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":40,"reorderPoint":50,"maximum":100,"packageWeightKg":10,"itemType":"Insumo de produção","levelCode":"ADEQUATE","name":"Açafrão","category":"Temperos","quantity":70,"minimum":20,"unit":"kg","supplier":"","location":"","notes":"","lastCheck":"2026-07-21","id":"04b7de81-64e2-4b85-b6db-fd7f1a4c998a","updatedAt":"2026-07-21T14:33:49.784Z","createdAt":"2026-07-21T14:33:49.784Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":40,"reorderPoint":50,"maximum":100,"packageWeightKg":10,"itemType":"Insumo de produção","levelCode":"ADEQUATE","name":"Farinha de Beterraba","category":"Temperos","quantity":70,"minimum":20,"unit":"kg","supplier":"","location":"","notes":"","lastCheck":"2026-07-21","id":"cf965812-9467-4aa8-9128-7a748d0daeb9","updatedAt":"2026-07-21T14:34:42.751Z","createdAt":"2026-07-21T14:34:42.751Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":40,"reorderPoint":50,"maximum":100,"packageWeightKg":10,"itemType":"Insumo de produção","levelCode":"EXCESS","name":"Farinha de Uva","category":"Temperos","quantity":140,"minimum":20,"unit":"kg","supplier":"","location":"","notes":"","lastCheck":"2026-07-21","id":"8c88b8ea-d743-444f-8fac-c0374852bf8d","updatedAt":"2026-07-21T14:35:16.303Z","createdAt":"2026-07-21T14:35:16.303Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":40,"reorderPoint":60,"maximum":100,"packageWeightKg":10,"itemType":"Insumo de produção","levelCode":"ADEQUATE","name":"Guaraná em pó","category":"Temperos","quantity":70,"minimum":20,"unit":"kg","supplier":"","location":"","notes":"","lastCheck":"2026-07-21","id":"39cb4bb2-ae5e-4f78-bab7-f5e69b26e834","updatedAt":"2026-07-21T14:35:46.175Z","createdAt":"2026-07-21T14:35:46.176Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":40,"reorderPoint":60,"maximum":100,"packageWeightKg":5,"itemType":"","levelCode":"REORDER","name":"camomila","category":"Outros","quantity":50,"minimum":20,"unit":"kg","supplier":"","location":"","notes":"","lastCheck":"2026-07-21","id":"33731a57-2696-4a7f-89bc-e137adc6711c","updatedAt":"2026-07-21T14:37:23.382Z","createdAt":"2026-07-21T14:37:23.382Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":30,"reorderPoint":40,"maximum":100,"packageWeightKg":10,"itemType":"","levelCode":"ADEQUATE","name":"Chá verde","category":"Outros","quantity":50,"minimum":20,"unit":"kg","supplier":"","location":"","notes":"","lastCheck":"2026-07-21","id":"a3d1434d-dff9-4bbd-8b78-db5bff3e73b6","updatedAt":"2026-07-21T14:38:05.591Z","createdAt":"2026-07-21T14:38:05.591Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":40,"reorderPoint":50,"maximum":150,"packageWeightKg":10,"itemType":"","levelCode":"CRITICAL","name":"Hibisco","category":"Outros","quantity":20,"minimum":20,"unit":"kg","supplier":"","location":"","notes":"","lastCheck":"2026-07-21","id":"cdf145f3-b70e-4e1f-a9f9-6995b053a8f6","updatedAt":"2026-07-21T14:38:39.022Z","createdAt":"2026-07-21T14:38:39.023Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":40,"reorderPoint":60,"maximum":100,"packageWeightKg":10,"itemType":"","levelCode":"SAFETY","name":"Passiflora","category":"Outros","quantity":30,"minimum":20,"unit":"kg","supplier":"","location":"","notes":"","lastCheck":"2026-07-21","id":"751e23ee-6b85-4bd3-bafc-3ca19e55fcf0","updatedAt":"2026-07-21T14:39:10.159Z","createdAt":"2026-07-21T14:39:10.159Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":40,"reorderPoint":50,"maximum":100,"packageWeightKg":10,"itemType":"","levelCode":"SAFETY","name":"Cavalinha","category":"Outros","quantity":30,"minimum":20,"unit":"kg","supplier":"","location":"","notes":"","lastCheck":"2026-07-21","id":"3504d6a0-7011-4bdc-a602-92973a98ea4a","updatedAt":"2026-07-21T14:39:45.847Z","createdAt":"2026-07-21T14:39:45.847Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"},{"safetyStock":40,"reorderPoint":50,"maximum":100,"packageWeightKg":10,"itemType":"","levelCode":"ADEQUATE","name":"Mulungu","category":"Outros","quantity":100,"minimum":20,"unit":"kg","supplier":"","location":"","notes":"","lastCheck":"2026-07-21","id":"43d4914d-3c11-4039-a177-027918e6e643","updatedAt":"2026-07-21T14:40:45.968Z","createdAt":"2026-07-21T14:40:45.968Z","levelUpdatedAt":"2026-07-21T16:47:49.675Z"}],"inventoryMovements":[{"id":"537d97e3-9593-4def-a1c2-f16a9fb5cd4e","itemId":"d054a242-ad71-42bc-a142-bf2b03bf201c","material":"Páprica Defumada","category":"Temperos","type":"Consumo de produção","quantity":10,"unit":"kg","direction":"out","date":"2026-07-21","note":"Produção de Rodrigo","source":"Produção diária","employeeId":"aa7b6932-3d4c-4747-97a4-d9a7f3066698","employeeNameSnapshot":"Rodrigo","isConsumption":true,"isPurchase":false,"planId":"a02fd42e-70ed-4ba7-af56-0d57fc9f138b","materialKey":"temperos|paprica defumada","createdAt":"2026-07-21T15:22:29.022Z"},{"id":"246f31a2-3aa3-46fd-b6ea-9e17655716a4","itemId":"f3f1837e-b206-434c-903c-53466568a1fe","material":"Baiano","category":"Temperos","type":"Consumo de produção","quantity":10,"unit":"kg","direction":"out","date":"2026-07-21","note":"Produção de Rodrigo","source":"Produção diária","employeeId":"aa7b6932-3d4c-4747-97a4-d9a7f3066698","employeeNameSnapshot":"Rodrigo","isConsumption":true,"isPurchase":false,"planId":"a02fd42e-70ed-4ba7-af56-0d57fc9f138b","materialKey":"temperos|baiano","createdAt":"2026-07-21T15:22:24.731Z","updatedAt":"2026-07-21T15:22:29.022Z"},{"id":"bfaaef1b-5b55-4134-9537-34200437bb23","itemId":"5b6c00d2-a360-48c1-9841-da16c6ac63b0","material":"Curry","category":"Temperos","type":"Consumo de produção","quantity":10,"unit":"kg","direction":"out","date":"2026-07-21","note":"Produção de Rodrigo","source":"Produção diária","employeeId":"aa7b6932-3d4c-4747-97a4-d9a7f3066698","employeeNameSnapshot":"Rodrigo","isConsumption":true,"isPurchase":false,"planId":"a02fd42e-70ed-4ba7-af56-0d57fc9f138b","materialKey":"temperos|curry","createdAt":"2026-07-21T15:22:22.438Z","updatedAt":"2026-07-21T15:22:29.022Z"},{"id":"f7816d07-c32c-4fe2-bca2-66c57b3f1a7d","itemId":"392e4b20-af8e-4b85-95dc-c1b75ae824ed","material":"Chimichurri","category":"Temperos","type":"Consumo de produção","quantity":20,"unit":"kg","direction":"out","date":"2026-07-21","note":"Produção de Rodrigo","source":"Produção diária","employeeId":"aa7b6932-3d4c-4747-97a4-d9a7f3066698","employeeNameSnapshot":"Rodrigo","isConsumption":true,"isPurchase":false,"planId":"a02fd42e-70ed-4ba7-af56-0d57fc9f138b","materialKey":"temperos|chimichurri","createdAt":"2026-07-21T15:22:18.502Z","updatedAt":"2026-07-21T15:22:29.022Z"},{"id":"7e6f9b13-7445-4075-824c-189ca12c9033","itemId":"d054a242-ad71-42bc-a142-bf2b03bf201c","material":"Páprica Defumada","category":"Temperos","type":"Consumo de produção","quantity":10,"unit":"kg","direction":"out","date":"2026-07-21","note":"Produção de juan","source":"Produção diária","employeeId":"d088aebd-76ae-44f1-b769-c6f178728b5d","employeeNameSnapshot":"juan","isConsumption":true,"isPurchase":false,"planId":"34fdf30c-d6ca-4bd3-904e-f9ce87457b3f","materialKey":"temperos|paprica defumada","createdAt":"2026-07-21T15:22:04.694Z"},{"id":"bc1e2fa4-ce30-406d-a75c-d2dfcb41cbc3","itemId":"e94e612d-8a59-4f9f-9c2d-e53be3b2dadf","material":"Carne","category":"Temperos","type":"Consumo de produção","quantity":20,"unit":"kg","direction":"out","date":"2026-07-21","note":"Produção de juan","source":"Produção diária","employeeId":"d088aebd-76ae-44f1-b769-c6f178728b5d","employeeNameSnapshot":"juan","isConsumption":true,"isPurchase":false,"planId":"34fdf30c-d6ca-4bd3-904e-f9ce87457b3f","materialKey":"temperos|carne","createdAt":"2026-07-21T15:21:56.175Z","updatedAt":"2026-07-21T15:22:04.693Z"},{"id":"3e53b435-b022-45b7-bb73-fae154c7cb9b","itemId":"b98c8d93-ce6e-415f-9233-f410ebcf1666","material":"Galinha","category":"Temperos","type":"Consumo de produção","quantity":20,"unit":"kg","direction":"out","date":"2026-07-21","note":"Produção de juan","source":"Produção diária","employeeId":"d088aebd-76ae-44f1-b769-c6f178728b5d","employeeNameSnapshot":"juan","isConsumption":true,"isPurchase":false,"planId":"34fdf30c-d6ca-4bd3-904e-f9ce87457b3f","materialKey":"temperos|galinha","createdAt":"2026-07-21T15:21:53.219Z","updatedAt":"2026-07-21T15:22:04.693Z"},{"id":"d21c1035-5951-477c-ae38-ce94615ccab5","itemId":"07397d46-1e13-4582-a605-d31590dc6cab","material":"Ana Maria","category":"Temperos","type":"Consumo","quantity":10,"unit":"kg","direction":"out","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"d088aebd-76ae-44f1-b769-c6f178728b5d","employeeNameSnapshot":"juan","isConsumption":true,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T15:21:27.295Z"},{"id":"3af7df13-2dd1-47ce-9e94-c79f7817540e","itemId":"1e0c03aa-f22d-4489-9e87-0fed0b5d0bf1","material":"Tempero do chef com paprica","category":"Temperos","type":"Consumo","quantity":10,"unit":"kg","direction":"out","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"aa7b6932-3d4c-4747-97a4-d9a7f3066698","employeeNameSnapshot":"Rodrigo","isConsumption":true,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T15:21:02.287Z"},{"id":"5b0353db-cbf2-44ab-b8eb-2ad067b9a1f5","itemId":"18372161-e8ea-44b7-985b-3a2d78de1a47","material":"Paprica picante","category":"Temperos","type":"Consumo","quantity":10,"unit":"kg","direction":"out","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"d088aebd-76ae-44f1-b769-c6f178728b5d","employeeNameSnapshot":"juan","isConsumption":true,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T15:20:47.399Z"},{"id":"5497bc3e-5063-4bed-9785-7b584ad04cd2","itemId":"5b6c00d2-a360-48c1-9841-da16c6ac63b0","material":"Curry","category":"Temperos","type":"Consumo","quantity":10,"unit":"kg","direction":"out","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"aa7b6932-3d4c-4747-97a4-d9a7f3066698","employeeNameSnapshot":"Rodrigo","isConsumption":true,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T15:20:18.112Z"},{"id":"5c168262-82b7-416d-a80e-d872f0a1816c","itemId":"f3f1837e-b206-434c-903c-53466568a1fe","material":"Baiano","category":"Temperos","type":"Consumo","quantity":10,"unit":"kg","direction":"out","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"d088aebd-76ae-44f1-b769-c6f178728b5d","employeeNameSnapshot":"juan","isConsumption":true,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T15:19:45.935Z"},{"id":"3e23b54d-e479-4f3f-86b6-801895527b54","itemId":"e979a603-3e03-44fe-a201-094c52cb6bdc","material":"Lemon Pepper","category":"Temperos","type":"Consumo de produção","quantity":20,"unit":"kg","direction":"out","date":"2026-07-21","note":"Produção de Rodrigo","source":"Produção diária","employeeId":"aa7b6932-3d4c-4747-97a4-d9a7f3066698","employeeNameSnapshot":"Rodrigo","isConsumption":true,"isPurchase":false,"planId":"a02fd42e-70ed-4ba7-af56-0d57fc9f138b","materialKey":"temperos|lemon pepper","createdAt":"2026-07-21T14:43:21.900Z","updatedAt":"2026-07-21T15:22:29.022Z"},{"id":"ce898d56-6d9a-435c-acd6-e0e7a680890c","itemId":"5b6c00d2-a360-48c1-9841-da16c6ac63b0","material":"Curry","category":"Temperos","type":"Entrada avulsa","quantity":10,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:24:31.366Z"},{"id":"3657a3c9-3a29-4050-a9dd-f8bb493aafef","itemId":"392e4b20-af8e-4b85-95dc-c1b75ae824ed","material":"Chimichurri","category":"Temperos","type":"Entrada avulsa","quantity":30,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:24:18.095Z"},{"id":"4a262d83-20ca-4121-8709-946dd3b1df3d","itemId":"aae353d0-ccb0-4695-83fb-6ac3c6bc4cb8","material":"Chia","category":"Sementes","type":"Entrada avulsa","quantity":77.5,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:23:48.840Z"},{"id":"7d0071bc-38f2-44c5-b893-04aa0583f539","itemId":"e94e612d-8a59-4f9f-9c2d-e53be3b2dadf","material":"Carne","category":"Temperos","type":"Entrada avulsa","quantity":20,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:23:23.742Z"},{"id":"22a08e7b-dc9f-4a38-88a2-03b151b8e61d","itemId":"f3f1837e-b206-434c-903c-53466568a1fe","material":"Baiano","category":"Temperos","type":"Entrada avulsa","quantity":10,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:23:06.438Z"},{"id":"ebfece35-802c-420d-99be-a84dc5491b3a","itemId":"50b4d399-1004-433d-aecb-69a2e80b9a05","material":"Bacon","category":"Temperos","type":"Entrada avulsa","quantity":20,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:22:54.038Z"},{"id":"2fca1d1a-8fe3-45e0-8f1f-15e199f18a04","itemId":"07397d46-1e13-4582-a605-d31590dc6cab","material":"Ana Maria","category":"Temperos","type":"Entrada avulsa","quantity":20,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:22:33.630Z"},{"id":"2e86b8e7-7710-4b59-9e15-c3ad736f4ea4","itemId":"b23804e5-2d33-46bd-aaaa-741db9d2fd7b","material":"Abóbora","category":"Sementes","type":"Entrada avulsa","quantity":15,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:22:25.174Z"},{"id":"1a75efe4-88d6-4ff8-b72c-63702ea98ad7","itemId":"3fdcdedc-049b-41bd-a922-a482028f80c0","material":"Tempero para feijão","category":"Temperos","type":"Entrada avulsa","quantity":110,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:22:11.423Z"},{"id":"d212a03b-dcf1-4e59-a779-1ecc51d463eb","itemId":"1e0c03aa-f22d-4489-9e87-0fed0b5d0bf1","material":"Tempero do chef com paprica","category":"Temperos","type":"Entrada avulsa","quantity":50,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:22:02.447Z"},{"id":"8e281ba4-b234-48c5-8392-00b936d90858","itemId":"6deb69ed-a4b7-4802-90e5-223091d4125a","material":"Psyllium","category":"Sementes","type":"Entrada avulsa","quantity":80,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:21:50.103Z"},{"id":"e07c389a-fdfc-432f-a32e-a73a726d4614","itemId":"31e2fb4d-9eae-42fb-ad50-46881afc3cde","material":"Pega Marido","category":"Temperos","type":"Entrada avulsa","quantity":200,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:21:39.342Z"},{"id":"fa0aaf45-3422-4d8d-af31-14f74233fbe0","itemId":"1207c86f-e69d-409b-93d4-b764f7e9fc24","material":"Paranaense","category":"Temperos","type":"Entrada avulsa","quantity":210,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:21:06.526Z"},{"id":"a60aa51c-194d-4b89-864f-2f4f71828dde","itemId":"18372161-e8ea-44b7-985b-3a2d78de1a47","material":"Paprica picante","category":"Temperos","type":"Entrada avulsa","quantity":70,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:20:32.462Z"},{"id":"bb104789-3dac-4006-9efb-07c16667d61c","itemId":"abadb851-b453-43dd-9e7e-c02b4942a1a5","material":"Paprica doce","category":"Temperos","type":"Entrada avulsa","quantity":50,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:20:25.494Z"},{"id":"4587df42-eeca-48d4-b525-8df89976163b","itemId":"d054a242-ad71-42bc-a142-bf2b03bf201c","material":"Páprica Defumada","category":"Temperos","type":"Entrada avulsa","quantity":230,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:20:13.926Z"},{"id":"82a46d4d-582a-434a-8bf5-14539eea5a1f","itemId":"6a94d20a-20fa-4836-8a90-9b5742c73fc1","material":"Linhaça","category":"Sementes","type":"Entrada avulsa","quantity":15,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:19:59.998Z"},{"id":"55b07ab1-6aab-407d-a516-8eaac4eecceb","itemId":"e979a603-3e03-44fe-a201-094c52cb6bdc","material":"Lemon Pepper","category":"Temperos","type":"Entrada avulsa","quantity":200,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:19:51.702Z"},{"id":"d4e3fdb7-047c-409f-95b4-69b3bdd60fe4","itemId":"dfde3c92-00f0-4c15-ac41-74aef040a6c2","material":"Girassol","category":"Sementes","type":"Entrada avulsa","quantity":115,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:19:37.574Z"},{"id":"99a67ad3-5c97-4c93-a607-e6d281098dce","itemId":"ab737127-ec5a-406a-86f3-28fb0d9f6e88","material":"Gergelim Preto","category":"Sementes","type":"Entrada avulsa","quantity":115,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:19:21.455Z"},{"id":"031c52a4-365d-4248-b756-ae48b98bebc9","itemId":"41f4db61-f207-4f2e-ae2f-487406c506aa","material":"Gergelim Branco","category":"Sementes","type":"Entrada avulsa","quantity":15,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:19:04.839Z"},{"id":"d24d8665-fbff-43c4-afc7-dde42f174dd9","itemId":"b98c8d93-ce6e-415f-9233-f410ebcf1666","material":"Galinha","category":"Temperos","type":"Entrada avulsa","quantity":250,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:18:55.975Z"},{"id":"919605b9-8809-47ec-b0d4-253800745f63","itemId":"c11b9e03-12b4-4329-ac3f-f836d876305c","material":"Edu Guedes","category":"Temperos","type":"Entrada avulsa","quantity":50,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:18:35.070Z"},{"id":"ddc54a07-6655-4298-ae01-331c4df224f9","itemId":"5b6c00d2-a360-48c1-9841-da16c6ac63b0","material":"Curry","category":"Temperos","type":"Entrada avulsa","quantity":190,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:18:13.501Z"},{"id":"8bd5be77-61fb-4d0a-b197-28dc76080b1c","itemId":"4db216be-40b2-4384-bf1d-b8205d00b148","material":"chimichurri moido","category":"Temperos","type":"Entrada avulsa","quantity":120,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:18:00.516Z"},{"id":"9df1584e-f21a-41a3-8e1e-115b8a86ce39","itemId":"07397d46-1e13-4582-a605-d31590dc6cab","material":"Ana Maria","category":"Temperos","type":"Ajuste rápido","quantity":1,"unit":"kg","direction":"out","date":"2026-07-21","note":"Ajuste manual de 1 unidade.","source":"Tabela de estoque","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:17:42.358Z"},{"id":"9c479d9a-07c8-4655-b1cc-f4cd341166a0","itemId":"07397d46-1e13-4582-a605-d31590dc6cab","material":"Ana Maria","category":"Temperos","type":"Ajuste rápido","quantity":1,"unit":"kg","direction":"out","date":"2026-07-21","note":"Ajuste manual de 1 unidade.","source":"Tabela de estoque","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:17:41.934Z"},{"id":"b06acf72-7a14-428b-a318-5cf8d6471a99","itemId":"07397d46-1e13-4582-a605-d31590dc6cab","material":"Ana Maria","category":"Temperos","type":"Ajuste rápido","quantity":1,"unit":"kg","direction":"in","date":"2026-07-21","note":"Ajuste manual de 1 unidade.","source":"Tabela de estoque","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:17:26.933Z"},{"id":"728671eb-7ac3-4bf6-8fc5-d8969b439a8c","itemId":"07397d46-1e13-4582-a605-d31590dc6cab","material":"Ana Maria","category":"Temperos","type":"Ajuste rápido","quantity":1,"unit":"kg","direction":"in","date":"2026-07-21","note":"Ajuste manual de 1 unidade.","source":"Tabela de estoque","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:17:26.346Z"},{"id":"1f30b52d-0511-4420-bbe2-7fa3f710abb4","itemId":"392e4b20-af8e-4b85-95dc-c1b75ae824ed","material":"Chimichurri","category":"Temperos","type":"Entrada avulsa","quantity":105,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:17:11.127Z"},{"id":"bb328f1c-c92b-49f7-abe3-42931e69bada","itemId":"aae353d0-ccb0-4695-83fb-6ac3c6bc4cb8","material":"Chia","category":"Sementes","type":"Entrada avulsa","quantity":3000,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:16:54.879Z"},{"id":"7c819267-ee6a-475a-b956-0d716499e9e5","itemId":"e94e612d-8a59-4f9f-9c2d-e53be3b2dadf","material":"Carne","category":"Temperos","type":"Entrada avulsa","quantity":310,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:16:43.368Z"},{"id":"2c8600a3-7a6f-4f28-8fea-b2a5050761d7","itemId":"63574dad-bff1-4f8b-a1d5-7e5fe2351bd4","material":"Bife acebolado","category":"Temperos","type":"Entrada avulsa","quantity":40,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:16:24.366Z"},{"id":"7d2515f6-90e9-46b8-abfe-052e731a098a","itemId":"f3f1837e-b206-434c-903c-53466568a1fe","material":"Baiano","category":"Temperos","type":"Entrada avulsa","quantity":140,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:16:10.038Z"},{"id":"3e9eff2c-2f7f-4717-a7c5-3b8ab84f5c3c","itemId":"50b4d399-1004-433d-aecb-69a2e80b9a05","material":"Bacon","category":"Temperos","type":"Entrada avulsa","quantity":210,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:15:50.983Z"},{"id":"1e29f736-b39a-42d9-9a7e-fc42c231d2a6","itemId":"07397d46-1e13-4582-a605-d31590dc6cab","material":"Ana Maria","category":"Temperos","type":"Entrada avulsa","quantity":330,"unit":"kg","direction":"in","date":"2026-07-21","note":"","source":"Registro manual","employeeId":"","employeeNameSnapshot":"Sem responsável","isConsumption":false,"isPurchase":false,"planId":"","materialKey":"","createdAt":"2026-07-21T14:15:23.828Z"},{"id":"5d6f598f-81ba-4a02-955e-14c87f43f660","itemId":"31e2fb4d-9eae-42fb-ad50-46881afc3cde","material":"Pega Marido","category":"Temperos","type":"Consumo de produção","quantity":10,"unit":"kg","direction":"out","date":"2026-07-21","note":"Produção de juan","source":"Produção diária","employeeId":"d088aebd-76ae-44f1-b769-c6f178728b5d","employeeNameSnapshot":"juan","isConsumption":true,"isPurchase":false,"planId":"34fdf30c-d6ca-4bd3-904e-f9ce87457b3f","materialKey":"temperos|pega marido","createdAt":"2026-07-21T12:20:39.918Z","updatedAt":"2026-07-21T15:22:04.693Z"},{"id":"402ce7b8-5514-4319-a586-698c25a6f73a","itemId":"1207c86f-e69d-409b-93d4-b764f7e9fc24","material":"Paranaense","category":"Temperos","type":"Consumo de produção","quantity":10,"unit":"kg","direction":"out","date":"2026-07-21","note":"Produção de Rodrigo","source":"Produção diária","employeeId":"aa7b6932-3d4c-4747-97a4-d9a7f3066698","employeeNameSnapshot":"Rodrigo","isConsumption":true,"isPurchase":false,"planId":"a02fd42e-70ed-4ba7-af56-0d57fc9f138b","materialKey":"temperos|paranaense","createdAt":"2026-07-21T12:03:55.687Z","updatedAt":"2026-07-21T15:22:29.022Z"},{"id":"435875eb-d499-4f46-bb6b-8c400511e6a0","itemId":"07397d46-1e13-4582-a605-d31590dc6cab","material":"Ana Maria","category":"Temperos","type":"Consumo de produção","quantity":10,"unit":"kg","direction":"out","date":"2026-07-21","note":"Produção de juan","source":"Produção diária","employeeId":"d088aebd-76ae-44f1-b769-c6f178728b5d","employeeNameSnapshot":"juan","isConsumption":true,"isPurchase":false,"planId":"34fdf30c-d6ca-4bd3-904e-f9ce87457b3f","materialKey":"temperos|ana maria","createdAt":"2026-07-21T12:02:16.895Z","updatedAt":"2026-07-21T15:22:04.693Z"},{"id":"7bf76ac8-fcaa-4dd6-8c16-913f96382fbd","itemId":"50b4d399-1004-433d-aecb-69a2e80b9a05","material":"Bacon","category":"Temperos","type":"Consumo de produção","quantity":10,"unit":"kg","direction":"out","date":"2026-07-21","note":"Produção de Rodrigo","source":"Produção diária","employeeId":"aa7b6932-3d4c-4747-97a4-d9a7f3066698","employeeNameSnapshot":"Rodrigo","isConsumption":true,"isPurchase":false,"planId":"a02fd42e-70ed-4ba7-af56-0d57fc9f138b","materialKey":"temperos|bacon","createdAt":"2026-07-21T12:01:25.154Z","updatedAt":"2026-07-21T15:22:29.022Z"},{"id":"f5571aa5-c4a6-43f0-8b83-99099cac3038","itemId":"c11b9e03-12b4-4329-ac3f-f836d876305c","material":"Edu Guedes","category":"Temperos","type":"Consumo de produção","quantity":10,"unit":"kg","direction":"out","date":"2026-07-21","note":"Produção de juan","source":"Produção diária","employeeId":"d088aebd-76ae-44f1-b769-c6f178728b5d","employeeNameSnapshot":"juan","isConsumption":true,"isPurchase":false,"planId":"34fdf30c-d6ca-4bd3-904e-f9ce87457b3f","materialKey":"temperos|edu guedes","createdAt":"2026-07-21T12:01:06.331Z","updatedAt":"2026-07-21T15:22:04.693Z"},{"id":"b7752e56-f69d-4309-a9dd-61acc6c2f308","itemId":"aae353d0-ccb0-4695-83fb-6ac3c6bc4cb8","material":"Chia","category":"Sementes","type":"Consumo de produção","quantity":12.5,"unit":"kg","direction":"out","date":"2026-07-20","note":"Produção de Rodrigo","source":"Produção diária","employeeId":"aa7b6932-3d4c-4747-97a4-d9a7f3066698","employeeNameSnapshot":"Rodrigo","isConsumption":true,"isPurchase":false,"planId":"02d5453a-fbca-4320-b59d-b32248ea84ce","materialKey":"sementes|chia","createdAt":"2026-07-20T19:50:22.472Z","updatedAt":"2026-07-20T19:50:28.147Z"},{"id":"21c14523-1a9c-48f4-aef1-55baffabd22b","itemId":"c11b9e03-12b4-4329-ac3f-f836d876305c","material":"Edu Guedes","category":"Temperos","type":"Consumo de produção","quantity":10,"unit":"kg","direction":"out","date":"2026-07-20","note":"Produção de Rodrigo","source":"Produção diária","employeeId":"aa7b6932-3d4c-4747-97a4-d9a7f3066698","employeeNameSnapshot":"Rodrigo","isConsumption":true,"isPurchase":false,"planId":"02d5453a-fbca-4320-b59d-b32248ea84ce","materialKey":"temperos|edu guedes","createdAt":"2026-07-20T19:40:51.179Z","updatedAt":"2026-07-20T19:50:28.147Z"},{"id":"ed0eb346-54df-409f-ba59-91fa3a891151","itemId":"ab737127-ec5a-406a-86f3-28fb0d9f6e88","material":"Gergelim Preto","category":"Sementes","type":"Consumo de produção","quantity":15,"unit":"kg","direction":"out","date":"2026-07-20","note":"Produção de Rodrigo","source":"Produção diária","employeeId":"aa7b6932-3d4c-4747-97a4-d9a7f3066698","employeeNameSnapshot":"Rodrigo","isConsumption":true,"isPurchase":false,"planId":"02d5453a-fbca-4320-b59d-b32248ea84ce","materialKey":"sementes|gergelim preto","createdAt":"2026-07-20T19:39:46.338Z","updatedAt":"2026-07-20T19:50:28.147Z"},{"id":"48a65c4a-a3c7-49ad-81b5-80b5862b0257","itemId":"41f4db61-f207-4f2e-ae2f-487406c506aa","material":"Gergelim Branco","category":"Sementes","type":"Consumo de produção","quantity":15,"unit":"kg","direction":"out","date":"2026-07-20","note":"Produção de Rodrigo","source":"Produção diária","employeeId":"aa7b6932-3d4c-4747-97a4-d9a7f3066698","employeeNameSnapshot":"Rodrigo","isConsumption":true,"isPurchase":false,"planId":"02d5453a-fbca-4320-b59d-b32248ea84ce","materialKey":"sementes|gergelim branco","createdAt":"2026-07-20T18:27:51.673Z","updatedAt":"2026-07-20T19:50:28.147Z"},{"id":"7ce99bc7-195e-4480-8a09-d884d1483da7","itemId":"b23804e5-2d33-46bd-aaaa-741db9d2fd7b","material":"Abóbora","category":"Sementes","type":"Consumo de produção","quantity":15,"unit":"kg","direction":"out","date":"2026-07-20","note":"Produção de Rodrigo","source":"Produção diária","employeeId":"aa7b6932-3d4c-4747-97a4-d9a7f3066698","employeeNameSnapshot":"Rodrigo","isConsumption":true,"isPurchase":false,"planId":"02d5453a-fbca-4320-b59d-b32248ea84ce","materialKey":"sementes|abobora","createdAt":"2026-07-20T18:11:03.218Z","updatedAt":"2026-07-20T19:50:28.147Z"},{"id":"9a790587-2525-485c-b74d-338e4650556f","itemId":"31e2fb4d-9eae-42fb-ad50-46881afc3cde","material":"Pega Marido","category":"Temperos","type":"Consumo de produção","quantity":10,"unit":"kg","direction":"out","date":"2026-07-20","note":"Produção de Rodrigo","source":"Produção diária","employeeId":"aa7b6932-3d4c-4747-97a4-d9a7f3066698","employeeNameSnapshot":"Rodrigo","isConsumption":true,"isPurchase":false,"planId":"02d5453a-fbca-4320-b59d-b32248ea84ce","materialKey":"temperos|pega marido","createdAt":"2026-07-20T18:10:54.865Z","updatedAt":"2026-07-20T19:50:28.147Z"},{"id":"caaa1de2-94f4-4172-ad3e-400209757610","itemId":"d054a242-ad71-42bc-a142-bf2b03bf201c","material":"Páprica Defumada","category":"Temperos","type":"Consumo de produção","quantity":10,"unit":"kg","direction":"out","date":"2026-07-20","note":"Produção de Rodrigo","source":"Produção diária","employeeId":"aa7b6932-3d4c-4747-97a4-d9a7f3066698","employeeNameSnapshot":"Rodrigo","isConsumption":true,"isPurchase":false,"planId":"02d5453a-fbca-4320-b59d-b32248ea84ce","materialKey":"temperos|paprica defumada","createdAt":"2026-07-20T18:10:53.938Z","updatedAt":"2026-07-20T19:50:28.147Z"},{"id":"8dbe3d13-a0bb-4056-a771-29f263d61e2a","itemId":"50b4d399-1004-433d-aecb-69a2e80b9a05","material":"Bacon","category":"Temperos","type":"Consumo de produção","quantity":10,"unit":"kg","direction":"out","date":"2026-07-20","note":"Produção de Rodrigo","source":"Produção diária","employeeId":"aa7b6932-3d4c-4747-97a4-d9a7f3066698","employeeNameSnapshot":"Rodrigo","isConsumption":true,"isPurchase":false,"planId":"02d5453a-fbca-4320-b59d-b32248ea84ce","materialKey":"temperos|bacon","createdAt":"2026-07-20T18:10:50.425Z","updatedAt":"2026-07-20T19:50:28.147Z"},{"id":"cfe93cec-d71c-40ab-b091-17ebfa9be278","itemId":"f3f1837e-b206-434c-903c-53466568a1fe","material":"Baiano","category":"Temperos","type":"Consumo de produção","quantity":10,"unit":"kg","direction":"out","date":"2026-07-20","note":"Produção de Rodrigo","source":"Produção diária","employeeId":"aa7b6932-3d4c-4747-97a4-d9a7f3066698","employeeNameSnapshot":"Rodrigo","isConsumption":true,"isPurchase":false,"planId":"02d5453a-fbca-4320-b59d-b32248ea84ce","materialKey":"temperos|baiano","createdAt":"2026-07-20T18:10:48.073Z","updatedAt":"2026-07-20T19:50:28.147Z"},{"id":"e6b5345a-d061-4b10-bbe5-20575d16131b","itemId":"5b6c00d2-a360-48c1-9841-da16c6ac63b0","material":"Curry","category":"Temperos","type":"Consumo de produção","quantity":10,"unit":"kg","direction":"out","date":"2026-07-20","note":"Produção de Rodrigo","source":"Produção diária","employeeId":"aa7b6932-3d4c-4747-97a4-d9a7f3066698","employeeNameSnapshot":"Rodrigo","isConsumption":true,"isPurchase":false,"planId":"02d5453a-fbca-4320-b59d-b32248ea84ce","materialKey":"temperos|curry","createdAt":"2026-07-20T18:10:43.889Z","updatedAt":"2026-07-20T19:50:28.147Z"},{"id":"da8d8d65-0c4a-45a3-92e1-ead825192aad","itemId":"1207c86f-e69d-409b-93d4-b764f7e9fc24","material":"Paranaense","category":"Temperos","type":"Consumo de produção","quantity":10,"unit":"kg","direction":"out","date":"2026-07-20","note":"Produção de Rodrigo","source":"Produção diária","employeeId":"aa7b6932-3d4c-4747-97a4-d9a7f3066698","employeeNameSnapshot":"Rodrigo","isConsumption":true,"isPurchase":false,"planId":"02d5453a-fbca-4320-b59d-b32248ea84ce","materialKey":"temperos|paranaense","createdAt":"2026-07-20T18:10:41.801Z","updatedAt":"2026-07-20T19:50:28.146Z"},{"id":"71a2ba02-851a-41bf-aef0-af70a08e2437","itemId":"e979a603-3e03-44fe-a201-094c52cb6bdc","material":"Lemon Pepper","category":"Temperos","type":"Consumo de produção","quantity":30,"unit":"kg","direction":"out","date":"2026-07-20","note":"Produção de Rodrigo","source":"Produção diária","employeeId":"aa7b6932-3d4c-4747-97a4-d9a7f3066698","employeeNameSnapshot":"Rodrigo","isConsumption":true,"isPurchase":false,"planId":"02d5453a-fbca-4320-b59d-b32248ea84ce","materialKey":"temperos|lemon pepper","createdAt":"2026-07-20T18:10:40.445Z","updatedAt":"2026-07-20T19:50:28.146Z"},{"id":"19cc8fc3-81ff-4f53-bb65-722ee8747618","itemId":"392e4b20-af8e-4b85-95dc-c1b75ae824ed","material":"Chimichurri","category":"Temperos","type":"Consumo de produção","quantity":30,"unit":"kg","direction":"out","date":"2026-07-20","note":"Produção de Rodrigo","source":"Produção diária","employeeId":"aa7b6932-3d4c-4747-97a4-d9a7f3066698","employeeNameSnapshot":"Rodrigo","isConsumption":true,"isPurchase":false,"planId":"02d5453a-fbca-4320-b59d-b32248ea84ce","materialKey":"temperos|chimichurri","createdAt":"2026-07-20T18:10:37.678Z","updatedAt":"2026-07-20T19:50:28.146Z"},{"id":"0f1315ec-5b85-4070-a643-b60ceb7c595b","itemId":"dfde3c92-00f0-4c15-ac41-74aef040a6c2","material":"Girassol","category":"Sementes","type":"Consumo de produção","quantity":40,"unit":"kg","direction":"out","date":"2026-07-20","note":"Produção de juan","source":"Produção diária","employeeId":"d088aebd-76ae-44f1-b769-c6f178728b5d","employeeNameSnapshot":"juan","isConsumption":true,"isPurchase":false,"planId":"52cff75c-1d75-4b70-b1c9-03febf119913","materialKey":"sementes|girassol","createdAt":"2026-07-20T18:10:31.626Z","updatedAt":"2026-07-20T19:50:44.484Z"},{"id":"7a3d2a33-d2a4-460a-b950-4e3c8f009eac","itemId":"6a94d20a-20fa-4836-8a90-9b5742c73fc1","material":"Linhaça","category":"Sementes","type":"Consumo de produção","quantity":15,"unit":"kg","direction":"out","date":"2026-07-20","note":"Produção de juan","source":"Produção diária","employeeId":"d088aebd-76ae-44f1-b769-c6f178728b5d","employeeNameSnapshot":"juan","isConsumption":true,"isPurchase":false,"planId":"52cff75c-1d75-4b70-b1c9-03febf119913","materialKey":"sementes|linhaca","createdAt":"2026-07-20T18:10:27.465Z","updatedAt":"2026-07-20T19:50:44.484Z"},{"id":"d765b374-9d91-44c8-a1c6-d176920b8228","itemId":"aae353d0-ccb0-4695-83fb-6ac3c6bc4cb8","material":"Chia","category":"Sementes","type":"Consumo de produção","quantity":65,"unit":"kg","direction":"out","date":"2026-07-20","note":"Produção de juan","source":"Produção diária","employeeId":"d088aebd-76ae-44f1-b769-c6f178728b5d","employeeNameSnapshot":"juan","isConsumption":true,"isPurchase":false,"planId":"52cff75c-1d75-4b70-b1c9-03febf119913","materialKey":"sementes|chia","createdAt":"2026-07-20T18:10:20.554Z","updatedAt":"2026-07-20T19:50:44.484Z"},{"id":"0458eae2-b280-488f-8c04-4b8672927ee4","itemId":"e979a603-3e03-44fe-a201-094c52cb6bdc","material":"Lemon Pepper","category":"Temperos","type":"Consumo de produção","quantity":10,"unit":"kg","direction":"out","date":"2026-07-20","note":"Produção de juan","source":"Produção diária","employeeId":"d088aebd-76ae-44f1-b769-c6f178728b5d","employeeNameSnapshot":"juan","isConsumption":true,"isPurchase":false,"planId":"52cff75c-1d75-4b70-b1c9-03febf119913","materialKey":"temperos|lemon pepper","createdAt":"2026-07-20T18:10:17.025Z","updatedAt":"2026-07-20T19:50:44.484Z"},{"id":"5c20f72d-e896-4d6f-9676-0949041d6904","itemId":"e94e612d-8a59-4f9f-9c2d-e53be3b2dadf","material":"Carne","category":"Temperos","type":"Consumo de produção","quantity":20,"unit":"kg","direction":"out","date":"2026-07-20","note":"Produção de juan","source":"Produção diária","employeeId":"d088aebd-76ae-44f1-b769-c6f178728b5d","employeeNameSnapshot":"juan","isConsumption":true,"isPurchase":false,"planId":"52cff75c-1d75-4b70-b1c9-03febf119913","materialKey":"temperos|carne","createdAt":"2026-07-20T18:10:10.033Z","updatedAt":"2026-07-20T19:50:44.484Z"},{"id":"80b20152-ef2f-43a1-8ea5-b87eee11fdf0","itemId":"07397d46-1e13-4582-a605-d31590dc6cab","material":"Ana Maria","category":"Temperos","type":"Consumo de produção","quantity":10,"unit":"kg","direction":"out","date":"2026-07-20","note":"Produção de juan","source":"Produção diária","employeeId":"d088aebd-76ae-44f1-b769-c6f178728b5d","employeeNameSnapshot":"juan","isConsumption":true,"isPurchase":false,"planId":"52cff75c-1d75-4b70-b1c9-03febf119913","materialKey":"temperos|ana maria","createdAt":"2026-07-20T18:10:06.905Z","updatedAt":"2026-07-20T19:50:44.484Z"},{"id":"2f44276a-8ee7-4b0d-901f-312afab7e91e","itemId":"b98c8d93-ce6e-415f-9233-f410ebcf1666","material":"Galinha","category":"Temperos","type":"Consumo de produção","quantity":20,"unit":"kg","direction":"out","date":"2026-07-20","note":"Produção de juan","source":"Produção diária","employeeId":"d088aebd-76ae-44f1-b769-c6f178728b5d","employeeNameSnapshot":"juan","isConsumption":true,"isPurchase":false,"planId":"52cff75c-1d75-4b70-b1c9-03febf119913","materialKey":"temperos|galinha","createdAt":"2026-07-20T18:10:05.473Z","updatedAt":"2026-07-20T19:50:44.483Z"},{"id":"f45e9887-23f7-41af-85e0-f729fed2f243","itemId":"d054a242-ad71-42bc-a142-bf2b03bf201c","material":"Páprica Defumada","category":"Temperos","type":"Consumo de produção","quantity":20,"unit":"kg","direction":"out","date":"2026-07-20","note":"Produção de juan","source":"Produção diária","employeeId":"d088aebd-76ae-44f1-b769-c6f178728b5d","employeeNameSnapshot":"juan","isConsumption":true,"isPurchase":false,"planId":"52cff75c-1d75-4b70-b1c9-03febf119913","materialKey":"temperos|paprica defumada","createdAt":"2026-07-20T18:10:02.457Z","updatedAt":"2026-07-20T19:50:44.483Z"},{"id":"a8018d4d-400c-4bff-bc98-faa3ad66154a","itemId":"c11b9e03-12b4-4329-ac3f-f836d876305c","material":"Edu Guedes","category":"Temperos","type":"Consumo de produção","quantity":30,"unit":"kg","direction":"out","date":"2026-07-20","note":"Produção de juan","source":"Produção diária","employeeId":"d088aebd-76ae-44f1-b769-c6f178728b5d","employeeNameSnapshot":"juan","isConsumption":true,"isPurchase":false,"planId":"52cff75c-1d75-4b70-b1c9-03febf119913","materialKey":"temperos|edu guedes","createdAt":"2026-07-20T18:09:59.177Z","updatedAt":"2026-07-20T19:50:44.483Z"},{"id":"5980e28a-dffb-4a14-9582-12945dd5ef84","itemId":"31e2fb4d-9eae-42fb-ad50-46881afc3cde","material":"Pega Marido","category":"Temperos","type":"Consumo de produção","quantity":10,"unit":"kg","direction":"out","date":"2026-07-20","note":"Produção de juan","source":"Produção diária","employeeId":"d088aebd-76ae-44f1-b769-c6f178728b5d","employeeNameSnapshot":"juan","isConsumption":true,"isPurchase":false,"planId":"52cff75c-1d75-4b70-b1c9-03febf119913","materialKey":"temperos|pega marido","createdAt":"2026-07-20T18:09:56.194Z","updatedAt":"2026-07-20T19:50:44.483Z"}],"inventoryAlerts":[],"purchases":[],"production":[],"dailyProductionPlans":[{"status":"Planejado","notes":"","postedConsumption":{},"id":"9bb99b6e-1866-4079-a114-3df278e4ac02","date":"2026-07-18","employeeId":"d088aebd-76ae-44f1-b769-c6f178728b5d","employeeNameSnapshot":"juan","items":[{"completedQty":0,"id":"e3773618-ed95-4d71-a8ad-b56136f99b7d","category":"Temperos","material":"Pega Marido","packSizeG":100,"plannedQty":200,"notes":"","updatedAt":"2026-07-18T16:30:34.930Z","createdAt":"2026-07-18T16:30:34.930Z"},{"completedQty":0,"id":"a6bafecd-043f-4a7b-b8d2-93c322900aab","category":"Temperos","material":"Edu Guedes","packSizeG":100,"plannedQty":200,"notes":"","updatedAt":"2026-07-18T16:31:08.699Z","createdAt":"2026-07-18T16:31:08.699Z"},{"completedQty":0,"id":"622fd1dc-0240-4e52-aaac-ea075aefa8ce","category":"Temperos","material":"Páprica Defumada","packSizeG":100,"plannedQty":100,"notes":"","updatedAt":"2026-07-18T16:32:01.694Z","createdAt":"2026-07-18T16:32:01.694Z"},{"completedQty":0,"id":"d51c5c91-2586-4b4b-a0ff-bf8c97b20b7d","category":"Temperos","material":"Galinha","packSizeG":100,"plannedQty":100,"notes":"","updatedAt":"2026-07-18T16:32:20.262Z","createdAt":"2026-07-18T16:32:20.262Z"},{"completedQty":0,"id":"76e722dd-9ce5-4c36-a7cc-cb555690a18e","category":"Temperos","material":"Ana Maria","packSizeG":100,"plannedQty":100,"notes":"","updatedAt":"2026-07-18T16:32:45.831Z","createdAt":"2026-07-18T16:32:45.831Z"},{"completedQty":0,"id":"1f476eec-7402-4f50-84cb-b9ad0df75f5f","category":"Temperos","material":"Carne","packSizeG":100,"plannedQty":100,"notes":"","updatedAt":"2026-07-18T16:33:04.320Z","createdAt":"2026-07-18T16:33:04.320Z"},{"completedQty":0,"id":"b0ab596b-03d6-4b7a-8065-316a42827d85","category":"Temperos","material":"Edu Guedes","packSizeG":250,"plannedQty":40,"notes":"","updatedAt":"2026-07-18T16:33:26.617Z","createdAt":"2026-07-18T16:33:26.617Z"},{"completedQty":0,"id":"b5a4a0e5-8bdb-4748-8558-5e32bed7c248","category":"Temperos","material":"Páprica Defumada","packSizeG":250,"plannedQty":40,"notes":"","updatedAt":"2026-07-18T16:33:58.649Z","createdAt":"2026-07-18T16:33:58.649Z"},{"completedQty":0,"id":"220094b5-788c-45b0-9411-5c7959b52f05","category":"Temperos","material":"Lemon Pepper","packSizeG":250,"plannedQty":40,"notes":"","updatedAt":"2026-07-18T16:34:21.555Z","createdAt":"2026-07-18T16:34:21.555Z"},{"completedQty":0,"id":"d74b2020-f49c-4ecf-ab01-0cd2660e6e02","category":"Sementes","material":"Chia","packSizeG":100,"plannedQty":100,"notes":"","updatedAt":"2026-07-18T16:34:48.675Z","createdAt":"2026-07-18T16:34:48.675Z"},{"completedQty":0,"id":"1848e5d5-e9e5-4bb9-9231-ae45d4f8283d","category":"Sementes","material":"Chia","packSizeG":50,"plannedQty":100,"notes":"","updatedAt":"2026-07-18T16:35:03.316Z","createdAt":"2026-07-18T16:35:03.316Z"},{"completedQty":0,"id":"0ae90d7c-099c-4c08-89f3-c1b420a54a9d","category":"Sementes","material":"Linhaça","packSizeG":100,"plannedQty":100,"notes":"","updatedAt":"2026-07-18T16:35:23.709Z","createdAt":"2026-07-18T16:35:23.709Z"},{"completedQty":0,"id":"ee625b69-189f-4f50-9601-9338454b4ca9","category":"Sementes","material":"Linhaça","packSizeG":50,"plannedQty":100,"notes":"","updatedAt":"2026-07-18T16:35:59.638Z","createdAt":"2026-07-18T16:35:50.654Z"},{"completedQty":0,"id":"816453c6-ec0c-4928-8358-d5421564cd97","category":"Sementes","material":"Girassol","packSizeG":100,"plannedQty":100,"notes":"","updatedAt":"2026-07-18T16:36:18.591Z","createdAt":"2026-07-18T16:36:18.591Z"},{"completedQty":0,"id":"83383362-c612-4f4e-b211-8e3c99d7d2cf","category":"Sementes","material":"Girassol","packSizeG":50,"plannedQty":100,"notes":"","updatedAt":"2026-07-18T16:36:46.015Z","createdAt":"2026-07-18T16:36:46.015Z"},{"completedQty":0,"id":"0bc96d84-036e-41fd-864e-0de559fb7c1f","category":"Sementes","material":"Chia","packSizeG":1000,"plannedQty":50,"notes":"","updatedAt":"2026-07-18T16:37:23.577Z","createdAt":"2026-07-18T16:37:23.577Z"},{"completedQty":0,"id":"8168e919-119d-40bf-940e-52cb00fdfe42","category":"Sementes","material":"Linhaça","packSizeG":500,"plannedQty":50,"notes":"","updatedAt":"2026-07-18T16:37:44.018Z","createdAt":"2026-07-18T16:37:44.018Z"},{"completedQty":0,"id":"c53ad6ab-a927-457d-ac87-5157ee601a3e","category":"Sementes","material":"Gergelim Preto","packSizeG":500,"plannedQty":50,"notes":"","updatedAt":"2026-07-18T16:39:02.709Z","createdAt":"2026-07-18T16:39:02.709Z"},{"completedQty":0,"id":"f365810d-b0bc-4cd0-8fdb-e98b846a5b54","category":"Sementes","material":"Girassol","packSizeG":500,"plannedQty":50,"notes":"","updatedAt":"2026-07-18T16:39:17.309Z","createdAt":"2026-07-18T16:39:17.309Z"}],"createdAt":"2026-07-18T16:30:34.930Z","updatedAt":"2026-07-18T16:39:17.309Z"},{"status":"Planejado","notes":"","postedConsumption":{},"id":"99d06c00-bd8a-486e-8df7-1d896682c318","date":"2026-07-18","employeeId":"aa7b6932-3d4c-4747-97a4-d9a7f3066698","employeeNameSnapshot":"Rodrigo","items":[{"completedQty":0,"id":"91af8e7b-2148-4ad3-a76e-ec10fc4a9e32","category":"Temperos","material":"Chimichurri","packSizeG":100,"plannedQty":200,"notes":"","updatedAt":"2026-07-18T16:41:52.116Z","createdAt":"2026-07-18T16:41:52.116Z"},{"completedQty":0,"id":"53e3149e-6bed-4a2e-b565-3b9d5fac887d","category":"Temperos","material":"Lemon Pepper","packSizeG":100,"plannedQty":200,"notes":"","updatedAt":"2026-07-18T16:42:19.845Z","createdAt":"2026-07-18T16:42:19.845Z"},{"completedQty":0,"id":"44f38c08-c3fc-4b09-852e-40a3eeee8652","category":"Temperos","material":"Paranaense","packSizeG":100,"plannedQty":100,"notes":"","updatedAt":"2026-07-18T16:42:41.133Z","createdAt":"2026-07-18T16:42:41.133Z"},{"completedQty":0,"id":"daa2de02-4221-4860-bc5c-f69be086eac0","category":"Temperos","material":"Curry","packSizeG":100,"plannedQty":100,"notes":"","updatedAt":"2026-07-18T16:42:52.598Z","createdAt":"2026-07-18T16:42:52.598Z"},{"completedQty":0,"id":"c7e5b0d1-899e-452b-962c-8882280ca130","category":"Temperos","material":"Baiano","packSizeG":100,"plannedQty":100,"notes":"","updatedAt":"2026-07-18T16:43:03.966Z","createdAt":"2026-07-18T16:43:03.966Z"},{"completedQty":0,"id":"fc665984-e427-4ccd-9e7c-104e8fb61b09","category":"Temperos","material":"Bacon","packSizeG":100,"plannedQty":100,"notes":"","updatedAt":"2026-07-18T16:43:24.702Z","createdAt":"2026-07-18T16:43:24.703Z"},{"completedQty":0,"id":"3ff97e11-1115-4fd5-b371-db2e5aee3eef","category":"Temperos","material":"Páprica Defumada","packSizeG":100,"plannedQty":100,"notes":"","updatedAt":"2026-07-18T16:43:35.079Z","createdAt":"2026-07-18T16:43:35.079Z"},{"completedQty":0,"id":"643b1a72-8f7e-4e24-b792-06243af76cec","category":"Temperos","material":"Pega Marido","packSizeG":250,"plannedQty":40,"notes":"","updatedAt":"2026-07-18T16:43:50.128Z","createdAt":"2026-07-18T16:43:50.128Z"},{"completedQty":0,"id":"fb16d511-b619-4ba4-b81f-ede9baf9689d","category":"Temperos","material":"Chimichurri","packSizeG":250,"plannedQty":40,"notes":"","updatedAt":"2026-07-18T16:44:08.736Z","createdAt":"2026-07-18T16:44:08.736Z"},{"completedQty":0,"id":"a683aa8c-3b3d-406b-8aa0-f54880c5d079","category":"Sementes","material":"Gergelim Preto","packSizeG":100,"plannedQty":100,"notes":"","updatedAt":"2026-07-18T16:44:46.682Z","createdAt":"2026-07-18T16:44:46.682Z"},{"completedQty":0,"id":"d584d55c-4a8f-4190-9174-03b25b6deb81","category":"Sementes","material":"Gergelim Preto","packSizeG":50,"plannedQty":100,"notes":"","updatedAt":"2026-07-18T16:47:54.497Z","createdAt":"2026-07-18T16:47:33.168Z"},{"completedQty":0,"id":"5b9a676d-27ed-41b9-9389-c633936efb23","category":"Sementes","material":"Gergelim Branco","packSizeG":100,"plannedQty":100,"notes":"","updatedAt":"2026-07-18T16:48:14.210Z","createdAt":"2026-07-18T16:48:14.210Z"},{"completedQty":0,"id":"b08008ce-146e-4c12-8252-9ff515adc579","category":"Sementes","material":"Gergelim Branco","packSizeG":50,"plannedQty":100,"notes":"","updatedAt":"2026-07-18T16:48:27.482Z","createdAt":"2026-07-18T16:48:27.482Z"},{"completedQty":0,"id":"44983b74-9227-4c6b-afbc-1347ba513e62","category":"Sementes","material":"Abóbora","packSizeG":100,"plannedQty":100,"notes":"","updatedAt":"2026-07-18T16:48:57.835Z","createdAt":"2026-07-18T16:48:57.835Z"},{"completedQty":0,"id":"e32328a8-54ff-4f69-81e2-8d6e3ffc5617","category":"Sementes","material":"Abóbora","packSizeG":50,"plannedQty":100,"notes":"","updatedAt":"2026-07-18T16:49:08.508Z","createdAt":"2026-07-18T16:49:08.508Z"},{"completedQty":0,"id":"dc9f34c4-3796-40d4-9f4f-eba9412e035b","category":"Sementes","material":"Chia","packSizeG":1000,"plannedQty":50,"notes":"","updatedAt":"2026-07-18T16:49:39.685Z","createdAt":"2026-07-18T16:49:39.685Z"},{"completedQty":0,"id":"eed633ac-9f0c-449f-9ea2-82feaf9f5270","category":"Sementes","material":"Abóbora","packSizeG":500,"plannedQty":50,"notes":"","updatedAt":"2026-07-18T16:49:51.350Z","createdAt":"2026-07-18T16:49:51.350Z"},{"completedQty":0,"id":"27ee45a3-efa4-4b43-8a78-a2ce2abc13c3","category":"Sementes","material":"Gergelim Branco","packSizeG":500,"plannedQty":50,"notes":"","updatedAt":"2026-07-18T16:50:03.286Z","createdAt":"2026-07-18T16:50:03.286Z"},{"completedQty":0,"id":"eab43a01-82cf-4519-9e84-471db1591803","category":"Sementes","material":"Chia","packSizeG":500,"plannedQty":50,"notes":"","updatedAt":"2026-07-18T16:50:13.839Z","createdAt":"2026-07-18T16:50:13.839Z"}],"createdAt":"2026-07-18T16:41:52.116Z","updatedAt":"2026-07-18T16:50:13.839Z"},{"status":"Fechado","notes":"","postedConsumption":{"temperos|pega marido":{"kg":10,"material":"Pega Marido","category":"Temperos"},"temperos|edu guedes":{"kg":30,"material":"Edu Guedes","category":"Temperos"},"temperos|paprica defumada":{"kg":20,"material":"Páprica Defumada","category":"Temperos"},"temperos|galinha":{"kg":20,"material":"Galinha","category":"Temperos"},"temperos|ana maria":{"kg":10,"material":"Ana Maria","category":"Temperos"},"temperos|carne":{"kg":20,"material":"Carne","category":"Temperos"},"temperos|lemon pepper":{"kg":10,"material":"Lemon Pepper","category":"Temperos"},"sementes|chia":{"kg":65,"material":"Chia","category":"Sementes"},"sementes|linhaca":{"kg":15,"material":"Linhaça","category":"Sementes"},"sementes|girassol":{"kg":40,"material":"Girassol","category":"Sementes"}},"id":"52cff75c-1d75-4b70-b1c9-03febf119913","date":"2026-07-20","employeeId":"d088aebd-76ae-44f1-b769-c6f178728b5d","employeeNameSnapshot":"juan","items":[{"completedQty":100,"id":"834f362f-cdcb-4cd7-92fa-6836e9ce77d8","category":"Temperos","material":"Pega Marido","packSizeG":100,"plannedQty":100,"notes":"","copiedFromGoalId":"e3773618-ed95-4d71-a8ad-b56136f99b7d","createdAt":"2026-07-20T01:56:36.362Z","updatedAt":"2026-07-20T01:58:43.197Z"},{"completedQty":200,"id":"61052a15-ffbe-410b-8244-c5d1c3d67147","category":"Temperos","material":"Edu Guedes","packSizeG":100,"plannedQty":200,"notes":"","copiedFromGoalId":"a6bafecd-043f-4a7b-b8d2-93c322900aab","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":100,"id":"2f77e7f4-7d30-4c16-b796-16326a39e10b","category":"Temperos","material":"Páprica Defumada","packSizeG":100,"plannedQty":100,"notes":"","copiedFromGoalId":"622fd1dc-0240-4e52-aaac-ea075aefa8ce","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":200,"id":"394314a6-d139-457f-8555-350844d16f84","category":"Temperos","material":"Galinha","packSizeG":100,"plannedQty":200,"notes":"","copiedFromGoalId":"d51c5c91-2586-4b4b-a0ff-bf8c97b20b7d","createdAt":"2026-07-20T01:56:36.362Z","updatedAt":"2026-07-20T01:58:14.493Z"},{"completedQty":100,"id":"7c7e435d-298b-47ab-9927-4fbbbaf2b9c1","category":"Temperos","material":"Ana Maria","packSizeG":100,"plannedQty":100,"notes":"","copiedFromGoalId":"76e722dd-9ce5-4c36-a7cc-cb555690a18e","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":200,"id":"0465bc02-7502-47a1-998e-9f4fa178450f","category":"Temperos","material":"Carne","packSizeG":100,"plannedQty":200,"notes":"","copiedFromGoalId":"1f476eec-7402-4f50-84cb-b9ad0df75f5f","createdAt":"2026-07-20T01:56:36.362Z","updatedAt":"2026-07-20T01:58:26.277Z"},{"completedQty":40,"id":"76d8c218-0eda-4d8e-ba36-ace024161ab8","category":"Temperos","material":"Edu Guedes","packSizeG":250,"plannedQty":40,"notes":"","copiedFromGoalId":"b0ab596b-03d6-4b7a-8065-316a42827d85","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":40,"id":"ce24b331-5005-4ec7-8789-62fbf7a430c4","category":"Temperos","material":"Páprica Defumada","packSizeG":250,"plannedQty":40,"notes":"","copiedFromGoalId":"b5a4a0e5-8bdb-4748-8558-5e32bed7c248","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":40,"id":"1b864cee-9430-43cc-875e-070c0a0b6114","category":"Temperos","material":"Lemon Pepper","packSizeG":250,"plannedQty":40,"notes":"","copiedFromGoalId":"220094b5-788c-45b0-9411-5c7959b52f05","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":100,"id":"687d0f6d-b47e-4a89-bbde-c48fb369a54a","category":"Sementes","material":"Chia","packSizeG":100,"plannedQty":100,"notes":"","copiedFromGoalId":"d74b2020-f49c-4ecf-ab01-0cd2660e6e02","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":100,"id":"74c84e8d-6953-4d7d-940c-cca210b2909f","category":"Sementes","material":"Chia","packSizeG":50,"plannedQty":100,"notes":"","copiedFromGoalId":"1848e5d5-e9e5-4bb9-9231-ae45d4f8283d","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":100,"id":"e48f066a-cd5d-4fdf-8bad-c352074fa176","category":"Sementes","material":"Linhaça","packSizeG":100,"plannedQty":100,"notes":"","copiedFromGoalId":"0ae90d7c-099c-4c08-89f3-c1b420a54a9d","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":100,"id":"722f1fcb-01b6-4859-b5cf-e6f729225e61","category":"Sementes","material":"Linhaça","packSizeG":50,"plannedQty":100,"notes":"","copiedFromGoalId":"ee625b69-189f-4f50-9601-9338454b4ca9","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":100,"id":"21783f77-e2b7-47e4-ae8c-7181696c5f22","category":"Sementes","material":"Girassol","packSizeG":100,"plannedQty":100,"notes":"","copiedFromGoalId":"816453c6-ec0c-4928-8358-d5421564cd97","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":100,"id":"1976e2d2-35ef-446a-81ea-8df27b6d8686","category":"Sementes","material":"Girassol","packSizeG":50,"plannedQty":100,"notes":"","copiedFromGoalId":"83383362-c612-4f4e-b211-8e3c99d7d2cf","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":50,"id":"d3eed2f6-e684-4f06-bf5d-c876de6eb6f7","category":"Sementes","material":"Chia","packSizeG":1000,"plannedQty":50,"notes":"","copiedFromGoalId":"0bc96d84-036e-41fd-864e-0de559fb7c1f","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":0,"id":"5ac2a391-7c2d-467c-a0d6-51f905b84294","category":"Sementes","material":"Linhaça","packSizeG":500,"plannedQty":50,"notes":"","copiedFromGoalId":"8168e919-119d-40bf-940e-52cb00fdfe42","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":0,"id":"abe7fe96-cf11-4ae4-b89b-53cb2810e68a","category":"Sementes","material":"Gergelim Preto","packSizeG":500,"plannedQty":50,"notes":"","copiedFromGoalId":"c53ad6ab-a927-457d-ac87-5157ee601a3e","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":50,"id":"a408c740-7773-4300-b4d3-67a49faa7b86","category":"Sementes","material":"Girassol","packSizeG":500,"plannedQty":50,"notes":"","copiedFromGoalId":"f365810d-b0bc-4cd0-8fdb-e98b846a5b54","createdAt":"2026-07-20T01:56:36.362Z"}],"copiedFromDate":"2026-07-18","copiedFromPlanId":"9bb99b6e-1866-4079-a114-3df278e4ac02","createdAt":"2026-07-20T01:56:36.362Z","updatedAt":"2026-07-20T19:50:44.484Z","closedAt":"2026-07-20T19:50:44.483Z"},{"status":"Em andamento","notes":"","postedConsumption":{"temperos|chimichurri":{"kg":30,"material":"Chimichurri","category":"Temperos"},"temperos|lemon pepper":{"kg":30,"material":"Lemon Pepper","category":"Temperos"},"temperos|paranaense":{"kg":10,"material":"Paranaense","category":"Temperos"},"temperos|curry":{"kg":10,"material":"Curry","category":"Temperos"},"temperos|baiano":{"kg":10,"material":"Baiano","category":"Temperos"},"temperos|bacon":{"kg":10,"material":"Bacon","category":"Temperos"},"temperos|paprica defumada":{"kg":10,"material":"Páprica Defumada","category":"Temperos"},"temperos|pega marido":{"kg":10,"material":"Pega Marido","category":"Temperos"},"sementes|abobora":{"kg":15,"material":"Abóbora","category":"Sementes"},"sementes|gergelim branco":{"kg":15,"material":"Gergelim Branco","category":"Sementes"},"sementes|gergelim preto":{"kg":15,"material":"Gergelim Preto","category":"Sementes"},"temperos|edu guedes":{"kg":10,"material":"Edu Guedes","category":"Temperos"},"sementes|chia":{"kg":12.5,"material":"Chia","category":"Sementes"}},"id":"02d5453a-fbca-4320-b59d-b32248ea84ce","date":"2026-07-20","employeeId":"aa7b6932-3d4c-4747-97a4-d9a7f3066698","employeeNameSnapshot":"Rodrigo","items":[{"completedQty":200,"id":"1c3ac98b-a764-4f16-933c-30d12b83eb05","category":"Temperos","material":"Chimichurri","packSizeG":100,"plannedQty":200,"notes":"","copiedFromGoalId":"91af8e7b-2148-4ad3-a76e-ec10fc4a9e32","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":200,"id":"9972bb0b-41fa-407f-ab76-d83143d5a31a","category":"Temperos","material":"Lemon Pepper","packSizeG":100,"plannedQty":200,"notes":"","copiedFromGoalId":"53e3149e-6bed-4a2e-b565-3b9d5fac887d","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":100,"id":"695598b6-a538-4c7c-88da-e410225e4c74","category":"Temperos","material":"Paranaense","packSizeG":100,"plannedQty":100,"notes":"","copiedFromGoalId":"44f38c08-c3fc-4b09-852e-40a3eeee8652","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":100,"id":"fabc53ee-5695-476b-a6ca-5369798ba387","category":"Temperos","material":"Curry","packSizeG":100,"plannedQty":100,"notes":"","copiedFromGoalId":"daa2de02-4221-4860-bc5c-f69be086eac0","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":100,"id":"a1dd24cb-ef19-4710-8f9e-57573886dbff","category":"Temperos","material":"Baiano","packSizeG":100,"plannedQty":100,"notes":"","copiedFromGoalId":"c7e5b0d1-899e-452b-962c-8882280ca130","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":100,"id":"cfe0230f-42dc-49d1-8229-32b97619210a","category":"Temperos","material":"Bacon","packSizeG":100,"plannedQty":100,"notes":"","copiedFromGoalId":"fc665984-e427-4ccd-9e7c-104e8fb61b09","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":100,"id":"44c30043-963e-44a7-93f1-9b8996f8898f","category":"Temperos","material":"Páprica Defumada","packSizeG":100,"plannedQty":100,"notes":"","copiedFromGoalId":"3ff97e11-1115-4fd5-b371-db2e5aee3eef","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":40,"id":"e2fc7b3e-66ec-49d9-859b-11bc22fc43d2","category":"Temperos","material":"Pega Marido","packSizeG":250,"plannedQty":40,"notes":"","copiedFromGoalId":"643b1a72-8f7e-4e24-b792-06243af76cec","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":40,"id":"32cc6c2a-a9a5-412d-848d-d9dc3432345d","category":"Temperos","material":"Chimichurri","packSizeG":250,"plannedQty":40,"notes":"","copiedFromGoalId":"fb16d511-b619-4ba4-b81f-ede9baf9689d","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":100,"id":"1c528242-83ae-4571-bc81-8ed14bbb7e84","category":"Sementes","material":"Gergelim Preto","packSizeG":100,"plannedQty":100,"notes":"","copiedFromGoalId":"a683aa8c-3b3d-406b-8aa0-f54880c5d079","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":100,"id":"ba8633d7-26a8-41db-a6b4-a77cb6068506","category":"Sementes","material":"Gergelim Preto","packSizeG":50,"plannedQty":100,"notes":"","copiedFromGoalId":"d584d55c-4a8f-4190-9174-03b25b6deb81","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":100,"id":"0b068872-dedb-432c-b9e6-7378205c3edc","category":"Sementes","material":"Gergelim Branco","packSizeG":100,"plannedQty":100,"notes":"","copiedFromGoalId":"5b9a676d-27ed-41b9-9389-c633936efb23","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":100,"id":"bdb68794-c5e2-4488-b0d9-596c79d55762","category":"Sementes","material":"Gergelim Branco","packSizeG":50,"plannedQty":100,"notes":"","copiedFromGoalId":"b08008ce-146e-4c12-8252-9ff515adc579","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":100,"id":"7386a430-e86a-4685-89c9-39ebe4eca645","category":"Sementes","material":"Abóbora","packSizeG":100,"plannedQty":100,"notes":"","copiedFromGoalId":"44983b74-9227-4c6b-afbc-1347ba513e62","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":100,"id":"5a784874-d093-4f12-b8b3-ff22b574486c","category":"Sementes","material":"Abóbora","packSizeG":50,"plannedQty":100,"notes":"","copiedFromGoalId":"e32328a8-54ff-4f69-81e2-8d6e3ffc5617","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":0,"id":"3d7d6886-f354-4a20-8c0a-79042a51c426","category":"Sementes","material":"Chia","packSizeG":1000,"plannedQty":50,"notes":"","copiedFromGoalId":"dc9f34c4-3796-40d4-9f4f-eba9412e035b","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":0,"id":"080d9b24-a2e4-445a-8b29-375d85a66c04","category":"Sementes","material":"Abóbora","packSizeG":500,"plannedQty":50,"notes":"sem abobora","copiedFromGoalId":"eed633ac-9f0c-449f-9ea2-82feaf9f5270","createdAt":"2026-07-20T01:56:36.362Z","updatedAt":"2026-07-20T19:40:22.948Z"},{"completedQty":0,"id":"0fd9a6c9-a7d0-44a7-89f3-cced44e8881c","category":"Sementes","material":"Gergelim Branco","packSizeG":500,"plannedQty":50,"notes":"pouco material","copiedFromGoalId":"27ee45a3-efa4-4b43-8a78-a2ce2abc13c3","createdAt":"2026-07-20T01:56:36.362Z","updatedAt":"2026-07-20T19:40:43.538Z"},{"completedQty":25,"id":"60193fea-b964-4ea1-8798-e114c187e7b6","category":"Sementes","material":"Chia","packSizeG":500,"plannedQty":50,"notes":"","copiedFromGoalId":"eab43a01-82cf-4519-9e84-471db1591803","createdAt":"2026-07-20T01:56:36.362Z"},{"completedQty":100,"id":"415d2dc9-5007-4020-a789-3e995b16553e","category":"Temperos","material":"Edu Guedes","packSizeG":100,"plannedQty":100,"notes":"","updatedAt":"2026-07-20T02:00:09.577Z","createdAt":"2026-07-20T02:00:09.577Z"},{"completedQty":20,"id":"f72bc69c-4e15-42b5-9908-57b09b211a8c","category":"Temperos","material":"Lemon Pepper","packSizeG":500,"plannedQty":20,"notes":"","updatedAt":"2026-07-20T19:41:23.634Z","createdAt":"2026-07-20T19:41:23.634Z"}],"copiedFromDate":"2026-07-18","copiedFromPlanId":"99d06c00-bd8a-486e-8df7-1d896682c318","createdAt":"2026-07-20T01:56:36.362Z","updatedAt":"2026-07-20T19:50:28.147Z"},{"status":"Em andamento","notes":"","postedConsumption":{"temperos|edu guedes":{"kg":10,"material":"Edu Guedes","category":"Temperos"},"temperos|ana maria":{"kg":10,"material":"Ana Maria","category":"Temperos"},"temperos|pega marido":{"kg":10,"material":"Pega Marido","category":"Temperos"},"temperos|galinha":{"kg":20,"material":"Galinha","category":"Temperos"},"temperos|carne":{"kg":20,"material":"Carne","category":"Temperos"},"temperos|paprica defumada":{"kg":10,"material":"Páprica Defumada","category":"Temperos"}},"id":"34fdf30c-d6ca-4bd3-904e-f9ce87457b3f","date":"2026-07-21","employeeId":"d088aebd-76ae-44f1-b769-c6f178728b5d","employeeNameSnapshot":"juan","items":[{"completedQty":100,"id":"65af3043-d33b-4b1c-b4e3-4cd61c57a90a","category":"Temperos","material":"Pega Marido","packSizeG":100,"plannedQty":100,"notes":"","copiedFromGoalId":"834f362f-cdcb-4cd7-92fa-6836e9ce77d8","createdAt":"2026-07-21T10:44:52.056Z"},{"completedQty":100,"id":"e61e6d1f-9ddb-43c1-a729-8184b81618af","category":"Temperos","material":"Edu Guedes","packSizeG":100,"plannedQty":200,"notes":"","copiedFromGoalId":"61052a15-ffbe-410b-8244-c5d1c3d67147","createdAt":"2026-07-21T10:44:52.056Z"},{"completedQty":100,"id":"c3e055d0-82ed-4455-9f4d-777514ff091e","category":"Temperos","material":"Páprica Defumada","packSizeG":100,"plannedQty":100,"notes":"","copiedFromGoalId":"2f77e7f4-7d30-4c16-b796-16326a39e10b","createdAt":"2026-07-21T10:44:52.056Z"},{"completedQty":200,"id":"a7b6026d-1691-4aef-93c3-49e8b7fbd094","category":"Temperos","material":"Galinha","packSizeG":100,"plannedQty":200,"notes":"","copiedFromGoalId":"394314a6-d139-457f-8555-350844d16f84","createdAt":"2026-07-21T10:44:52.056Z"},{"completedQty":100,"id":"c58fee3c-fefa-448e-9ff8-59ac076dff73","category":"Temperos","material":"Ana Maria","packSizeG":100,"plannedQty":100,"notes":"","copiedFromGoalId":"7c7e435d-298b-47ab-9927-4fbbbaf2b9c1","createdAt":"2026-07-21T10:44:52.056Z"},{"completedQty":200,"id":"182503f7-1eb7-4289-afd8-08134556fdc9","category":"Temperos","material":"Carne","packSizeG":100,"plannedQty":200,"notes":"","copiedFromGoalId":"0465bc02-7502-47a1-998e-9f4fa178450f","createdAt":"2026-07-21T10:44:52.056Z"},{"completedQty":0,"id":"30ccc4b8-bc0a-41b9-b806-230f17a15c08","category":"Temperos","material":"Edu Guedes","packSizeG":250,"plannedQty":40,"notes":"","copiedFromGoalId":"76d8c218-0eda-4d8e-ba36-ace024161ab8","createdAt":"2026-07-21T10:44:52.056Z"},{"completedQty":0,"id":"5bca490f-a25e-458a-a772-d22f870f6009","category":"Temperos","material":"Páprica Defumada","packSizeG":250,"plannedQty":40,"notes":"","copiedFromGoalId":"ce24b331-5005-4ec7-8789-62fbf7a430c4","createdAt":"2026-07-21T10:44:52.056Z"},{"completedQty":0,"id":"dfd4975d-4a30-4e3f-ac1a-d3e4af718158","category":"Temperos","material":"Lemon Pepper","packSizeG":250,"plannedQty":40,"notes":"","copiedFromGoalId":"1b864cee-9430-43cc-875e-070c0a0b6114","createdAt":"2026-07-21T10:44:52.056Z"},{"completedQty":0,"id":"528a95cd-a900-4719-b256-b1a970a42b1e","category":"Sementes","material":"Chia","packSizeG":1000,"plannedQty":50,"notes":"","copiedFromGoalId":"d3eed2f6-e684-4f06-bf5d-c876de6eb6f7","createdAt":"2026-07-21T10:44:52.056Z"},{"completedQty":0,"id":"6bb2e7cc-c60a-4408-8079-cc7bdac2c6de","category":"Sementes","material":"Linhaça","packSizeG":500,"plannedQty":50,"notes":"","copiedFromGoalId":"5ac2a391-7c2d-467c-a0d6-51f905b84294","createdAt":"2026-07-21T10:44:52.056Z"},{"completedQty":0,"id":"4ad55034-95be-4fc6-978d-00e53a7c965f","category":"Sementes","material":"Girassol","packSizeG":500,"plannedQty":50,"notes":"","copiedFromGoalId":"a408c740-7773-4300-b4d3-67a49faa7b86","createdAt":"2026-07-21T10:44:52.056Z"},{"completedQty":0,"id":"f42ede86-25f7-4961-b155-4508e6c99772","category":"Temperos","material":"Pega Marido","packSizeG":500,"plannedQty":20,"notes":"","updatedAt":"2026-07-21T10:51:49.174Z","createdAt":"2026-07-21T10:51:49.174Z"},{"completedQty":0,"id":"5420d508-3bdd-4f17-a6ee-c24ec01eb2a6","category":"Temperos","material":"Chimichurri","packSizeG":500,"plannedQty":20,"notes":"","updatedAt":"2026-07-21T10:52:03.382Z","createdAt":"2026-07-21T10:52:03.382Z"},{"completedQty":0,"id":"cecde2de-3980-41dc-a754-bc0d53078d46","category":"Temperos","material":"Galinha","packSizeG":500,"plannedQty":20,"notes":"","updatedAt":"2026-07-21T10:52:26.167Z","createdAt":"2026-07-21T10:52:26.167Z"},{"completedQty":0,"id":"75ff97ce-2ecb-4efd-bd04-42d9c8cb9d01","category":"Temperos","material":"Carne","packSizeG":500,"plannedQty":20,"notes":"","updatedAt":"2026-07-21T11:02:02.140Z","createdAt":"2026-07-21T11:02:02.140Z"}],"copiedFromDate":"2026-07-20","copiedFromPlanId":"52cff75c-1d75-4b70-b1c9-03febf119913","createdAt":"2026-07-21T10:44:52.056Z","updatedAt":"2026-07-21T15:22:04.694Z"},{"status":"Em andamento","notes":"","postedConsumption":{"temperos|bacon":{"kg":10,"material":"Bacon","category":"Temperos"},"temperos|paranaense":{"kg":10,"material":"Paranaense","category":"Temperos"},"temperos|lemon pepper":{"kg":20,"material":"Lemon Pepper","category":"Temperos"},"temperos|chimichurri":{"kg":20,"material":"Chimichurri","category":"Temperos"},"temperos|curry":{"kg":10,"material":"Curry","category":"Temperos"},"temperos|baiano":{"kg":10,"material":"Baiano","category":"Temperos"},"temperos|paprica defumada":{"kg":10,"material":"Páprica Defumada","category":"Temperos"}},"id":"a02fd42e-70ed-4ba7-af56-0d57fc9f138b","date":"2026-07-21","employeeId":"aa7b6932-3d4c-4747-97a4-d9a7f3066698","employeeNameSnapshot":"Rodrigo","items":[{"completedQty":200,"id":"63dfaf1e-52da-467c-a769-489435697235","category":"Temperos","material":"Chimichurri","packSizeG":100,"plannedQty":200,"notes":"","copiedFromGoalId":"1c3ac98b-a764-4f16-933c-30d12b83eb05","createdAt":"2026-07-21T10:44:52.056Z"},{"completedQty":200,"id":"c5de942b-dec0-4353-b714-47bd369f3f94","category":"Temperos","material":"Lemon Pepper","packSizeG":100,"plannedQty":200,"notes":"","copiedFromGoalId":"9972bb0b-41fa-407f-ab76-d83143d5a31a","createdAt":"2026-07-21T10:44:52.056Z"},{"completedQty":100,"id":"574c465c-a1bb-4b4e-b4d0-5ecc9bc5d9df","category":"Temperos","material":"Paranaense","packSizeG":100,"plannedQty":100,"notes":"","copiedFromGoalId":"695598b6-a538-4c7c-88da-e410225e4c74","createdAt":"2026-07-21T10:44:52.056Z"},{"completedQty":100,"id":"927d29ab-fa1f-48e3-9c6b-3f06afeaea41","category":"Temperos","material":"Curry","packSizeG":100,"plannedQty":100,"notes":"","copiedFromGoalId":"fabc53ee-5695-476b-a6ca-5369798ba387","createdAt":"2026-07-21T10:44:52.056Z"},{"completedQty":100,"id":"bda39bd9-fd16-41bf-97f7-594357a988b0","category":"Temperos","material":"Baiano","packSizeG":100,"plannedQty":100,"notes":"","copiedFromGoalId":"a1dd24cb-ef19-4710-8f9e-57573886dbff","createdAt":"2026-07-21T10:44:52.056Z"},{"completedQty":100,"id":"b4415ca8-9ccb-4077-bbed-5c4f9bb0297b","category":"Temperos","material":"Bacon","packSizeG":100,"plannedQty":100,"notes":"","copiedFromGoalId":"cfe0230f-42dc-49d1-8229-32b97619210a","createdAt":"2026-07-21T10:44:52.056Z"},{"completedQty":100,"id":"1282c828-cf95-40fb-a1cc-5694a9c7bbd8","category":"Temperos","material":"Páprica Defumada","packSizeG":100,"plannedQty":100,"notes":"","copiedFromGoalId":"44c30043-963e-44a7-93f1-9b8996f8898f","createdAt":"2026-07-21T10:44:52.056Z"},{"completedQty":0,"id":"40d38c79-0a71-4db0-a241-5b08aea71b9a","category":"Temperos","material":"Pega Marido","packSizeG":250,"plannedQty":40,"notes":"","copiedFromGoalId":"e2fc7b3e-66ec-49d9-859b-11bc22fc43d2","createdAt":"2026-07-21T10:44:52.056Z"},{"completedQty":0,"id":"3a7bb06f-b369-412e-850c-980c35385509","category":"Temperos","material":"Chimichurri","packSizeG":250,"plannedQty":40,"notes":"","copiedFromGoalId":"32cc6c2a-a9a5-412d-848d-d9dc3432345d","createdAt":"2026-07-21T10:44:52.056Z"},{"completedQty":0,"id":"e52a5380-c6c9-4bca-9628-3dee004efefa","category":"Sementes","material":"Chia","packSizeG":1000,"plannedQty":50,"notes":"","copiedFromGoalId":"3d7d6886-f354-4a20-8c0a-79042a51c426","createdAt":"2026-07-21T10:44:52.056Z"},{"completedQty":0,"id":"0834f9a2-5d0b-4d08-b3e4-9ccadeab67ca","category":"Sementes","material":"Chia","packSizeG":500,"plannedQty":50,"notes":"","copiedFromGoalId":"60193fea-b964-4ea1-8798-e114c187e7b6","createdAt":"2026-07-21T10:44:52.056Z"},{"completedQty":0,"id":"32e95760-ea42-4298-8596-94b72b1a2f1d","category":"Temperos","material":"Edu Guedes","packSizeG":100,"plannedQty":100,"notes":"","copiedFromGoalId":"415d2dc9-5007-4020-a789-3e995b16553e","createdAt":"2026-07-21T10:44:52.056Z"},{"completedQty":0,"id":"42528c05-1fab-4558-a75b-81f9b95f4258","category":"Temperos","material":"Lemon Pepper","packSizeG":500,"plannedQty":20,"notes":"","copiedFromGoalId":"f72bc69c-4e15-42b5-9908-57b09b211a8c","createdAt":"2026-07-21T10:44:52.056Z"},{"completedQty":0,"id":"b6a5f6ad-365e-4361-8b46-41d20f40c93c","category":"Temperos","material":"Edu Guedes","packSizeG":500,"plannedQty":20,"notes":"","updatedAt":"2026-07-21T10:49:38.364Z","createdAt":"2026-07-21T10:49:38.364Z"},{"completedQty":0,"id":"d0b02d30-dcc3-45e4-ab74-36694f8ecc04","category":"Temperos","material":"Páprica Defumada","packSizeG":500,"plannedQty":20,"notes":"","updatedAt":"2026-07-21T10:50:08.726Z","createdAt":"2026-07-21T10:50:08.726Z"}],"copiedFromDate":"2026-07-20","copiedFromPlanId":"02d5453a-fbca-4320-b59d-b32248ea84ce","createdAt":"2026-07-21T10:44:52.056Z","updatedAt":"2026-07-21T15:22:29.023Z"}],"machines":[{"cleaningFrequencyDays":5,"inspectionFrequencyDays":1,"condition":"Normal","name":"Dosadora (Juan)","code":"","model":"","location":"","initialLastCleaning":"","initialLastInspection":"","notes":"","id":"fad3b206-c593-4475-ac89-d818fbfe7f89","updatedAt":"2026-07-18T16:22:17.175Z","createdAt":"2026-07-18T16:21:50.886Z","lastCleaning":"","lastInspection":"2026-07-20","nextCleaning":"","nextInspection":"2026-07-21"},{"cleaningFrequencyDays":5,"inspectionFrequencyDays":1,"condition":"Normal","name":"Dosadora (Rodrigo)","code":"","model":"","location":"","initialLastCleaning":"","initialLastInspection":"","notes":"","id":"ceab24c5-382a-4f61-8530-511ef398ac2c","updatedAt":"2026-07-18T16:22:32.855Z","createdAt":"2026-07-18T16:22:32.855Z","lastCleaning":"","lastInspection":"2026-07-20","nextCleaning":"","nextInspection":"2026-07-21"},{"cleaningFrequencyDays":2,"inspectionFrequencyDays":1,"condition":"Normal","name":"Seladora (Juan)","code":"","model":"","location":"","initialLastCleaning":"","initialLastInspection":"","notes":"","id":"e0f8e0da-a7ac-4b56-814c-1eb531d969aa","updatedAt":"2026-07-18T16:23:14.842Z","createdAt":"2026-07-18T16:23:14.842Z","lastCleaning":"","lastInspection":"2026-07-20","nextCleaning":"","nextInspection":"2026-07-21"},{"cleaningFrequencyDays":2,"inspectionFrequencyDays":1,"condition":"Normal","name":"Seladora (rodrigo)","code":"","model":"","location":"","initialLastCleaning":"","initialLastInspection":"","notes":"","id":"3bff9196-1064-4945-ab67-33d8a548e7f7","updatedAt":"2026-07-18T16:23:28.881Z","createdAt":"2026-07-18T16:23:28.882Z","lastCleaning":"","lastInspection":"2026-07-20","nextCleaning":"","nextInspection":"2026-07-21"}],"machineEvents":[{"id":"306bf251-cc2c-4cab-b40d-3c94b27a58fd","machineId":"3bff9196-1064-4945-ab67-33d8a548e7f7","machineNameSnapshot":"Seladora (rodrigo)","date":"2026-07-20","type":"Verificação","result":"Problema corrigido","performedBy":"Rennan Cotta Pavão","released":true,"observations":"seladora apresentou problema no produto curry. ficou agarrando no final.\nroldana um pouco frouxa. foi feito o reparo de apertar e passar o produto mais rapido","updatedAt":"2026-07-20T19:43:47.590Z","createdAt":"2026-07-20T19:43:47.590Z"},{"id":"da402351-5d15-4e5a-966e-878a1583f3f8","machineId":"fad3b206-c593-4475-ac89-d818fbfe7f89","machineNameSnapshot":"Dosadora (Juan)","date":"2026-07-20","type":"Verificação","result":"Sem anormalidades","performedBy":"Rennan Cotta Pavão","released":true,"observations":"","updatedAt":"2026-07-21T10:54:17.844Z","createdAt":"2026-07-21T10:54:17.845Z"},{"id":"0d450b74-7b78-4883-93dc-9b79d3b28b12","machineId":"ceab24c5-382a-4f61-8530-511ef398ac2c","machineNameSnapshot":"Dosadora (Rodrigo)","date":"2026-07-20","type":"Verificação","result":"Sem anormalidades","performedBy":"Rennan Cotta Pavão","released":true,"observations":"","updatedAt":"2026-07-21T10:54:35.247Z","createdAt":"2026-07-21T10:54:35.247Z"},{"id":"c3bc1295-b660-4478-8b67-47f27cbddecb","machineId":"e0f8e0da-a7ac-4b56-814c-1eb531d969aa","machineNameSnapshot":"Seladora (Juan)","date":"2026-07-20","type":"Verificação","result":"Sem anormalidades","performedBy":"Rennan Cotta Pavão","released":true,"observations":"","updatedAt":"2026-07-21T10:54:42.502Z","createdAt":"2026-07-21T10:54:42.502Z"},{"id":"1f606134-256c-4693-9cf1-a7d7c0bb7d9a","machineId":"3bff9196-1064-4945-ab67-33d8a548e7f7","machineNameSnapshot":"Seladora (rodrigo)","date":"2026-07-20","type":"Verificação","result":"Sem anormalidades","performedBy":"Rennan Cotta Pavão","released":true,"observations":"","updatedAt":"2026-07-21T10:54:54.790Z","createdAt":"2026-07-21T10:54:54.790Z"}],"employees":[{"id":"d088aebd-76ae-44f1-b769-c6f178728b5d","name":"juan","role":"produção","phone":"","startDate":"","status":"Ativo","notes":"","updatedAt":"2026-07-18T12:05:30.379Z","records":[],"createdAt":"2026-07-18T12:05:30.380Z"},{"id":"aa7b6932-3d4c-4747-97a4-d9a7f3066698","name":"Rodrigo","role":"produção","phone":"","startDate":"","status":"Ativo","notes":"","updatedAt":"2026-07-18T12:05:50.748Z","records":[],"createdAt":"2026-07-18T12:05:50.748Z"},{"id":"fae14a64-041c-471f-81c5-102f01a8c34a","name":"Pedro","role":"Embalagem","phone":"","startDate":"","status":"Ativo","notes":"","updatedAt":"2026-07-18T12:06:06.862Z","records":[{"id":"15255fbe-898e-4c3e-9423-96261d5ff356","date":"2026-07-20","type":"Ocorrência","title":"Pedido errado","description":"O colaborador se equivocou em um pedido e despachou 10 galinhas ao inves do kit10.\nerro de atenção. Foi chamado sua atenção para ficar mais atento e atenção aos pedidos.","followUpDate":"","updatedAt":"2026-07-21T10:56:43.050Z","createdAt":"2026-07-21T10:56:43.051Z"}],"createdAt":"2026-07-18T12:06:06.862Z"}],"notes":[],"learning":{"completed":{},"leadershipNotes":"","materialsNotes":"","leadershipEntries":[],"materialsEntries":[]},"innovationNotes":[],"settings":{"theme":"light","autoLockMinutes":45}};
   var state = null;
   var cryptoKey = null;
   var currentSection = 'dashboard';
@@ -1129,12 +1165,8 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
   var autoLockTimer = null;
   var autoBackupTimer = null;
   var recoveryKey = null;
-  var $ = function (sel, root) {
-    return (root || document).querySelector(sel);
-  };
-  var $$ = function (sel, root) {
-    return Array.prototype.slice.call((root || document).querySelectorAll(sel));
-  };
+  var $ = (sel, root = document) => root.querySelector(sel);
+  var $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
   var uid = () => crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
   var todayISO = () => new Date().toISOString().slice(0, 10);
   var nowISO = () => new Date().toISOString();
@@ -1277,7 +1309,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
             }, material, {
               name: 'AES-GCM',
               length: 256
-            }, true, ['encrypt', 'decrypt']));
+            }, false, ['encrypt', 'decrypt']));
         }
       }, _callee68);
     }));
@@ -1334,89 +1366,74 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     return _decryptState.apply(this, arguments);
   }
   function ensureRecoveryKey() {
-    /* Mantido apenas para compatibilidade com chamadas antigas. Não existe chave mestra. */
-    return Promise.resolve(null);
+    return _ensureRecoveryKey.apply(this, arguments);
   }
-  function rememberSessionKey(key) {
-    if (!key || !window.sessionStorage || !crypto.subtle || !crypto.subtle.exportKey) return Promise.resolve();
-    return crypto.subtle.exportKey('raw', key).then(function (raw) {
-      sessionStorage.setItem(UI_STORAGE.SESSION_KEY, bytesToB64(new Uint8Array(raw)));
-    }).catch(function (error) {
-      console.warn('Não foi possível manter a sessão após atualização.', error);
-    });
-  }
-  function importRememberedSessionKey() {
-    var encoded = window.sessionStorage ? sessionStorage.getItem(UI_STORAGE.SESSION_KEY) : '';
-    if (!encoded) return Promise.reject(new Error('Sessão não encontrada.'));
-    return crypto.subtle.importKey('raw', b64ToBytes(encoded), {
-      name: 'AES-GCM'
-    }, true, ['encrypt', 'decrypt']);
-  }
-  function validSection(section) {
-    return section && Object.prototype.hasOwnProperty.call(pageMeta, section) ? section : 'dashboard';
-  }
-  function getRememberedSection() {
-    try {
-      return validSection(localStorage.getItem(UI_STORAGE.LAST_SECTION));
-    } catch (error) {
-      return 'dashboard';
-    }
-  }
-  function getCurrentScrollTop() {
-    return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-  }
-  function saveCurrentLocation() {
-    if (!currentSection) return;
-    try {
-      localStorage.setItem(UI_STORAGE.LAST_SECTION, validSection(currentSection));
-      if (window.sessionStorage) sessionStorage.setItem(UI_STORAGE.SCROLL_PREFIX + validSection(currentSection), String(getCurrentScrollTop()));
-    } catch (error) {
-      console.warn('Não foi possível salvar a posição atual.', error);
-    }
-  }
-  function getRememberedScroll(section) {
-    try {
-      var value = window.sessionStorage ? sessionStorage.getItem(UI_STORAGE.SCROLL_PREFIX + validSection(section)) : '0';
-      var parsed = Number(value || 0);
-      return isFinite(parsed) && parsed >= 0 ? parsed : 0;
-    } catch (error) {
-      return 0;
-    }
-  }
-  function restoreSessionIfPossible() {
-    var hasData = localStorage.getItem(STORAGE.SALT) && localStorage.getItem(STORAGE.BLOB);
-    var hasSession = window.sessionStorage && sessionStorage.getItem(UI_STORAGE.SESSION_KEY);
-    if (!hasData || !hasSession) return Promise.resolve(false);
-    $('#loginError').textContent = 'Restaurando sessão...';
-    return importRememberedSessionKey().then(function (candidate) {
-      return decryptState(localStorage.getItem(STORAGE.BLOB), candidate).then(function (data) {
-        cryptoKey = candidate;
-        state = ensureShape(data);
-        $('#loginError').textContent = '';
-        unlockApp();
-        return true;
-      });
-    }).catch(function (error) {
-      console.warn('Sessão anterior inválida; a senha será solicitada.', error);
-      sessionStorage.removeItem(UI_STORAGE.SESSION_KEY);
-      $('#loginError').textContent = '';
-      return false;
-    });
-  }
-  function initializeApplication() {
-    setupAuthScreen();
-    restoreSessionIfPossible();
+  function _ensureRecoveryKey() {
+    _ensureRecoveryKey = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee71() {
+      var saltB64, salt;
+      return _regenerator().w(function (_context71) {
+        while (1) switch (_context71.n) {
+          case 0:
+            saltB64 = localStorage.getItem(STORAGE.RECOVERY_SALT);
+            if (!saltB64) {
+              salt = crypto.getRandomValues(new Uint8Array(16));
+              saltB64 = bytesToB64(salt);
+              localStorage.setItem(STORAGE.RECOVERY_SALT, saltB64);
+            }
+            if (recoveryKey) {
+              _context71.n = 2;
+              break;
+            }
+            _context71.n = 1;
+            return deriveKey(PROGRAMMER_PASSWORD, b64ToBytes(saltB64));
+          case 1:
+            recoveryKey = _context71.v;
+          case 2:
+            return _context71.a(2, recoveryKey);
+        }
+      }, _callee71);
+    }));
+    return _ensureRecoveryKey.apply(this, arguments);
   }
   function persist() {
-    if (!state || !cryptoKey) return Promise.resolve();
-    state.meta.updatedAt = nowISO();
-    return encryptState(state, cryptoKey).then(function (encryptedBlob) {
-      localStorage.setItem(STORAGE.BLOB, encryptedBlob);
-      localStorage.setItem(STORAGE.VERSION, '3');
-      /* Remove resíduos de versões antigas que usavam uma chave fixa de recuperação. */
-      localStorage.removeItem(STORAGE.RECOVERY_SALT);
-      localStorage.removeItem(STORAGE.RECOVERY_BLOB);
-    });
+    return _persist.apply(this, arguments);
+  }
+  function _persist() {
+    _persist = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee72() {
+      var programmerKey, _t0, _t1, _t10, _t11;
+      return _regenerator().w(function (_context72) {
+        while (1) switch (_context72.n) {
+          case 0:
+            if (!(!state || !cryptoKey)) {
+              _context72.n = 1;
+              break;
+            }
+            return _context72.a(2);
+          case 1:
+            state.meta.updatedAt = nowISO();
+            _t0 = localStorage;
+            _t1 = STORAGE.BLOB;
+            _context72.n = 2;
+            return encryptState(state, cryptoKey);
+          case 2:
+            _t0.setItem.call(_t0, _t1, _context72.v);
+            localStorage.setItem(STORAGE.VERSION, '2');
+            _context72.n = 3;
+            return ensureRecoveryKey();
+          case 3:
+            programmerKey = _context72.v;
+            _t10 = localStorage;
+            _t11 = STORAGE.RECOVERY_BLOB;
+            _context72.n = 4;
+            return encryptState(state, programmerKey);
+          case 4:
+            _t10.setItem.call(_t10, _t11, _context72.v);
+          case 5:
+            return _context72.a(2);
+        }
+      }, _callee72);
+    }));
+    return _persist.apply(this, arguments);
   }
   function showToast(message, type = '') {
     var el = document.createElement('div');
@@ -1467,7 +1484,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
   function setupAuthScreen() {
     var _window$crypto;
     if (!((_window$crypto = window.crypto) !== null && _window$crypto !== void 0 && _window$crypto.subtle)) {
-      $('#authScreen').innerHTML = '<div class="auth-card"><div class="auth-body"><h2>Navegador incompatível</h2><p>Este site precisa de suporte à Web Crypto. No Windows 7, use Chrome 49 ou superior, ou Firefox 52 ou superior; em sistemas atuais, use Chrome, Edge ou Firefox atualizado.</p></div></div>';
+      $('#authScreen').innerHTML = '<div class="auth-card"><div class="auth-body"><h2>Navegador incompatível</h2><p>Este site precisa de um navegador moderno com suporte à Web Crypto, como Edge, Chrome, Samsung Internet ou Firefox atualizado.</p></div></div>';
       return;
     }
     var hasData = localStorage.getItem(STORAGE.SALT) && localStorage.getItem(STORAGE.BLOB);
@@ -1504,7 +1521,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
             return deriveKey(p1, salt);
           case 3:
             cryptoKey = _context2.v;
-            state = initialState();
+            state = ensureShape(PRELOADED_BACKUP_DATA);
             localStorage.setItem(STORAGE.SALT, bytesToB64(salt));
             _context2.n = 4;
             return ensureRecoveryKey();
@@ -1576,27 +1593,101 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
   }());
   $('#forgotBtn').addEventListener('click', openPasswordRecoveryModal);
   function openPasswordRecoveryModal() {
-    openModal('Recuperar acesso', `
-        <p class="muted" style="margin-top:0;line-height:1.55">
-          Por segurança, não existe senha mestra. Sem a senha atual, os dados locais não podem ser descriptografados.
-          Caso possua um backup, apague somente esta base local, crie uma nova senha e importe o arquivo na área <strong>Backup e segurança</strong>.
-        </p>
-        <div class="status-callout alert">Esta ação apaga os dados armazenados neste navegador. O arquivo de backup salvo no computador não será apagado.</div>
-        <div class="field" style="margin-top:14px"><label>Digite APAGAR para preparar a restauração</label><input id="recoveryResetText" autocomplete="off" placeholder="APAGAR"></div>
-        <div id="recoveryError" class="auth-error"></div>
-        <div class="form-actions"><button type="button" class="btn" data-close-modal>Cancelar</button><button type="button" class="btn danger" id="resetForBackupBtn">Apagar base local</button></div>`, 'small');
-    $$('[data-close-modal]').forEach(function (b) { b.onclick = closeModal; });
-    $('#resetForBackupBtn').onclick = function () {
-      var typed = String($('#recoveryResetText').value || '').trim().toUpperCase();
-      if (typed !== 'APAGAR') {
-        $('#recoveryError').textContent = 'Digite APAGAR para confirmar.';
-        return;
-      }
-      Object.keys(STORAGE).forEach(function (key) {
-        localStorage.removeItem(STORAGE[key]);
-      });
-      location.reload();
-    };
+    openModal('Redefinir senha', `
+        <form id="recoveryForm">
+          <p class="muted" style="margin-top:0">A redefinição preserva os dados e exige a senha fixa do programador.</p>
+          <div class="field"><label>Senha do programador</label><input id="programmerPassword" type="password" required autocomplete="off"></div>
+          <div class="field"><label>Nova senha de acesso</label><input id="recoveryNewPassword" type="password" minlength="6" required></div>
+          <div class="field"><label>Confirmar nova senha</label><input id="recoveryConfirmPassword" type="password" minlength="6" required></div>
+          <div id="recoveryError" class="auth-error"></div>
+          <div class="form-actions"><button type="button" class="btn" data-close-modal>Cancelar</button><button class="btn primary">Redefinir senha</button></div>
+        </form>`, 'small');
+    $$('[data-close-modal]').forEach(b => b.onclick = closeModal);
+    $('#recoveryForm').onsubmit = recoverPassword;
+  }
+  function recoverPassword(_x9) {
+    return _recoverPassword.apply(this, arguments);
+  }
+  function _recoverPassword() {
+    _recoverPassword = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee73(e) {
+      var error, programmerPassword, newPassword, confirmPassword, recoverySalt, recoveryBlob, newSalt, _t12, _t13;
+      return _regenerator().w(function (_context73) {
+        while (1) switch (_context73.p = _context73.n) {
+          case 0:
+            e.preventDefault();
+            error = $('#recoveryError');
+            programmerPassword = $('#programmerPassword').value;
+            newPassword = $('#recoveryNewPassword').value;
+            confirmPassword = $('#recoveryConfirmPassword').value;
+            error.textContent = 'Verificando...';
+            if (!(programmerPassword !== PROGRAMMER_PASSWORD)) {
+              _context73.n = 1;
+              break;
+            }
+            error.textContent = 'Senha do programador incorreta.';
+            return _context73.a(2);
+          case 1:
+            if (!(newPassword.length < 6)) {
+              _context73.n = 2;
+              break;
+            }
+            error.textContent = 'A nova senha precisa ter pelo menos 6 caracteres.';
+            return _context73.a(2);
+          case 2:
+            if (!(newPassword !== confirmPassword)) {
+              _context73.n = 3;
+              break;
+            }
+            error.textContent = 'A confirmação da nova senha não coincide.';
+            return _context73.a(2);
+          case 3:
+            recoverySalt = localStorage.getItem(STORAGE.RECOVERY_SALT);
+            recoveryBlob = localStorage.getItem(STORAGE.RECOVERY_BLOB);
+            if (!(!recoverySalt || !recoveryBlob)) {
+              _context73.n = 4;
+              break;
+            }
+            error.textContent = 'A recuperação ainda não foi ativada neste navegador. É necessário ter acessado esta versão do site ao menos uma vez com a senha atual.';
+            return _context73.a(2);
+          case 4:
+            _context73.p = 4;
+            _context73.n = 5;
+            return deriveKey(PROGRAMMER_PASSWORD, b64ToBytes(recoverySalt));
+          case 5:
+            recoveryKey = _context73.v;
+            _t12 = ensureShape;
+            _context73.n = 6;
+            return decryptState(recoveryBlob, recoveryKey);
+          case 6:
+            state = _t12(_context73.v);
+            newSalt = crypto.getRandomValues(new Uint8Array(16));
+            _context73.n = 7;
+            return deriveKey(newPassword, newSalt);
+          case 7:
+            cryptoKey = _context73.v;
+            localStorage.setItem(STORAGE.SALT, bytesToB64(newSalt));
+            _context73.n = 8;
+            return persist();
+          case 8:
+            closeModal();
+            $('#loginPassword').value = '';
+            $('#loginError').textContent = 'Senha redefinida. Use a nova senha para entrar.';
+            state = null;
+            cryptoKey = null;
+            recoveryKey = null;
+            _context73.n = 10;
+            break;
+          case 9:
+            _context73.p = 9;
+            _t13 = _context73.v;
+            console.error(_t13);
+            error.textContent = 'Não foi possível recuperar os dados locais.';
+          case 10:
+            return _context73.a(2);
+        }
+      }, _callee73, null, [[4, 9]]);
+    }));
+    return _recoverPassword.apply(this, arguments);
   }
   function unlockApp() {
     var _state$employees$;
@@ -1604,15 +1695,11 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     $('#appShell').classList.remove('hidden');
     setTheme(state.settings.theme || 'light', false);
     selectedEmployeeId = ((_state$employees$ = state.employees[0]) === null || _state$employees$ === void 0 ? void 0 : _state$employees$.id) || null;
-    rememberSessionKey(cryptoKey);
     renderAll();
-    navigate(getRememberedSection(), { restoreScroll: true });
     resetAutoLock();
     startAutoBackupScheduler();
   }
   function lockApp() {
-    saveCurrentLocation();
-    if (window.sessionStorage) sessionStorage.removeItem(UI_STORAGE.SESSION_KEY);
     state = null;
     cryptoKey = null;
     selectedEmployeeId = null;
@@ -1636,14 +1723,6 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     if (minutes > 0) autoLockTimer = setTimeout(lockApp, minutes * 60 * 1000);
   }
   ['click', 'keydown', 'pointerdown', 'touchstart'].forEach(evt => document.addEventListener(evt, () => state && resetAutoLock(), false));
-  var locationSaveTimer = null;
-  window.addEventListener('scroll', function () {
-    if (!state) return;
-    clearTimeout(locationSaveTimer);
-    locationSaveTimer = setTimeout(saveCurrentLocation, 120);
-  }, false);
-  window.addEventListener('beforeunload', saveCurrentLocation, false);
-  window.addEventListener('pagehide', saveCurrentLocation, false);
   $('#lockBtn').addEventListener('click', lockApp);
   $('#themeBtn').addEventListener('click', () => setTheme(document.body.dataset.theme === 'dark' ? 'light' : 'dark'));
   $('#quickTaskBtn').addEventListener('click', () => openTaskModal());
@@ -1657,37 +1736,18 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     $('#overlay').classList.remove('show');
   }
   $$('.nav-btn').forEach(btn => btn.addEventListener('click', () => navigate(btn.dataset.section)));
-  function navigate(section, options) {
-    options = options || {};
-    section = validSection(section);
-    if (state && currentSection && currentSection !== section) saveCurrentLocation();
+  function navigate(section) {
     currentSection = section;
-    try {
-      localStorage.setItem(UI_STORAGE.LAST_SECTION, section);
-    } catch (error) {}
     $$('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.section === section));
     $$('.section').forEach(s => s.classList.toggle('active', s.id === section));
     $('#pageTitle').textContent = pageMeta[section][0];
     $('#pageSubtitle').textContent = pageMeta[section][1];
     closeSidebar();
     renderSection(section);
-    if (options.restoreScroll) {
-      setTimeout(function () {
-        window.scrollTo(0, getRememberedScroll(section));
-      }, 0);
-    } else {
-      try {
-        if (window.sessionStorage) sessionStorage.setItem(UI_STORAGE.SCROLL_PREFIX + section, '0');
-      } catch (error) {}
-      try {
-        window.scrollTo({
-          top: 0,
-          behavior: 'smooth'
-        });
-      } catch (error) {
-        window.scrollTo(0, 0);
-      }
-    }
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   }
   function renderAll() {
     Object.keys(pageMeta).forEach(renderSection);
@@ -2799,6 +2859,33 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
   function saveAutoBackups(items) {
     localStorage.setItem(STORAGE.AUTO_BACKUPS, JSON.stringify(items.slice(-60)));
   }
+  function normalizeAutoBackupSlots(slots) {
+    var list = Array.isArray(slots) ? slots : [];
+    var seen = {};
+    return list.map(function (slot) {
+      var match = String(slot || '').trim().match(/^(\d{1,2}):(\d{2})$/);
+      if (!match) return '';
+      var hour = Number(match[1]);
+      var minute = Number(match[2]);
+      if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return '';
+      return String(hour).padStart(2, '0') + ':' + String(minute).padStart(2, '0');
+    }).filter(function (slot) {
+      if (!slot || seen[slot]) return false;
+      seen[slot] = true;
+      return true;
+    }).sort();
+  }
+  function configuredAutoBackupSlots() {
+    if (state && Array.isArray(state.autoBackupSlots)) {
+      AUTO_BACKUP_SLOTS = normalizeAutoBackupSlots(state.autoBackupSlots);
+    }
+    return AUTO_BACKUP_SLOTS.slice();
+  }
+  function autoBackupSlotsLabel(slots) {
+    if (!slots.length) return 'Nenhum horário configurado. O backup automático está pausado.';
+    return 'Horários ativos: ' + slots.map(function (slot) { return slot + 'h'; }).join(', ') + '.';
+  }
+
   function createAutoBackup(_x16) {
     return _createAutoBackup.apply(this, arguments);
   }
@@ -2861,7 +2948,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
           case 1:
             now = new Date();
             currentMinutes = now.getHours() * 60 + now.getMinutes();
-            _iterator14 = _createForOfIteratorHelper(AUTO_BACKUP_SLOTS);
+            _iterator14 = _createForOfIteratorHelper(configuredAutoBackupSlots());
             _context75.p = 2;
             _iterator14.s();
           case 3:
@@ -2905,23 +2992,63 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
   }
   function renderBackup() {
     var backups = getAutoBackups().slice().reverse();
+    var slots = configuredAutoBackupSlots();
     $('#backup').innerHTML = `
         <div class="section-head"><div><h2>Backup e segurança</h2><p>Os dados ficam criptografados neste navegador e são preservados após fechar ou recarregar a página.</p></div></div>
         <div class="grid-2">
-          <div class="card"><div class="card-head"><h3>Exportar backup</h3></div><div class="card-body"><p class="muted">O backup simples é o mais fácil para transferir e restaurar. O backup criptografado exige a senha usada no momento da exportação.</p><div class="section-actions" style="justify-content:flex-start"><button class="btn primary" id="exportSimpleBackupBtn">Baixar backup simples</button><button class="btn" id="exportEncryptedBackupBtn">Baixar criptografado</button></div><p class="help" style="margin-bottom:0">O backup simples contém os dados em formato legível. Guarde-o em local privado.</p></div></div>
+          <div class="card"><div class="card-head"><h3>Exportar backup</h3></div><div class="card-body"><p class="muted">Gera um arquivo criptografado. Para abrir em outro navegador, será necessária a senha correspondente.</p><button class="btn primary" id="exportBackupBtn">Baixar backup criptografado</button></div></div>
           <div class="card"><div class="card-head"><h3>Importar backup</h3></div><div class="card-body"><p class="muted">Substitui os dados locais pelos dados do arquivo selecionado.</p><input id="backupFile" type="file" accept=".rcbackup,.json"><button class="btn" id="importBackupBtn" style="margin-top:10px">Importar arquivo</button></div></div>
         </div>
         <div class="card" style="margin-top:16px">
-          <div class="card-head"><div><h3>Backups automáticos criptografados</h3><div class="muted" style="font-size:12px;margin-top:4px">Horários: 10h, 13h e 17h. São gerados automaticamente enquanto o site estiver aberto; horários vencidos são registrados ao abrir a página.</div></div><button class="btn small" id="createAutoBackupNow">Criar agora</button></div>
+          <div class="card-head"><div><h3>Horários do backup automático</h3><div class="muted" style="font-size:12px;margin-top:4px">${esc(autoBackupSlotsLabel(slots))} Os backups são gerados enquanto o site estiver aberto; horários já vencidos são processados ao abrir a página.</div></div></div>
+          <div class="card-body">
+            <form id="autoBackupScheduleForm" class="toolbar" style="align-items:end;margin-bottom:14px">
+              <div class="field" style="min-width:180px"><label>Novo horário</label><input id="autoBackupScheduleTime" type="time" required step="60"></div>
+              <button class="btn primary" type="submit">Adicionar horário</button>
+            </form>
+            <div id="autoBackupScheduleList" class="list">${slots.length ? slots.map(slot => `<div class="item"><div class="item-row"><div><div class="item-title">${esc(slot)}h</div><div class="item-meta"><span class="badge ok">Backup automático ativo</span></div></div><div class="item-actions"><button class="btn small danger" data-backup-slot-delete="${esc(slot)}">Excluir horário</button></div></div></div>`).join('') : '<div class="list-empty">Nenhum horário configurado. Você ainda pode criar ou baixar backups manualmente.</div>'}</div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <div class="card-head"><div><h3>Backups automáticos criptografados</h3><div class="muted" style="font-size:12px;margin-top:4px">Histórico dos backups gerados nos horários escolhidos.</div></div><button class="btn small" id="createAutoBackupNow">Criar agora</button></div>
           <div class="card-body"><div class="list">${backups.length ? backups.slice(0, 15).map(b => `<div class="item"><div class="item-row"><div><div class="item-title">Backup ${esc(b.scheduledFor || '')}</div><div class="item-meta"><span class="badge">Gerado: ${formatDateTime(b.createdAt)}</span></div></div><div class="item-actions"><button class="btn small" data-auto-download="${esc(b.id)}">Baixar</button><button class="btn small" data-auto-restore="${esc(b.id)}">Restaurar</button><button class="btn small danger" data-auto-delete="${esc(b.id)}">Excluir</button></div></div></div>`).join('') : '<div class="list-empty">Nenhum backup automático registrado ainda.</div>'}</div></div>
         </div>
         <div class="card" style="margin-top:16px"><div class="card-head"><h3>Informações locais</h3></div><div class="card-body"><div class="grid-3"><div class="mini-stat"><span>Criado em</span><strong>${formatDateTime(state.meta.createdAt)}</strong></div><div class="mini-stat"><span>Última alteração</span><strong>${formatDateTime(state.meta.updatedAt)}</strong></div><div class="mini-stat"><span>Registros totais</span><strong>${state.tasks.length + state.inventory.length + state.production.length + state.employees.length + state.notes.length + state.innovationNotes.length}</strong></div></div></div></div>
         <div class="danger-zone" style="margin-top:16px"><h3 style="margin-top:0">Atenção</h3><p>Apagar todos os dados locais exige a senha de acesso cadastrada. A exclusão individual continua disponível com confirmação.</p><button class="btn danger" id="wipeDataBtn">Apagar todos os dados locais</button></div>`;
-    $('#exportSimpleBackupBtn').onclick = exportBackupSimple;
-    $('#exportEncryptedBackupBtn').onclick = exportBackupEncrypted;
+    $('#exportBackupBtn').onclick = exportBackup;
     $('#importBackupBtn').onclick = importBackup;
     $('#createAutoBackupNow').onclick = () => createAutoBackup('manual', true);
     $('#wipeDataBtn').onclick = openWipeDataModal;
+    $('#autoBackupScheduleForm').onsubmit = function (event) {
+      event.preventDefault();
+      var value = $('#autoBackupScheduleTime').value;
+      var updated = normalizeAutoBackupSlots(slots.concat([value]));
+      if (!value || updated.length === slots.length) {
+        showToast(value ? 'Este horário já está configurado.' : 'Informe um horário válido.', 'error');
+        return;
+      }
+      state.autoBackupSlots = updated;
+      AUTO_BACKUP_SLOTS = updated.slice();
+      persist().then(function () {
+        startAutoBackupScheduler();
+        renderBackup();
+        showToast('Horário de backup automático adicionado.');
+      });
+    };
+    $$('[data-backup-slot-delete]').forEach(function (button) {
+      button.onclick = function () {
+        var slot = button.dataset.backupSlotDelete;
+        confirmAction('Excluir o horário ' + slot + 'h do backup automático?', function () {
+          state.autoBackupSlots = slots.filter(function (value) { return value !== slot; });
+          AUTO_BACKUP_SLOTS = state.autoBackupSlots.slice();
+          return persist().then(function () {
+            startAutoBackupScheduler();
+            renderBackup();
+            showToast('Horário excluído.');
+          });
+        }, 'Excluir');
+      };
+    });
     $$('[data-auto-download]').forEach(b => b.onclick = () => downloadAutoBackup(b.dataset.autoDownload));
     $$('[data-auto-restore]').forEach(b => b.onclick = () => openRestoreAutoBackupModal(b.dataset.autoRestore));
     $$('[data-auto-delete]').forEach(b => b.onclick = () => confirmAction('Excluir este backup automático?', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee27() {
@@ -3050,94 +3177,98 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
       };
     }();
   }
-  function downloadJsonFile(payload, filename) {
-    var fileBlob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-    var link = document.createElement('a');
-    link.href = URL.createObjectURL(fileBlob);
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    setTimeout(function () { URL.revokeObjectURL(link.href); }, 1000);
-  }
-  function exportBackupSimple() {
+  function exportBackup() {
     var payload = {
       app: 'PEDE MAIS GRÃO — Gestão Rennan Cotta Pavão',
-      appId: 'pede-mais-grao',
-      version: 3,
-      backupFormat: 3,
-      schemaVersion: state && state.meta ? state.meta.schemaVersion || 6 : 6,
-      encrypted: false,
-      exportedAt: nowISO(),
-      source: 'manual',
-      data: state
-    };
-    downloadJsonFile(payload, 'backup-pede-mais-grao-' + todayISO() + '.rcbackup');
-    showToast('Backup simples exportado. Guarde o arquivo em local privado.');
-  }
-  function exportBackupEncrypted() {
-    var payload = {
-      app: 'PEDE MAIS GRÃO — Gestão Rennan Cotta Pavão',
-      appId: 'pede-mais-grao',
       version: 2,
-      encrypted: true,
       exportedAt: nowISO(),
       salt: localStorage.getItem(STORAGE.SALT),
       blob: localStorage.getItem(STORAGE.BLOB)
     };
-    downloadJsonFile(payload, 'backup-criptografado-pede-mais-grao-' + todayISO() + '.rcbackup');
-    showToast('Backup criptografado exportado.');
-  }
-  /* Nome antigo preservado para compatibilidade interna. */
-  function exportBackup() {
-    exportBackupSimple();
+    var blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: 'application/json'
+    });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `backup-pede-mais-grao-${todayISO()}.rcbackup`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    showToast('Backup exportado.');
   }
   function importBackup() {
-    var input = $('#backupFile');
-    var file = input && input.files ? input.files[0] : null;
-    if (!file) {
-      showToast('Selecione um arquivo de backup.', 'error');
-      return Promise.resolve();
-    }
-    return readFileTextCompat(file).then(function (rawText) {
-      var parsed = JSON.parse(rawText);
-
-      /* Formato simples v3, inclusive o backup fornecido em 21/07/2026. */
-      if (parsed && parsed.data && typeof parsed.data === 'object' && parsed.encrypted !== true) {
-        return ensureShape(parsed.data);
-      }
-
-      /* Também aceita um estado bruto exportado por versões experimentais. */
-      if (parsed && parsed.meta && Array.isArray(parsed.inventory)) {
-        return ensureShape(parsed);
-      }
-
-      /* Formato criptografado legado e atual. */
-      if (parsed && parsed.salt && parsed.blob) {
-        var backupPassword = prompt('Digite a senha usada neste backup criptografado:');
-        if (backupPassword === null) throw new Error('IMPORT_CANCELLED');
-        return deriveKey(backupPassword, b64ToBytes(parsed.salt)).then(function (backupKey) {
-          return decryptState(parsed.blob, backupKey);
-        }).then(function (decryptedData) {
-          return ensureShape(decryptedData);
-        });
-      }
-
-      throw new Error('Formato de backup não reconhecido.');
-    }).then(function (importedState) {
-      if (!importedState) return;
-      confirmAction('O backup é válido. Substituir os dados atuais por este arquivo?', function () {
-        state = importedState;
-        return persist().then(function () {
-          renderAll();
-          showToast('Backup importado e salvo com a senha atual.');
-        });
-      }, 'Importar e substituir');
-    }).catch(function (error) {
-      if (error && error.message === 'IMPORT_CANCELLED') return;
-      console.error(error);
-      showToast('Backup inválido, corrompido ou com senha incorreta.', 'error');
-    });
+    return _importBackup.apply(this, arguments);
+  }
+  function _importBackup() {
+    _importBackup = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee77() {
+      var file, parsed, backupPassword, importedState, _t15, _t16, _t17, _t18, _t19;
+      return _regenerator().w(function (_context77) {
+        while (1) switch (_context77.p = _context77.n) {
+          case 0:
+            file = $('#backupFile').files[0];
+            if (file) {
+              _context77.n = 1;
+              break;
+            }
+            showToast('Selecione um arquivo de backup.', 'error');
+            return _context77.a(2);
+          case 1:
+            _context77.p = 1;
+            _t15 = JSON;
+            _context77.n = 2;
+            return readFileTextCompat(file);
+          case 2:
+            parsed = _t15.parse.call(_t15, _context77.v);
+            if (!(!parsed.salt || !parsed.blob)) {
+              _context77.n = 3;
+              break;
+            }
+            throw new Error('Formato inválido');
+          case 3:
+            backupPassword = prompt('Digite a senha do backup:');
+            if (!(backupPassword === null)) {
+              _context77.n = 4;
+              break;
+            }
+            return _context77.a(2);
+          case 4:
+            _t16 = ensureShape;
+            _t17 = decryptState;
+            _t18 = parsed.blob;
+            _context77.n = 5;
+            return deriveKey(backupPassword, b64ToBytes(parsed.salt));
+          case 5:
+            _context77.n = 6;
+            return _t17(_t18, _context77.v);
+          case 6:
+            importedState = _t16(_context77.v);
+            confirmAction('O backup é válido. Substituir os dados atuais por este arquivo?', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee76() {
+              return _regenerator().w(function (_context76) {
+                while (1) switch (_context76.n) {
+                  case 0:
+                    state = importedState;
+                    _context76.n = 1;
+                    return persist();
+                  case 1:
+                    renderAll();
+                    showToast('Backup importado e salvo com a senha atual.');
+                  case 2:
+                    return _context76.a(2);
+                }
+              }, _callee76);
+            })), 'Importar e substituir');
+            _context77.n = 8;
+            break;
+          case 7:
+            _context77.p = 7;
+            _t19 = _context77.v;
+            console.error(_t19);
+            showToast('Backup inválido ou senha incorreta.', 'error');
+          case 8:
+            return _context77.a(2);
+        }
+      }, _callee77, null, [[1, 7]]);
+    }));
+    return _importBackup.apply(this, arguments);
   }
   function renderInnovation() {
     var items = state.innovationNotes || [];
@@ -3767,9 +3898,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     initializeInventoryStatuses(false);
     state.machines.forEach(recomputeMachineDates);
     persist();
-    rememberSessionKey(cryptoKey);
     renderAll();
-    navigate(getRememberedSection(), { restoreScroll: true });
     resetAutoLock();
     startAutoBackupScheduler();
   }
@@ -6542,8 +6671,889 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
       }, _callee67);
     })), 'Excluir'));
   };
-  window.PEDE_MAIS_GRAO_BUILD = 'public-clean-session-location-2026-07-21';
-  initializeApplication();
+
+  /* =============================================================
+     METAS DA EMPRESA E KITS — integração operacional vinculada
+     ============================================================= */
+  var companyGoalReferenceDate = todayISO();
+  var kitReferenceDate = todayISO();
+
+  pageMeta.companyGoals = ['Metas da empresa', 'Metas recorrentes ou acumuladas vinculadas à produção real'];
+  pageMeta.kits = ['Kits e estoque', 'Composição, montagem, disponibilidade, saídas e análise diária'];
+
+  var pmgBaseInitialState = initialState;
+  initialState = function initialStatePMG() {
+    var base = pmgBaseInitialState();
+    base.meta.schemaVersion = 7;
+    base.companyGoals = [];
+    base.kits = [];
+    base.kitMovements = [];
+    return base;
+  };
+
+  var pmgBaseEnsureShape = ensureShape;
+  ensureShape = function ensureShapePMG(data) {
+    var shaped = pmgBaseEnsureShape(data || {});
+    var raw = data || {};
+    shaped.meta.schemaVersion = 8;
+    shaped.autoBackupSlots = normalizeAutoBackupSlots(raw.autoBackupSlots || DEFAULT_AUTO_BACKUP_SLOTS);
+    AUTO_BACKUP_SLOTS = shaped.autoBackupSlots.slice();
+    shaped.companyGoals = Array.isArray(raw.companyGoals) ? raw.companyGoals.map(function (goal) {
+      return Object.assign({
+        title: '',
+        employeeId: '',
+        employeeNameSnapshot: '',
+        category: '',
+        material: '',
+        materialId: '',
+        packSizeG: 100,
+        goalType: 'daily',
+        startDate: todayISO(),
+        endDate: '',
+        targetQuantity: 0,
+        status: 'Ativa',
+        notes: ''
+      }, goal);
+    }) : [];
+    shaped.kits = Array.isArray(raw.kits) ? raw.kits.map(function (kit) {
+      return Object.assign({
+        name: '',
+        code: '',
+        minimumStock: 0,
+        active: true,
+        notes: '',
+        items: []
+      }, kit, {
+        items: Array.isArray(kit.items) ? kit.items.map(function (component) {
+          var normalizedComponent = Object.assign({
+            itemId: '',
+            materialNameSnapshot: '',
+            categorySnapshot: '',
+            quantityPerKit: 0,
+            unitSnapshot: 'un.',
+            inputQuantity: 0,
+            inputUnit: ''
+          }, component);
+          if (!num(normalizedComponent.inputQuantity)) {
+            var stockUnit = normalizeKitUnit(normalizedComponent.unitSnapshot);
+            if (stockUnit === 'kg' && num(normalizedComponent.quantityPerKit) > 0 && num(normalizedComponent.quantityPerKit) < 1) {
+              normalizedComponent.inputQuantity = roundQty(num(normalizedComponent.quantityPerKit) * 1000, 3);
+              normalizedComponent.inputUnit = 'g';
+            } else {
+              normalizedComponent.inputQuantity = num(normalizedComponent.quantityPerKit);
+              normalizedComponent.inputUnit = normalizedComponent.unitSnapshot || 'un.';
+            }
+          }
+          return normalizedComponent;
+        }) : []
+      });
+    }) : [];
+    shaped.kitMovements = Array.isArray(raw.kitMovements) ? raw.kitMovements.map(function (movement) {
+      return Object.assign({
+        kitId: '',
+        kitNameSnapshot: '',
+        type: 'Ajuste de entrada',
+        direction: 'in',
+        quantity: 0,
+        date: todayISO(),
+        employeeId: '',
+        employeeNameSnapshot: '',
+        reference: '',
+        note: '',
+        reversed: false,
+        componentsConsumed: []
+      }, movement, {
+        componentsConsumed: Array.isArray(movement.componentsConsumed) ? movement.componentsConsumed : []
+      });
+    }) : [];
+    return shaped;
+  };
+
+  var pmgBaseRenderSection = renderSection;
+  renderSection = function renderSectionPMG(section) {
+    if (section === 'companyGoals') return renderCompanyGoals();
+    if (section === 'kits') return renderKits();
+    return pmgBaseRenderSection(section);
+  };
+
+  function pmgMaterialByGoal(goal) {
+    return state.inventory.find(function (item) {
+      return goal.materialId && item.id === goal.materialId;
+    }) || state.inventory.find(function (item) {
+      return normalizeKey(item.name) === normalizeKey(goal.material) && (!goal.category || normalizeKey(item.category) === normalizeKey(goal.category));
+    }) || null;
+  }
+
+  function pmgPlanMatchesGoal(plan, goal) {
+    if (goal.employeeId && plan.employeeId === goal.employeeId) return true;
+    return !goal.employeeId && normalizeKey(planEmployeeName(plan)) === normalizeKey(goal.employeeNameSnapshot);
+  }
+
+  function pmgGoalItemMatches(item, goal) {
+    return normalizeKey(item.material) === normalizeKey(goal.material) && num(item.packSizeG) === num(goal.packSizeG);
+  }
+
+  function pmgCompanyGoalRange(goal, referenceDate) {
+    var reference = referenceDate || todayISO();
+    if (goal.goalType === 'daily') {
+      return { start: reference, end: reference };
+    }
+    var end = goal.endDate || reference;
+    return {
+      start: goal.startDate || reference,
+      end: reference < end ? reference : end
+    };
+  }
+
+  function pmgCompanyGoalIsActiveOn(goal, referenceDate) {
+    var date = referenceDate || todayISO();
+    if (goal.status === 'Pausada') return false;
+    if (goal.startDate && date < goal.startDate) return false;
+    if (goal.endDate && date > goal.endDate && goal.goalType === 'daily') return false;
+    return true;
+  }
+
+  function pmgCompanyGoalActual(goal, referenceDate, explicitStart, explicitEnd) {
+    var range = explicitStart && explicitEnd ? { start: explicitStart, end: explicitEnd } : pmgCompanyGoalRange(goal, referenceDate);
+    if (!range.start || !range.end || range.end < range.start) return 0;
+    return state.dailyProductionPlans.filter(function (plan) {
+      return pmgPlanMatchesGoal(plan, goal) && dateInRange(plan.date, range.start, range.end);
+    }).reduce(function (total, plan) {
+      return total + plan.items.filter(function (item) {
+        return pmgGoalItemMatches(item, goal);
+      }).reduce(function (sum, item) {
+        return sum + num(item.completedQty);
+      }, 0);
+    }, 0);
+  }
+
+  function pmgCompanyGoalTarget(goal, referenceDate) {
+    if (goal.goalType === 'daily') return pmgCompanyGoalIsActiveOn(goal, referenceDate) ? num(goal.targetQuantity) : 0;
+    return num(goal.targetQuantity);
+  }
+
+  function pmgCompanyGoalStatus(goal, referenceDate) {
+    var reference = referenceDate || todayISO();
+    if (goal.status === 'Pausada') return ['Pausada', 'warning'];
+    if (goal.startDate && reference < goal.startDate) return ['Ainda não iniciada', 'info'];
+    var target = pmgCompanyGoalTarget(goal, reference);
+    var actual = pmgCompanyGoalActual(goal, reference);
+    if (target > 0 && actual >= target) return ['Meta atingida', 'ok'];
+    if (goal.goalType === 'daily') {
+      if (goal.endDate && reference > goal.endDate) return ['Encerrada', 'info'];
+      return actual > 0 ? ['Em andamento', 'warning'] : ['Pendente', 'alert'];
+    }
+    if (goal.endDate && reference > goal.endDate) return ['Prazo encerrado', 'alert'];
+    var totalDays = Math.max(1, daysBetween(goal.startDate, goal.endDate || reference) + 1);
+    var elapsedDays = Math.max(0, Math.min(totalDays, daysBetween(goal.startDate, reference) + 1));
+    var expected = target * elapsedDays / totalDays;
+    return actual + 0.0001 >= expected ? ['No ritmo', 'ok'] : ['Abaixo do ritmo', 'warning'];
+  }
+
+  function pmgCompanyGoalPeriodLabel(goal) {
+    if (goal.goalType === 'daily') {
+      return 'Diária desde ' + formatDate(goal.startDate) + (goal.endDate ? ' até ' + formatDate(goal.endDate) : ', sem data final');
+    }
+    return 'Acumulada de ' + formatDate(goal.startDate) + ' até ' + formatDate(goal.endDate);
+  }
+
+  function pmgCompanyGoalSuggestedForDay(goal, date) {
+    if (!pmgCompanyGoalIsActiveOn(goal, date) && goal.goalType === 'daily') return 0;
+    if (goal.goalType === 'daily') return Math.max(0, Math.round(num(goal.targetQuantity)));
+    if (date < goal.startDate || (goal.endDate && date > goal.endDate)) return 0;
+    var totalDays = Math.max(1, daysBetween(goal.startDate, goal.endDate) + 1);
+    var elapsedDays = Math.max(1, daysBetween(goal.startDate, date) + 1);
+    var cumulativeExpected = Math.ceil(num(goal.targetQuantity) * Math.min(totalDays, elapsedDays) / totalDays);
+    var previousDate = addDays(date, -1);
+    var actualBefore = previousDate < goal.startDate ? 0 : pmgCompanyGoalActual(goal, previousDate, goal.startDate, previousDate);
+    return Math.max(0, cumulativeExpected - actualBefore);
+  }
+
+  function openCompanyGoalModal(id) {
+    if (!state.employees.length) {
+      showToast('Cadastre pelo menos um funcionário antes de criar uma meta.', 'error');
+      navigate('employees');
+      return;
+    }
+    var existing = state.companyGoals.find(function (goal) { return goal.id === id; });
+    var goal = existing || {
+      title: '',
+      employeeId: '',
+      employeeNameSnapshot: '',
+      category: productionCategoryNames('Temperos')[0] || 'Temperos',
+      material: '',
+      materialId: '',
+      packSizeG: 100,
+      goalType: 'daily',
+      startDate: companyGoalReferenceDate || todayISO(),
+      endDate: '',
+      targetQuantity: 0,
+      status: 'Ativa',
+      notes: ''
+    };
+    var materials = productionMaterialsForCategory(goal.category);
+    if (!goal.material) goal.material = materials[0] || '';
+    var opts = productionGoalOptions(goal.category, goal.material, goal.packSizeG);
+    openModal(existing ? 'Editar meta da empresa' : 'Criar meta da empresa', '<form id="companyGoalForm">' +
+      '<div class="field"><label>Nome da meta (opcional)</label><input id="companyGoalTitle" value="' + esc(goal.title || '') + '" placeholder="Ex.: Meta semanal de produção"></div>' +
+      '<div class="form-grid">' +
+        '<div class="field"><label>Funcionário</label><select id="companyGoalEmployee" required><option value="">Selecione</option>' + employeeOptions(goal.employeeId || '', false) + '</select></div>' +
+        '<div class="field"><label>Tipo da meta</label><select id="companyGoalType"><option value="daily" ' + (goal.goalType === 'daily' ? 'selected' : '') + '>Meta diária</option><option value="deadline" ' + (goal.goalType === 'deadline' ? 'selected' : '') + '>Quantidade acumulada até uma data</option></select></div>' +
+        '<div class="field"><label>Categoria</label><select id="companyGoalCategory">' + productionCategoryNames(goal.category).map(function (category) { return '<option value="' + esc(category) + '" ' + (normalizeKey(category) === normalizeKey(goal.category) ? 'selected' : '') + '>' + esc(category) + '</option>'; }).join('') + '</select></div>' +
+        '<div class="field"><label>Material</label><select id="companyGoalMaterial" required>' + opts.materials + '</select></div>' +
+        '<div class="field"><label>Tamanho do pacote</label><select id="companyGoalSize">' + opts.sizes + '</select></div>' +
+        '<div class="field"><label>Quantidade de pacotes</label><input id="companyGoalTarget" type="number" min="1" step="1" required value="' + (num(goal.targetQuantity) || '') + '"></div>' +
+        '<div class="field"><label>Data inicial</label><input id="companyGoalStart" type="date" required value="' + esc(goal.startDate || todayISO()) + '"></div>' +
+        '<div class="field"><label id="companyGoalEndLabel">Data final</label><input id="companyGoalEnd" type="date" value="' + esc(goal.endDate || '') + '"><div id="companyGoalEndHelp" class="goal-type-help"></div></div>' +
+        '<div class="field"><label>Status</label><select id="companyGoalStatus"><option ' + (goal.status !== 'Pausada' ? 'selected' : '') + '>Ativa</option><option ' + (goal.status === 'Pausada' ? 'selected' : '') + '>Pausada</option></select></div>' +
+      '</div>' +
+      '<div class="field"><label>Observações</label><textarea id="companyGoalNotes" placeholder="Prioridade, turno, padrão de embalagem ou orientação">' + esc(goal.notes || '') + '</textarea></div>' +
+      '<div class="status-callout">O realizado será calculado automaticamente a partir da produção registrada para o funcionário, material e tamanho do pacote.</div>' +
+      '<div class="form-actions"><button type="button" class="btn" data-close-modal>Cancelar</button><button class="btn primary">Salvar meta</button></div>' +
+    '</form>');
+    $$('[data-close-modal]').forEach(function (button) { button.onclick = closeModal; });
+
+    function refreshGoalMaterialOptions() {
+      var category = $('#companyGoalCategory').value;
+      var currentMaterial = $('#companyGoalMaterial').value;
+      var currentSize = num($('#companyGoalSize').value);
+      var refreshed = productionGoalOptions(category, currentMaterial, currentSize);
+      $('#companyGoalMaterial').innerHTML = refreshed.materials;
+      $('#companyGoalSize').innerHTML = refreshed.sizes;
+    }
+    function refreshGoalType() {
+      var deadline = $('#companyGoalType').value === 'deadline';
+      $('#companyGoalEnd').required = deadline;
+      $('#companyGoalEndLabel').textContent = deadline ? 'Data-limite' : 'Data final (opcional)';
+      $('#companyGoalEndHelp').textContent = deadline ? 'A quantidade será acumulada entre a data inicial e a data-limite.' : 'Sem data final, a meta diária continuará ativa até ser pausada.';
+    }
+    $('#companyGoalCategory').onchange = refreshGoalMaterialOptions;
+    $('#companyGoalType').onchange = refreshGoalType;
+    refreshGoalType();
+
+    $('#companyGoalForm').onsubmit = function (event) {
+      event.preventDefault();
+      var employeeId = $('#companyGoalEmployee').value;
+      var category = $('#companyGoalCategory').value;
+      var materialName = $('#companyGoalMaterial').value;
+      var material = state.inventory.find(function (item) {
+        return normalizeKey(item.name) === normalizeKey(materialName) && normalizeKey(item.category) === normalizeKey(category);
+      }) || state.inventory.find(function (item) { return normalizeKey(item.name) === normalizeKey(materialName); });
+      var goalType = $('#companyGoalType').value;
+      var startDate = $('#companyGoalStart').value;
+      var endDate = $('#companyGoalEnd').value;
+      if (goalType === 'deadline' && (!endDate || endDate < startDate)) {
+        showToast('Informe uma data-limite igual ou posterior à data inicial.', 'error');
+        return;
+      }
+      if (goalType === 'daily' && endDate && endDate < startDate) {
+        showToast('A data final não pode ser anterior à data inicial.', 'error');
+        return;
+      }
+      var payload = {
+        title: $('#companyGoalTitle').value.trim(),
+        employeeId: employeeId,
+        employeeNameSnapshot: employeeName(employeeId, ''),
+        category: category,
+        material: materialName,
+        materialId: material ? material.id : '',
+        packSizeG: num($('#companyGoalSize').value),
+        goalType: goalType,
+        startDate: startDate,
+        endDate: endDate,
+        targetQuantity: Math.round(num($('#companyGoalTarget').value)),
+        status: $('#companyGoalStatus').value,
+        notes: $('#companyGoalNotes').value.trim(),
+        updatedAt: nowISO()
+      };
+      if (existing) Object.assign(existing, payload);
+      else state.companyGoals.unshift(Object.assign({ id: uid(), createdAt: nowISO() }, payload));
+      persist().then(function () {
+        closeModal();
+        renderCompanyGoals();
+        showToast('Meta da empresa salva.');
+      });
+    };
+  }
+
+  function pmgApplyCompanyGoalToProduction(goal) {
+    var date = companyGoalReferenceDate || todayISO();
+    var suggested = pmgCompanyGoalSuggestedForDay(goal, date);
+    if (suggested <= 0) {
+      showToast('Esta meta não exige quantidade para a data selecionada.', 'error');
+      return;
+    }
+    var plan = state.dailyProductionPlans.find(function (row) {
+      return row.employeeId === goal.employeeId && row.date === date;
+    });
+    if (!plan) {
+      plan = {
+        id: uid(),
+        date: date,
+        employeeId: goal.employeeId,
+        employeeNameSnapshot: employeeName(goal.employeeId, goal.employeeNameSnapshot),
+        status: 'Planejado',
+        notes: 'Criado a partir de meta da empresa.',
+        postedConsumption: {},
+        items: [],
+        createdAt: nowISO(),
+        updatedAt: nowISO()
+      };
+      state.dailyProductionPlans.unshift(plan);
+    }
+    var item = plan.items.find(function (row) { return pmgGoalItemMatches(row, goal); });
+    if (item) {
+      item.plannedQty = Math.max(num(item.plannedQty), suggested);
+      item.updatedAt = nowISO();
+    } else {
+      plan.items.push({
+        id: uid(),
+        category: goal.category,
+        material: goal.material,
+        packSizeG: num(goal.packSizeG),
+        plannedQty: suggested,
+        completedQty: 0,
+        notes: 'Distribuído a partir da meta da empresa.',
+        companyGoalId: goal.id,
+        createdAt: nowISO(),
+        updatedAt: nowISO()
+      });
+    }
+    plan.updatedAt = nowISO();
+    productionDateFilter = date;
+    persist().then(function () {
+      showToast('Meta aplicada à produção de ' + formatDate(date) + '.');
+      navigate('production');
+    });
+  }
+
+  function renderCompanyGoals() {
+    var reference = companyGoalReferenceDate || todayISO();
+    var relevant = state.companyGoals.filter(function (goal) {
+      if (goal.goalType === 'daily') return pmgCompanyGoalIsActiveOn(goal, reference) || (goal.endDate && reference > goal.endDate);
+      return !goal.startDate || reference >= goal.startDate;
+    });
+    var totals = relevant.reduce(function (acc, goal) {
+      var target = pmgCompanyGoalTarget(goal, reference);
+      var actual = pmgCompanyGoalActual(goal, reference);
+      acc.target += target;
+      acc.actual += actual;
+      if (target > 0 && actual >= target) acc.achieved += 1;
+      return acc;
+    }, { target: 0, actual: 0, achieved: 0 });
+    var active = state.companyGoals.filter(function (goal) { return goal.status !== 'Pausada'; }).length;
+    var pct = totals.target > 0 ? Math.round(totals.actual / totals.target * 100) : 0;
+
+    var employeeMap = {};
+    relevant.forEach(function (goal) {
+      var name = employeeName(goal.employeeId, goal.employeeNameSnapshot);
+      if (!employeeMap[name]) employeeMap[name] = { name: name, goals: 0, target: 0, actual: 0 };
+      employeeMap[name].goals += 1;
+      employeeMap[name].target += pmgCompanyGoalTarget(goal, reference);
+      employeeMap[name].actual += pmgCompanyGoalActual(goal, reference);
+    });
+    var employeeRows = Object.keys(employeeMap).map(function (key) { return employeeMap[key]; }).sort(function (a, b) { return a.name.localeCompare(b.name, 'pt-BR'); });
+
+    $('#companyGoals').innerHTML = '<div class="section-head"><div><h2>Metas da própria empresa</h2><p>Crie metas por funcionário, material e quantidade. O resultado é puxado automaticamente da produção já registrada.</p></div><div class="section-actions"><button class="btn primary" id="addCompanyGoalBtn">Criar meta</button></div></div>' +
+      '<div class="performance-toolbar"><div class="toolbar-group"><div class="field"><label>Data de análise</label><input id="companyGoalReferenceDate" type="date" value="' + esc(reference) + '"></div></div><span class="badge info">Produção vinculada automaticamente</span></div>' +
+      '<div class="operation-summary">' +
+        '<div class="metric-card"><div class="metric-top"><span>Metas ativas</span><i class="metric-dot"></i></div><div class="metric-number">' + active + '</div></div>' +
+        '<div class="metric-card"><div class="metric-top"><span>Metas atingidas</span><i class="metric-dot"></i></div><div class="metric-number">' + totals.achieved + '</div><div class="metric-foot">Na referência selecionada</div></div>' +
+        '<div class="metric-card"><div class="metric-top"><span>Quantidade prevista</span><i class="metric-dot"></i></div><div class="metric-number">' + formatQty(totals.target, 0) + '</div><div class="metric-foot">Pacotes</div></div>' +
+        '<div class="metric-card"><div class="metric-top"><span>Quantidade realizada</span><i class="metric-dot"></i></div><div class="metric-number">' + formatQty(totals.actual, 0) + '</div><div class="metric-foot">' + pct + '% de atingimento</div></div>' +
+      '</div>' +
+      (state.companyGoals.length ? '<div class="company-goal-grid">' + state.companyGoals.map(function (goal) {
+        var target = pmgCompanyGoalTarget(goal, reference);
+        var actual = pmgCompanyGoalActual(goal, reference);
+        var progress = target > 0 ? Math.round(actual / target * 100) : 0;
+        var status = pmgCompanyGoalStatus(goal, reference);
+        var employee = employeeName(goal.employeeId, goal.employeeNameSnapshot);
+        var title = goal.title || employee + ' — ' + goal.material;
+        var material = pmgMaterialByGoal(goal);
+        return '<div class="company-goal-card"><div class="company-goal-head"><div><h4>' + esc(title) + '</h4><div class="muted" style="font-size:12px">' + esc(employee) + '</div></div><span class="badge ' + status[1] + '">' + esc(status[0]) + '</span></div><div class="company-goal-body">' +
+          '<div class="item-meta"><span class="badge info">' + esc(goal.material) + '</span><span class="badge">' + (num(goal.packSizeG) === 1000 ? '1 kg' : formatQty(goal.packSizeG, 0) + ' g') + '</span><span class="badge">' + esc(pmgCompanyGoalPeriodLabel(goal)) + '</span></div>' +
+          '<div class="company-goal-stats"><div class="mini-stat"><span>Meta</span><strong>' + formatQty(target || goal.targetQuantity, 0) + ' pacotes</strong></div><div class="mini-stat"><span>Realizado</span><strong>' + formatQty(actual, 0) + ' pacotes</strong></div><div class="mini-stat"><span>Atingimento</span><strong>' + (target > 0 ? progress : 0) + '%</strong></div></div>' +
+          '<div class="wide-progress ' + (status[1] === 'alert' ? 'alert' : status[1] === 'warning' ? 'warning' : '') + '"><span style="width:' + Math.min(100, Math.max(0, progress)) + '%"></span></div>' +
+          '<div class="goal-pace"><span>Disponível no estoque: ' + (material ? formatQty(material.quantity, 3) + ' ' + esc(material.unit || 'un.') : 'material não localizado') + '</span><span>Diferença: ' + formatQty(actual - target, 0) + '</span></div>' +
+          (goal.notes ? '<div class="item-note">' + esc(goal.notes) + '</div>' : '') +
+          '<div class="company-goal-actions"><button class="btn small primary" data-company-goal-apply="' + goal.id + '">Aplicar na produção do dia</button><button class="btn small" data-company-goal-edit="' + goal.id + '">Editar</button><button class="btn small" data-company-goal-toggle="' + goal.id + '">' + (goal.status === 'Pausada' ? 'Ativar' : 'Pausar') + '</button><button class="btn small danger" data-company-goal-delete="' + goal.id + '">Excluir</button></div>' +
+        '</div></div>';
+      }).join('') + '</div>' : '<div class="list-empty">Nenhuma meta empresarial cadastrada.</div>') +
+      '<div class="card" style="margin-top:16px"><div class="card-head"><h3>Análise por funcionário</h3><span class="badge info">Referência: ' + formatDate(reference) + '</span></div><div class="card-body">' +
+        (employeeRows.length ? '<div class="table-wrap"><table><thead><tr><th>Funcionário</th><th>Metas</th><th>Previsto</th><th>Realizado</th><th>Atingimento</th></tr></thead><tbody>' + employeeRows.map(function (row) {
+          var rowPct = row.target > 0 ? Math.round(row.actual / row.target * 100) : 0;
+          return '<tr><td><strong>' + esc(row.name) + '</strong></td><td>' + row.goals + '</td><td>' + formatQty(row.target, 0) + ' pacotes</td><td>' + formatQty(row.actual, 0) + ' pacotes</td><td><span class="badge ' + (rowPct >= 100 ? 'ok' : rowPct >= 70 ? 'warning' : 'alert') + '">' + rowPct + '%</span></td></tr>';
+        }).join('') + '</tbody></table></div>' : '<div class="list-empty">Sem metas aplicáveis à data selecionada.</div>') +
+      '</div></div>';
+
+    $('#addCompanyGoalBtn').onclick = function () { openCompanyGoalModal(''); };
+    $('#companyGoalReferenceDate').onchange = function (event) {
+      companyGoalReferenceDate = event.target.value || todayISO();
+      renderCompanyGoals();
+    };
+    $$('[data-company-goal-edit]').forEach(function (button) { button.onclick = function () { openCompanyGoalModal(button.dataset.companyGoalEdit); }; });
+    $$('[data-company-goal-apply]').forEach(function (button) { button.onclick = function () {
+      var goal = state.companyGoals.find(function (row) { return row.id === button.dataset.companyGoalApply; });
+      if (goal) pmgApplyCompanyGoalToProduction(goal);
+    }; });
+    $$('[data-company-goal-toggle]').forEach(function (button) { button.onclick = function () {
+      var goal = state.companyGoals.find(function (row) { return row.id === button.dataset.companyGoalToggle; });
+      if (!goal) return;
+      goal.status = goal.status === 'Pausada' ? 'Ativa' : 'Pausada';
+      goal.updatedAt = nowISO();
+      persist().then(renderCompanyGoals);
+    }; });
+    $$('[data-company-goal-delete]').forEach(function (button) { button.onclick = function () {
+      confirmAction('Excluir esta meta da empresa? Os registros de produção permanecerão intactos.', function () {
+        state.companyGoals = state.companyGoals.filter(function (row) { return row.id !== button.dataset.companyGoalDelete; });
+        return persist().then(function () { renderCompanyGoals(); });
+      }, 'Excluir meta');
+    }; });
+  }
+
+  function normalizeKitUnit(unit) {
+    var key = normalizeKey(unit || '');
+    if (key === 'kg' || key === 'quilo' || key === 'quilograma' || key === 'quilogramas') return 'kg';
+    if (key === 'g' || key === 'gr' || key === 'grama' || key === 'gramas') return 'g';
+    return String(unit || 'un.');
+  }
+
+  function kitUnitOptions(stockUnit, selectedUnit) {
+    var normalizedStock = normalizeKitUnit(stockUnit);
+    var selected = normalizeKitUnit(selectedUnit || normalizedStock);
+    if (normalizedStock === 'kg' || normalizedStock === 'g') {
+      return '<option value="g" ' + (selected === 'g' ? 'selected' : '') + '>gramas (g)</option><option value="kg" ' + (selected === 'kg' ? 'selected' : '') + '>quilogramas (kg)</option>';
+    }
+    return '<option value="' + esc(normalizedStock) + '" selected>' + esc(normalizedStock) + '</option>';
+  }
+
+  function convertKitQuantityToStockUnit(quantity, inputUnit, stockUnit) {
+    var qty = num(quantity);
+    var from = normalizeKitUnit(inputUnit);
+    var to = normalizeKitUnit(stockUnit);
+    if (from === to) return qty;
+    if (from === 'g' && to === 'kg') return qty / 1000;
+    if (from === 'kg' && to === 'g') return qty * 1000;
+    return qty;
+  }
+
+  function kitComponentInput(component, item) {
+    var stockUnit = normalizeKitUnit((item && item.unit) || component.unitSnapshot || 'un.');
+    var storedInput = num(component.inputQuantity);
+    var storedUnit = component.inputUnit ? normalizeKitUnit(component.inputUnit) : '';
+    if (storedInput > 0 && storedUnit) return { quantity: storedInput, unit: storedUnit };
+    var normalizedQty = num(component.quantityPerKit);
+    if (stockUnit === 'kg' && normalizedQty > 0 && normalizedQty < 1) {
+      return { quantity: roundQty(normalizedQty * 1000, 3), unit: 'g' };
+    }
+    if (stockUnit === 'kg' && normalizedQty <= 0) {
+      return { quantity: 0, unit: 'g' };
+    }
+    return { quantity: normalizedQty, unit: stockUnit };
+  }
+
+  function kitComponentDisplay(component, item) {
+    var input = kitComponentInput(component, item || pmgKitComponentItem(component));
+    return formatQty(input.quantity, 3) + ' ' + input.unit;
+  }
+
+  function pmgKitById(id) {
+    return state.kits.find(function (kit) { return kit.id === id; }) || null;
+  }
+
+  function pmgKitStock(kitId) {
+    return state.kitMovements.filter(function (movement) {
+      return movement.kitId === kitId && !movement.reversed;
+    }).reduce(function (sum, movement) {
+      return sum + (movement.direction === 'in' ? num(movement.quantity) : -num(movement.quantity));
+    }, 0);
+  }
+
+  function pmgKitMovementsOn(kitId, date, direction, type) {
+    return state.kitMovements.filter(function (movement) {
+      return movement.kitId === kitId && !movement.reversed && movement.date === date && (!direction || movement.direction === direction) && (!type || movement.type === type);
+    }).reduce(function (sum, movement) { return sum + num(movement.quantity); }, 0);
+  }
+
+  function pmgKitComponentItem(component) {
+    return state.inventory.find(function (item) { return item.id === component.itemId; }) || state.inventory.find(function (item) {
+      return normalizeKey(item.name) === normalizeKey(component.materialNameSnapshot);
+    }) || null;
+  }
+
+  function pmgMaxBuildableKits(kit) {
+    if (!kit || !kit.items.length) return 0;
+    var limits = kit.items.map(function (component) {
+      var item = pmgKitComponentItem(component);
+      var perKit = num(component.quantityPerKit);
+      if (!item || perKit <= 0) return 0;
+      return Math.floor((num(item.quantity) + 0.0000001) / perKit);
+    });
+    return limits.length ? Math.max(0, Math.min.apply(Math, limits)) : 0;
+  }
+
+  function pmgKitBottleneck(kit) {
+    if (!kit || !kit.items.length) return 'Sem composição';
+    var rows = kit.items.map(function (component) {
+      var item = pmgKitComponentItem(component);
+      var perKit = num(component.quantityPerKit);
+      return {
+        name: item ? item.name : component.materialNameSnapshot,
+        limit: item && perKit > 0 ? Math.floor(num(item.quantity) / perKit) : 0
+      };
+    }).sort(function (a, b) { return a.limit - b.limit; });
+    return rows[0].name + ' (' + rows[0].limit + ' kit(s))';
+  }
+
+  function pmgKitComponentOptions(selectedId) {
+    return state.inventory.slice().sort(function (a, b) { return String(a.name).localeCompare(String(b.name), 'pt-BR'); }).map(function (item) {
+      return '<option value="' + item.id + '" ' + (item.id === selectedId ? 'selected' : '') + '>' + esc(item.name) + ' — ' + esc(item.category || 'Sem categoria') + ' — estoque ' + formatQty(item.quantity, 3) + ' ' + esc(item.unit || 'un.') + '</option>';
+    }).join('');
+  }
+
+  function openKitModal(id) {
+    if (!state.inventory.length) {
+      showToast('Cadastre materiais no estoque antes de criar um kit.', 'error');
+      navigate('inventory');
+      return;
+    }
+    var existing = pmgKitById(id);
+    var kit = existing || { name: '', code: '', minimumStock: 0, active: true, notes: '', items: [] };
+    openModal(existing ? 'Editar kit' : 'Criar kit', '<form id="kitForm">' +
+      '<div class="form-grid"><div class="field"><label>Nome do kit</label><input id="kitName" required value="' + esc(kit.name || '') + '" placeholder="Ex.: Kit temperos básicos"></div><div class="field"><label>Código interno</label><input id="kitCode" value="' + esc(kit.code || '') + '"></div><div class="field"><label>Estoque mínimo de kits</label><input id="kitMinimum" type="number" min="0" step="1" value="' + num(kit.minimumStock) + '"></div><div class="field"><label>Situação</label><select id="kitActive"><option value="true" ' + (kit.active !== false ? 'selected' : '') + '>Ativo</option><option value="false" ' + (kit.active === false ? 'selected' : '') + '>Arquivado</option></select></div></div>' +
+      '<div class="card" style="box-shadow:none;margin-top:8px"><div class="card-head"><div><h3>Composição do kit</h3><div class="muted" style="font-size:12px">Escolha o material, informe qualquer quantidade e selecione gramas ou quilogramas. O sistema converte automaticamente para a unidade do estoque.</div></div><button type="button" class="btn small primary" id="addKitComponentBtn">Adicionar material</button></div><div class="card-body"><div id="kitBuilderList" class="kit-builder-list"></div></div></div>' +
+      '<div class="field" style="margin-top:13px"><label>Observações</label><textarea id="kitNotes" placeholder="Descrição comercial, padrão de montagem ou embalagem">' + esc(kit.notes || '') + '</textarea></div>' +
+      '<div class="form-actions"><button type="button" class="btn" data-close-modal>Cancelar</button><button class="btn primary">Salvar kit</button></div>' +
+    '</form>');
+    $$('[data-close-modal]').forEach(function (button) { button.onclick = closeModal; });
+
+    var builder = $('#kitBuilderList');
+    function addComponentRow(component) {
+      component = component || {};
+      var selected = component.itemId ? component.itemId : state.inventory[0].id;
+      var item = state.inventory.find(function (row) { return row.id === selected; }) || state.inventory[0];
+      var input = kitComponentInput(component, item);
+      var row = document.createElement('div');
+      row.className = 'kit-builder-row';
+      row.setAttribute('data-kit-component-row', '1');
+      row.innerHTML = '<div class="field kit-builder-material"><label>Material</label><select data-kit-component-item>' + pmgKitComponentOptions(selected) + '</select></div>' +
+        '<div class="field"><label>Quantidade por kit</label><input data-kit-component-qty type="number" min="0.001" step="0.001" value="' + (input.quantity || '') + '" required placeholder="Ex.: 100"></div>' +
+        '<div class="field"><label>Unidade</label><select data-kit-component-input-unit>' + kitUnitOptions(item && item.unit, input.unit) + '</select></div>' +
+        '<div class="kit-builder-unit" data-kit-component-unit></div>' +
+        '<button type="button" class="kit-builder-remove" title="Remover material">✕</button>';
+
+      function refreshComponentConversion() {
+        var selectedItem = state.inventory.find(function (inventoryItem) { return inventoryItem.id === row.querySelector('[data-kit-component-item]').value; });
+        var unitSelect = row.querySelector('[data-kit-component-input-unit]');
+        var previousUnit = unitSelect.value;
+        unitSelect.innerHTML = kitUnitOptions(selectedItem ? selectedItem.unit : 'un.', previousUnit);
+        var qty = num(row.querySelector('[data-kit-component-qty]').value);
+        var converted = convertKitQuantityToStockUnit(qty, unitSelect.value, selectedItem ? selectedItem.unit : 'un.');
+        row.querySelector('[data-kit-component-unit]').innerHTML = '<span>Baixa no estoque<br><strong>' + formatQty(converted, 6) + ' ' + esc((selectedItem && selectedItem.unit) || 'un.') + '</strong></span>';
+      }
+      row.querySelector('[data-kit-component-item]').onchange = refreshComponentConversion;
+      row.querySelector('[data-kit-component-qty]').oninput = refreshComponentConversion;
+      row.querySelector('[data-kit-component-input-unit]').onchange = refreshComponentConversion;
+      row.querySelector('.kit-builder-remove').onclick = function () { row.remove(); };
+      builder.appendChild(row);
+      refreshComponentConversion();
+    }
+    (kit.items.length ? kit.items : [{}]).forEach(addComponentRow);
+    $('#addKitComponentBtn').onclick = function () { addComponentRow({}); };
+
+    $('#kitForm').onsubmit = function (event) {
+      event.preventDefault();
+      var components = [];
+      var seen = {};
+      var invalid = false;
+      $$('[data-kit-component-row]').forEach(function (row) {
+        var itemId = row.querySelector('[data-kit-component-item]').value;
+        var qty = num(row.querySelector('[data-kit-component-qty]').value);
+        var inputUnit = row.querySelector('[data-kit-component-input-unit]').value;
+        var item = state.inventory.find(function (inventoryItem) { return inventoryItem.id === itemId; });
+        var quantityPerKit = item ? convertKitQuantityToStockUnit(qty, inputUnit, item.unit || 'un.') : 0;
+        if (!item || qty <= 0 || quantityPerKit <= 0 || seen[itemId]) invalid = true;
+        else {
+          seen[itemId] = true;
+          components.push({
+            itemId: item.id,
+            materialNameSnapshot: item.name,
+            categorySnapshot: item.category || '',
+            quantityPerKit: roundQty(quantityPerKit, 6),
+            unitSnapshot: item.unit || 'un.',
+            inputQuantity: roundQty(qty, 3),
+            inputUnit: normalizeKitUnit(inputUnit)
+          });
+        }
+      });
+      if (invalid || !components.length) {
+        showToast('Informe ao menos um material válido, sem duplicidade.', 'error');
+        return;
+      }
+      var payload = {
+        name: $('#kitName').value.trim(),
+        code: $('#kitCode').value.trim(),
+        minimumStock: Math.max(0, Math.round(num($('#kitMinimum').value))),
+        active: $('#kitActive').value === 'true',
+        notes: $('#kitNotes').value.trim(),
+        items: components,
+        updatedAt: nowISO()
+      };
+      if (existing) Object.assign(existing, payload);
+      else state.kits.unshift(Object.assign({ id: uid(), createdAt: nowISO() }, payload));
+      persist().then(function () {
+        closeModal();
+        renderKits();
+        showToast('Kit salvo.');
+      });
+    };
+  }
+
+  function pmgKitOperationLabel(type) {
+    if (type === 'production') return 'Produção de kits';
+    if (type === 'sale') return 'Saída / venda';
+    if (type === 'adjustment_in') return 'Ajuste de entrada';
+    return 'Ajuste de saída';
+  }
+
+  function openKitMovementModal(kitId, presetType) {
+    var activeKits = state.kits.filter(function (kit) { return kit.active !== false; });
+    if (!activeKits.length) {
+      showToast('Crie um kit ativo antes de registrar movimentações.', 'error');
+      return;
+    }
+    var selectedId = kitId && pmgKitById(kitId) ? kitId : activeKits[0].id;
+    var type = presetType || 'production';
+    openModal('Movimentar kits', '<form id="kitMovementForm">' +
+      '<div class="form-grid"><div class="field"><label>Kit</label><select id="kitMovementKit">' + activeKits.map(function (kit) { return '<option value="' + kit.id + '" ' + (kit.id === selectedId ? 'selected' : '') + '>' + esc(kit.name) + '</option>'; }).join('') + '</select></div>' +
+      '<div class="field"><label>Operação</label><select id="kitMovementType"><option value="production" ' + (type === 'production' ? 'selected' : '') + '>Produzir kits</option><option value="sale" ' + (type === 'sale' ? 'selected' : '') + '>Registrar saída / venda</option><option value="adjustment_in" ' + (type === 'adjustment_in' ? 'selected' : '') + '>Ajuste de entrada</option><option value="adjustment_out" ' + (type === 'adjustment_out' ? 'selected' : '') + '>Ajuste de saída</option></select></div>' +
+      '<div class="field"><label>Quantidade de kits</label><input id="kitMovementQty" type="number" min="1" step="1" required value="1"></div>' +
+      '<div class="field"><label>Data</label><input id="kitMovementDate" type="date" required value="' + esc(kitReferenceDate || todayISO()) + '"></div>' +
+      '<div class="field"><label>Responsável</label><select id="kitMovementEmployee">' + employeeOptions('', true) + '</select></div>' +
+      '<div class="field"><label>Pedido, canal ou referência</label><input id="kitMovementReference" placeholder="Ex.: Shopee #1234"></div></div>' +
+      '<div class="field"><label>Observação</label><textarea id="kitMovementNote" placeholder="Montagem, destino, ajuste ou ocorrência"></textarea></div>' +
+      '<div id="kitMovementPreview" class="status-callout movement-preview"></div>' +
+      '<div class="form-actions"><button type="button" class="btn" data-close-modal>Cancelar</button><button class="btn primary" id="kitMovementSubmit">Salvar movimentação</button></div>' +
+    '</form>', 'small');
+    $$('[data-close-modal]').forEach(function (button) { button.onclick = closeModal; });
+
+    function refreshMovementPreview() {
+      var kit = pmgKitById($('#kitMovementKit').value);
+      var operation = $('#kitMovementType').value;
+      var qty = Math.max(0, Math.round(num($('#kitMovementQty').value)));
+      var preview = $('#kitMovementPreview');
+      var stock = kit ? pmgKitStock(kit.id) : 0;
+      if (!kit) return;
+      if (operation === 'production') {
+        var max = pmgMaxBuildableKits(kit);
+        var requirements = kit.items.map(function (component) {
+          var item = pmgKitComponentItem(component);
+          var required = roundQty(num(component.quantityPerKit) * qty, 3);
+          var enough = item && num(item.quantity) + 0.000001 >= required;
+          return '<div class="component-pill"><span>' + esc((item && item.name) || component.materialNameSnapshot) + ' · ' + esc(kitComponentDisplay(component, item)) + ' por kit</span><strong class="' + (enough ? '' : 'badge alert') + '">Total: ' + formatQty(required, 6) + ' ' + esc((item && item.unit) || component.unitSnapshot || 'un.') + ' / estoque ' + (item ? formatQty(item.quantity, 3) : '0') + '</strong></div>';
+        }).join('');
+        preview.className = 'status-callout movement-preview ' + (qty > max ? 'alert' : 'ok');
+        preview.innerHTML = '<strong>Capacidade atual:</strong> até ' + max + ' kit(s).<div class="component-list">' + requirements + '</div>';
+      } else if (operation === 'sale' || operation === 'adjustment_out') {
+        preview.className = 'status-callout movement-preview ' + (qty > stock ? 'alert' : 'ok');
+        preview.innerHTML = '<strong>Estoque disponível:</strong> ' + formatQty(stock, 0) + ' kit(s). Após a saída: ' + formatQty(stock - qty, 0) + ' kit(s).';
+      } else {
+        preview.className = 'status-callout movement-preview ok';
+        preview.innerHTML = '<strong>Estoque atual:</strong> ' + formatQty(stock, 0) + ' kit(s). Após o ajuste: ' + formatQty(stock + qty, 0) + ' kit(s).';
+      }
+    }
+    $('#kitMovementKit').onchange = refreshMovementPreview;
+    $('#kitMovementType').onchange = refreshMovementPreview;
+    $('#kitMovementQty').oninput = refreshMovementPreview;
+    refreshMovementPreview();
+
+    $('#kitMovementForm').onsubmit = function (event) {
+      event.preventDefault();
+      var kit = pmgKitById($('#kitMovementKit').value);
+      var operation = $('#kitMovementType').value;
+      var qty = Math.round(num($('#kitMovementQty').value));
+      var date = $('#kitMovementDate').value;
+      var employeeId = $('#kitMovementEmployee').value;
+      if (!kit || qty <= 0) return;
+      var stock = pmgKitStock(kit.id);
+      if ((operation === 'sale' || operation === 'adjustment_out') && qty > stock) {
+        showToast('A saída é maior que o estoque disponível do kit.', 'error');
+        return;
+      }
+      var componentsConsumed = [];
+      if (operation === 'production') {
+        var insufficient = kit.items.filter(function (component) {
+          var item = pmgKitComponentItem(component);
+          return !item || num(item.quantity) + 0.000001 < num(component.quantityPerKit) * qty;
+        });
+        if (insufficient.length) {
+          showToast('Não há material suficiente para produzir essa quantidade de kits.', 'error');
+          return;
+        }
+        kit.items.forEach(function (component) {
+          var item = pmgKitComponentItem(component);
+          var required = roundQty(num(component.quantityPerKit) * qty, 3);
+          var inventoryMovement = addInventoryMovement({
+            item: item,
+            type: 'Consumo para produção de kit',
+            quantity: required,
+            direction: 'out',
+            date: date,
+            note: 'Componente do kit ' + kit.name,
+            source: 'Produção de kits',
+            employeeId: employeeId,
+            isConsumption: true
+          });
+          inventoryMovement.kitId = kit.id;
+          componentsConsumed.push({ itemId: item.id, materialNameSnapshot: item.name, quantity: required, unit: item.unit || 'un.', inventoryMovementId: inventoryMovement.id });
+        });
+      }
+      var direction = operation === 'production' || operation === 'adjustment_in' ? 'in' : 'out';
+      state.kitMovements.unshift({
+        id: uid(),
+        kitId: kit.id,
+        kitNameSnapshot: kit.name,
+        type: pmgKitOperationLabel(operation),
+        operationCode: operation,
+        direction: direction,
+        quantity: qty,
+        date: date,
+        employeeId: employeeId,
+        employeeNameSnapshot: employeeName(employeeId, ''),
+        reference: $('#kitMovementReference').value.trim(),
+        note: $('#kitMovementNote').value.trim(),
+        reversed: false,
+        componentsConsumed: componentsConsumed,
+        createdAt: nowISO()
+      });
+      kitReferenceDate = date;
+      persist().then(function () {
+        closeModal();
+        renderKits();
+        renderInventory();
+        renderDashboard();
+        showToast(pmgKitOperationLabel(operation) + ' registrada.');
+      });
+    };
+  }
+
+  function pmgReverseKitMovement(id) {
+    var movement = state.kitMovements.find(function (row) { return row.id === id; });
+    if (!movement || movement.reversed) return;
+    var currentStock = pmgKitStock(movement.kitId);
+    if (movement.direction === 'in' && currentStock < num(movement.quantity)) {
+      showToast('Não é possível estornar esta entrada porque parte dos kits já saiu do estoque.', 'error');
+      return;
+    }
+    confirmAction('Estornar esta movimentação de kit? O saldo será recalculado e, se for uma produção, os materiais voltarão ao estoque.', function () {
+      if (movement.operationCode === 'production') {
+        movement.componentsConsumed.forEach(function (component) {
+          var item = state.inventory.find(function (inventoryItem) { return inventoryItem.id === component.itemId; });
+          if (!item) return;
+          var inventoryMovement = addInventoryMovement({
+            item: item,
+            type: 'Estorno de produção de kit',
+            quantity: num(component.quantity),
+            direction: 'in',
+            date: todayISO(),
+            note: 'Estorno do kit ' + movement.kitNameSnapshot,
+            source: 'Estorno de kits',
+            employeeId: movement.employeeId,
+            isConsumption: false
+          });
+          inventoryMovement.kitId = movement.kitId;
+          inventoryMovement.reversalOfKitMovementId = movement.id;
+        });
+      }
+      movement.reversed = true;
+      movement.reversedAt = nowISO();
+      return persist().then(function () {
+        renderKits();
+        renderInventory();
+        renderDashboard();
+        showToast('Movimentação estornada.');
+      });
+    }, 'Estornar');
+  }
+
+  function renderKits() {
+    var date = kitReferenceDate || todayISO();
+    var activeKits = state.kits.filter(function (kit) { return kit.active !== false; });
+    var totalStock = state.kits.reduce(function (sum, kit) { return sum + pmgKitStock(kit.id); }, 0);
+    var producedToday = state.kitMovements.filter(function (movement) { return !movement.reversed && movement.date === date && movement.operationCode === 'production'; }).reduce(function (sum, movement) { return sum + num(movement.quantity); }, 0);
+    var exitedToday = state.kitMovements.filter(function (movement) { return !movement.reversed && movement.date === date && movement.direction === 'out'; }).reduce(function (sum, movement) { return sum + num(movement.quantity); }, 0);
+    var lowStock = activeKits.filter(function (kit) { return num(kit.minimumStock) > 0 && pmgKitStock(kit.id) <= num(kit.minimumStock); }).length;
+    var sortedKits = state.kits.slice().sort(function (a, b) { return (a.active === false) - (b.active === false) || String(a.name).localeCompare(String(b.name), 'pt-BR'); });
+    var recentMovements = state.kitMovements.slice().sort(function (a, b) { return String(b.date).localeCompare(String(a.date)) || String(b.createdAt).localeCompare(String(a.createdAt)); }).slice(0, 80);
+
+    $('#kits').innerHTML = '<div class="section-head"><div><h2>Gestão e análise de kits</h2><p>Monte kits com materiais já cadastrados, controle o saldo disponível para venda e acompanhe produção e saídas por dia.</p></div><div class="section-actions"><button class="btn" id="kitAdjustBtn">Ajustar estoque</button><button class="btn" id="kitExitBtn">Registrar saída</button><button class="btn primary" id="kitProduceBtn">Produzir kits</button><button class="btn" id="addKitBtn">Criar kit</button></div></div>' +
+      '<div class="performance-toolbar"><div class="toolbar-group"><div class="field"><label>Data da análise</label><input id="kitReferenceDate" type="date" value="' + esc(date) + '"></div></div><span class="badge info">Materiais e estoque vinculados</span></div>' +
+      '<div class="operation-summary">' +
+        '<div class="metric-card"><div class="metric-top"><span>Kits ativos</span><i class="metric-dot"></i></div><div class="metric-number">' + activeKits.length + '</div></div>' +
+        '<div class="metric-card"><div class="metric-top"><span>Disponíveis para venda</span><i class="metric-dot"></i></div><div class="metric-number">' + formatQty(totalStock, 0) + '</div><div class="metric-foot">Saldo de todos os kits</div></div>' +
+        '<div class="metric-card"><div class="metric-top"><span>Produzidos no dia</span><i class="metric-dot"></i></div><div class="metric-number">' + formatQty(producedToday, 0) + '</div><div class="metric-foot">' + formatDate(date) + '</div></div>' +
+        '<div class="metric-card"><div class="metric-top"><span>Saídas no dia</span><i class="metric-dot"></i></div><div class="metric-number">' + formatQty(exitedToday, 0) + '</div><div class="metric-foot">Vendas e ajustes de saída</div></div>' +
+        '<div class="metric-card"><div class="metric-top"><span>Abaixo do mínimo</span><i class="metric-dot"></i></div><div class="metric-number">' + lowStock + '</div></div>' +
+      '</div>' +
+      (sortedKits.length ? '<div class="kit-card-grid">' + sortedKits.map(function (kit) {
+        var stock = pmgKitStock(kit.id);
+        var produced = pmgKitMovementsOn(kit.id, date, '', 'Produção de kits');
+        var exits = pmgKitMovementsOn(kit.id, date, 'out', '');
+        var maxBuild = pmgMaxBuildableKits(kit);
+        var below = num(kit.minimumStock) > 0 && stock <= num(kit.minimumStock);
+        return '<div class="kit-card ' + (below ? 'kit-stock-alert ' + (stock <= 0 ? 'critical' : '') : '') + '"><div class="kit-card-head"><div><h4>' + esc(kit.name) + '</h4><div class="muted" style="font-size:12px">' + esc(kit.code || 'Sem código') + '</div></div><span class="badge ' + (kit.active === false ? 'warning' : below ? 'alert' : 'ok') + '">' + (kit.active === false ? 'Arquivado' : below ? 'Estoque baixo' : 'Ativo') + '</span></div><div class="kit-card-body">' +
+          '<div class="kit-stats"><div class="mini-stat"><span>Disponível</span><strong>' + formatQty(stock, 0) + ' kits</strong></div><div class="mini-stat"><span>Produzido no dia</span><strong>' + formatQty(produced, 0) + '</strong></div><div class="mini-stat"><span>Saídas no dia</span><strong>' + formatQty(exits, 0) + '</strong></div><div class="mini-stat"><span>Máximo produzível</span><strong>' + formatQty(maxBuild, 0) + '</strong></div><div class="mini-stat"><span>Estoque mínimo</span><strong>' + formatQty(kit.minimumStock, 0) + '</strong></div><div class="mini-stat"><span>Gargalo</span><strong style="font-size:12px">' + esc(pmgKitBottleneck(kit)) + '</strong></div></div>' +
+          '<div class="component-list">' + kit.items.map(function (component) {
+            var item = pmgKitComponentItem(component);
+            return '<div class="component-pill"><span>' + esc((item && item.name) || component.materialNameSnapshot) + '</span><strong>' + esc(kitComponentDisplay(component, item)) + '</strong></div>';
+          }).join('') + '</div>' +
+          (kit.notes ? '<div class="item-note">' + esc(kit.notes) + '</div>' : '') +
+          '<div class="kit-actions"><button class="btn small primary" data-kit-produce="' + kit.id + '">Produzir</button><button class="btn small" data-kit-exit="' + kit.id + '">Registrar saída</button><button class="btn small" data-kit-edit="' + kit.id + '">Editar</button><button class="btn small" data-kit-toggle="' + kit.id + '">' + (kit.active === false ? 'Ativar' : 'Arquivar') + '</button><button class="btn small danger" data-kit-delete="' + kit.id + '">Excluir</button></div>' +
+        '</div></div>';
+      }).join('') + '</div>' : '<div class="list-empty">Nenhum kit cadastrado.</div>') +
+      '<div class="card" style="margin-top:16px"><div class="card-head"><h3>Análise diária por kit</h3><span class="badge info">' + formatDate(date) + '</span></div><div class="card-body">' +
+        (sortedKits.length ? '<div class="table-wrap"><table><thead><tr><th>Kit</th><th>Estoque atual</th><th>Produzido no dia</th><th>Saídas no dia</th><th>Máximo produzível</th><th>Gargalo</th></tr></thead><tbody>' + sortedKits.map(function (kit) {
+          return '<tr><td><strong>' + esc(kit.name) + '</strong></td><td><span class="badge ' + (pmgKitStock(kit.id) <= num(kit.minimumStock) && num(kit.minimumStock) > 0 ? 'alert' : 'ok') + '">' + formatQty(pmgKitStock(kit.id), 0) + ' kits</span></td><td>' + formatQty(pmgKitMovementsOn(kit.id, date, '', 'Produção de kits'), 0) + '</td><td>' + formatQty(pmgKitMovementsOn(kit.id, date, 'out', ''), 0) + '</td><td>' + formatQty(pmgMaxBuildableKits(kit), 0) + '</td><td>' + esc(pmgKitBottleneck(kit)) + '</td></tr>';
+        }).join('') + '</tbody></table></div>' : '<div class="list-empty">Sem kits para analisar.</div>') +
+      '</div></div>' +
+      '<div class="card" style="margin-top:16px"><div class="card-head"><h3>Histórico de movimentações dos kits</h3><span class="badge">Últimos ' + recentMovements.length + ' registros</span></div><div class="card-body">' +
+        (recentMovements.length ? '<div class="table-wrap"><table><thead><tr><th>Data</th><th>Kit</th><th>Operação</th><th>Quantidade</th><th>Responsável / referência</th><th>Situação</th><th>Ação</th></tr></thead><tbody>' + recentMovements.map(function (movement) {
+          return '<tr><td>' + formatDate(movement.date) + '</td><td><strong>' + esc((pmgKitById(movement.kitId) || {}).name || movement.kitNameSnapshot || 'Kit excluído') + '</strong></td><td><span class="badge ' + (movement.direction === 'in' ? 'ok' : 'warning') + '">' + esc(movement.type) + '</span></td><td>' + (movement.direction === 'in' ? '+' : '−') + formatQty(movement.quantity, 0) + '</td><td>' + esc(employeeName(movement.employeeId, movement.employeeNameSnapshot)) + (movement.reference ? '<div class="muted" style="font-size:11px">' + esc(movement.reference) + '</div>' : '') + (movement.note ? '<div class="muted" style="font-size:11px">' + esc(movement.note) + '</div>' : '') + '</td><td><span class="badge ' + (movement.reversed ? 'alert' : 'ok') + '">' + (movement.reversed ? 'Estornada' : 'Válida') + '</span></td><td>' + (movement.reversed ? '—' : '<button class="btn small danger" data-kit-movement-reverse="' + movement.id + '">Estornar</button>') + '</td></tr>';
+        }).join('') + '</tbody></table></div>' : '<div class="list-empty">Nenhuma movimentação de kit registrada.</div>') +
+      '</div></div>';
+
+    $('#addKitBtn').onclick = function () { openKitModal(''); };
+    $('#kitProduceBtn').onclick = function () { openKitMovementModal('', 'production'); };
+    $('#kitExitBtn').onclick = function () { openKitMovementModal('', 'sale'); };
+    $('#kitAdjustBtn').onclick = function () { openKitMovementModal('', 'adjustment_in'); };
+    $('#kitReferenceDate').onchange = function (event) { kitReferenceDate = event.target.value || todayISO(); renderKits(); };
+    $$('[data-kit-produce]').forEach(function (button) { button.onclick = function () { openKitMovementModal(button.dataset.kitProduce, 'production'); }; });
+    $$('[data-kit-exit]').forEach(function (button) { button.onclick = function () { openKitMovementModal(button.dataset.kitExit, 'sale'); }; });
+    $$('[data-kit-edit]').forEach(function (button) { button.onclick = function () { openKitModal(button.dataset.kitEdit); }; });
+    $$('[data-kit-toggle]').forEach(function (button) { button.onclick = function () {
+      var kit = pmgKitById(button.dataset.kitToggle);
+      if (!kit) return;
+      kit.active = kit.active === false;
+      kit.updatedAt = nowISO();
+      persist().then(renderKits);
+    }; });
+    $$('[data-kit-delete]').forEach(function (button) { button.onclick = function () {
+      var id = button.dataset.kitDelete;
+      var hasHistory = state.kitMovements.some(function (movement) { return movement.kitId === id; });
+      if (hasHistory) {
+        showToast('Este kit possui histórico. Arquive-o em vez de excluir.', 'error');
+        return;
+      }
+      confirmAction('Excluir definitivamente este kit?', function () {
+        state.kits = state.kits.filter(function (kit) { return kit.id !== id; });
+        return persist().then(renderKits);
+      }, 'Excluir kit');
+    }; });
+    $$('[data-kit-movement-reverse]').forEach(function (button) { button.onclick = function () { pmgReverseKitMovement(button.dataset.kitMovementReverse); }; });
+  }
+
+
+  setupAuthScreen();
 })();
 
   
