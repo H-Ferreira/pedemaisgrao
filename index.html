@@ -6778,7 +6778,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
   ensureShape = function ensureShapePMG(data) {
     var shaped = pmgBaseEnsureShape(data || {});
     var raw = data || {};
-    shaped.meta.schemaVersion = 8;
+    shaped.meta.schemaVersion = 10;
     shaped.autoBackupSlots = normalizeAutoBackupSlots(raw.autoBackupSlots || DEFAULT_AUTO_BACKUP_SLOTS);
     AUTO_BACKUP_SLOTS = shaped.autoBackupSlots.slice();
     shaped.companyGoals = Array.isArray(raw.companyGoals) ? raw.companyGoals.map(function (goal) {
@@ -6844,11 +6844,68 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
         reference: '',
         note: '',
         reversed: false,
+        clientOperationToken: '',
+        stockTransactionId: '',
+        stockApplied: false,
+        consumptionLayer: 'finished_goods',
+        kitDoubleDebitRepaired: false,
         componentsConsumed: []
       }, movement, {
         componentsConsumed: Array.isArray(movement.componentsConsumed) ? movement.componentsConsumed : []
       });
     }) : [];
+
+    /* Migração: corrige baixas antigas de kits que atingiram novamente o estoque de insumos.
+       Cada transação vinculada é devolvida uma única vez e permanece registrada para auditoria. */
+    var repairedLegacyKitDebit = false;
+    shaped.kitMovements.forEach(function (kitMovement) {
+      if (!kitMovement || kitMovement.operationCode !== 'production' || kitMovement.reversed || kitMovement.kitDoubleDebitRepaired) return;
+      var linkedDebits = shaped.inventoryMovements.filter(function (inventoryMovement) {
+        return inventoryMovement && inventoryMovement.direction === 'out' && inventoryMovement.kitMovementId === kitMovement.id && !inventoryMovement.kitDoubleDebitRepaired;
+      });
+      linkedDebits.forEach(function (inventoryMovement) {
+        var item = shaped.inventory.find(function (inventoryItem) { return inventoryItem.id === inventoryMovement.itemId; });
+        if (!item) return;
+        item.quantity = roundQty(num(item.quantity) + num(inventoryMovement.quantity), 6);
+        item.lastCheck = todayISO();
+        item.updatedAt = nowISO();
+        inventoryMovement.isConsumption = false;
+        inventoryMovement.kitDoubleDebitRepaired = true;
+        inventoryMovement.repairedAt = nowISO();
+        inventoryMovement.originalType = inventoryMovement.originalType || inventoryMovement.type;
+        inventoryMovement.type = 'Baixa de kit anulada';
+        var correctionId = 'KIT-CORRECAO-' + inventoryMovement.id;
+        if (!shaped.inventoryMovements.some(function (row) { return row.id === correctionId; })) {
+          shaped.inventoryMovements.unshift({
+            id: correctionId,
+            itemId: item.id,
+            material: item.name,
+            category: item.category || '',
+            type: 'Correção de baixa duplicada de kit',
+            quantity: roundQty(inventoryMovement.quantity, 6),
+            unit: inventoryMovement.unit || item.unit || 'un.',
+            direction: 'in',
+            date: todayISO(),
+            note: 'Devolução automática: o kit utiliza produto acabado e não deve consumir novamente os insumos.',
+            source: 'Correção automática de kits',
+            employeeId: kitMovement.employeeId || '',
+            employeeNameSnapshot: kitMovement.employeeNameSnapshot || '',
+            isConsumption: false,
+            isPurchase: false,
+            kitId: kitMovement.kitId,
+            kitMovementId: kitMovement.id,
+            correctionOfInventoryMovementId: inventoryMovement.id,
+            createdAt: nowISO()
+          });
+        }
+        repairedLegacyKitDebit = true;
+      });
+      kitMovement.stockApplied = false;
+      kitMovement.consumptionLayer = 'finished_goods';
+      kitMovement.kitDoubleDebitRepaired = true;
+      kitMovement.repairedAt = linkedDebits.length ? nowISO() : kitMovement.repairedAt || '';
+    });
+    if (repairedLegacyKitDebit) shaped.meta.kitDoubleDebitRepairAt = nowISO();
     return shaped;
   };
 
@@ -7240,6 +7297,78 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     return formatQty(input.quantity, 3) + ' ' + input.unit;
   }
 
+  function pmgFinishedGoodsKey(material, category) {
+    return normalizeKey(category || '') + '|' + normalizeKey(material || '');
+  }
+
+  function pmgQuantityToKg(quantity, unit) {
+    var normalizedUnit = normalizeKitUnit(unit || '');
+    if (normalizedUnit === 'kg') return num(quantity);
+    if (normalizedUnit === 'g') return num(quantity) / 1000;
+    return 0;
+  }
+
+  function pmgProducedFinishedGoodsTotals() {
+    var totals = {};
+    (state.dailyProductionPlans || []).forEach(function (plan) {
+      if (!plan || plan.status !== 'Fechado' || !Array.isArray(plan.items)) return;
+      plan.items.forEach(function (goal) {
+        var producedKg = goalKg(goal, 'completedQty');
+        if (producedKg <= 0) return;
+        var key = pmgFinishedGoodsKey(goal.material, goal.category);
+        if (!totals[key]) totals[key] = { material: goal.material, category: goal.category || '', kg: 0 };
+        totals[key].kg = roundQty(totals[key].kg + producedKg, 6);
+      });
+    });
+    return totals;
+  }
+
+  function pmgAllocatedFinishedGoodsTotals() {
+    var totals = {};
+    (state.kitMovements || []).forEach(function (movement) {
+      if (!movement || movement.reversed || movement.operationCode !== 'production') return;
+      var components = Array.isArray(movement.componentsConsumed) ? movement.componentsConsumed : [];
+      if (!components.length) {
+        var legacyKit = state.kits.find(function (kit) { return kit.id === movement.kitId; });
+        if (legacyKit && Array.isArray(legacyKit.items)) {
+          components = legacyKit.items.map(function (component) {
+            var item = pmgKitComponentItem(component);
+            return {
+              itemId: component.itemId,
+              materialNameSnapshot: (item && item.name) || component.materialNameSnapshot,
+              categorySnapshot: (item && item.category) || component.categorySnapshot || '',
+              quantity: roundQty(num(component.quantityPerKit) * num(movement.quantity), 6),
+              unit: (item && item.unit) || component.unitSnapshot || 'kg'
+            };
+          });
+        }
+      }
+      components.forEach(function (component) {
+        var item = state.inventory.find(function (inventoryItem) { return inventoryItem.id === component.itemId; });
+        var material = component.materialNameSnapshot || (item && item.name) || '';
+        var category = component.categorySnapshot || (item && item.category) || '';
+        var quantityKg = num(component.quantityKg) || pmgQuantityToKg(component.quantity, component.unit || (item && item.unit) || 'kg');
+        if (!material || quantityKg <= 0) return;
+        var key = component.productKey || pmgFinishedGoodsKey(material, category);
+        if (!totals[key]) totals[key] = { material: material, category: category, kg: 0 };
+        totals[key].kg = roundQty(totals[key].kg + quantityKg, 6);
+      });
+    });
+    return totals;
+  }
+
+  function pmgFinishedGoodsBalance(material, category) {
+    var key = pmgFinishedGoodsKey(material, category);
+    var produced = pmgProducedFinishedGoodsTotals();
+    var allocated = pmgAllocatedFinishedGoodsTotals();
+    return roundQty(num(produced[key] && produced[key].kg) - num(allocated[key] && allocated[key].kg), 6);
+  }
+
+  function pmgFinishedGoodsBalanceForItem(item) {
+    if (!item) return 0;
+    return pmgFinishedGoodsBalance(item.name, item.category || '');
+  }
+
   function pmgKitById(id) {
     return state.kits.find(function (kit) { return kit.id === id; }) || null;
   }
@@ -7254,7 +7383,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
 
   function pmgKitMovementsOn(kitId, date, direction, type) {
     return state.kitMovements.filter(function (movement) {
-      return movement.kitId === kitId && !movement.reversed && movement.date === date && (!direction || movement.direction === direction) && (!type || movement.type === type);
+      return movement.kitId === kitId && !movement.reversed && movement.date === date && (!direction || movement.direction === direction) && (!type || movement.type === type || movement.operationCode === type);
     }).reduce(function (sum, movement) { return sum + num(movement.quantity); }, 0);
   }
 
@@ -7264,25 +7393,62 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     }) || null;
   }
 
-  function pmgMaxBuildableKits(kit) {
-    if (!kit || !kit.items.length) return 0;
-    var limits = kit.items.map(function (component) {
+  function pmgKitUnitRequirements(kit) {
+    var grouped = {};
+    if (!kit || !Array.isArray(kit.items)) return [];
+    kit.items.forEach(function (component) {
       var item = pmgKitComponentItem(component);
       var perKit = num(component.quantityPerKit);
-      if (!item || perKit <= 0) return 0;
-      return Math.floor((num(item.quantity) + 0.0000001) / perKit);
+      var perKitKg = item ? pmgQuantityToKg(perKit, item.unit || component.unitSnapshot || 'kg') : 0;
+      if (!item || perKit <= 0 || perKitKg <= 0) return;
+      if (!grouped[item.id]) {
+        grouped[item.id] = {
+          item: item,
+          itemId: item.id,
+          materialNameSnapshot: item.name,
+          categorySnapshot: item.category || '',
+          unit: item.unit || component.unitSnapshot || 'kg',
+          quantityPerKit: 0,
+          quantityPerKitKg: 0,
+          displayParts: []
+        };
+      }
+      grouped[item.id].quantityPerKit = roundQty(grouped[item.id].quantityPerKit + perKit, 6);
+      grouped[item.id].quantityPerKitKg = roundQty(grouped[item.id].quantityPerKitKg + perKitKg, 6);
+      grouped[item.id].displayParts.push(kitComponentDisplay(component, item));
+    });
+    return Object.keys(grouped).map(function (itemId) {
+      var requirement = grouped[itemId];
+      requirement.availableFinishedKg = pmgFinishedGoodsBalanceForItem(requirement.item);
+      return requirement;
+    });
+  }
+
+  function pmgKitProductionRequirements(kit, kitQuantity) {
+    return pmgKitUnitRequirements(kit).map(function (requirement) {
+      return Object.assign({}, requirement, {
+        requiredQuantity: roundQty(num(requirement.quantityPerKit) * num(kitQuantity), 6),
+        requiredQuantityKg: roundQty(num(requirement.quantityPerKitKg) * num(kitQuantity), 6)
+      });
+    });
+  }
+
+  function pmgMaxBuildableKits(kit) {
+    var requirements = pmgKitUnitRequirements(kit);
+    if (!requirements.length) return 0;
+    var limits = requirements.map(function (requirement) {
+      return Math.floor((Math.max(0, num(requirement.availableFinishedKg)) + 0.0000001) / num(requirement.quantityPerKitKg));
     });
     return limits.length ? Math.max(0, Math.min.apply(Math, limits)) : 0;
   }
 
   function pmgKitBottleneck(kit) {
-    if (!kit || !kit.items.length) return 'Sem composição';
-    var rows = kit.items.map(function (component) {
-      var item = pmgKitComponentItem(component);
-      var perKit = num(component.quantityPerKit);
+    var requirements = pmgKitUnitRequirements(kit);
+    if (!requirements.length) return 'Sem produto produzido válido';
+    var rows = requirements.map(function (requirement) {
       return {
-        name: item ? item.name : component.materialNameSnapshot,
-        limit: item && perKit > 0 ? Math.floor(num(item.quantity) / perKit) : 0
+        name: requirement.item.name,
+        limit: Math.floor(Math.max(0, num(requirement.availableFinishedKg)) / num(requirement.quantityPerKitKg))
       };
     }).sort(function (a, b) { return a.limit - b.limit; });
     return rows[0].name + ' (' + rows[0].limit + ' kit(s))';
@@ -7290,13 +7456,14 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
 
   function pmgKitComponentOptions(selectedId) {
     return state.inventory.slice().sort(function (a, b) { return String(a.name).localeCompare(String(b.name), 'pt-BR'); }).map(function (item) {
-      return '<option value="' + item.id + '" ' + (item.id === selectedId ? 'selected' : '') + '>' + esc(item.name) + ' — ' + esc(item.category || 'Sem categoria') + ' — estoque ' + formatQty(item.quantity, 3) + ' ' + esc(item.unit || 'un.') + '</option>';
+      var producedBalance = pmgFinishedGoodsBalanceForItem(item);
+      return '<option value="' + item.id + '" ' + (item.id === selectedId ? 'selected' : '') + '>' + esc(item.name) + ' — ' + esc(item.category || 'Sem categoria') + ' — produzido disponível ' + formatQty(Math.max(0, producedBalance), 3) + ' kg</option>';
     }).join('');
   }
 
   function openKitModal(id) {
     if (!state.inventory.length) {
-      showToast('Cadastre materiais no estoque antes de criar um kit.', 'error');
+      showToast('Cadastre os produtos usados na produção antes de criar um kit.', 'error');
       navigate('inventory');
       return;
     }
@@ -7304,7 +7471,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     var kit = existing || { name: '', code: '', minimumStock: 0, active: true, notes: '', items: [] };
     openModal(existing ? 'Editar kit' : 'Criar kit', '<form id="kitForm">' +
       '<div class="form-grid"><div class="field"><label>Nome do kit</label><input id="kitName" required value="' + esc(kit.name || '') + '" placeholder="Ex.: Kit temperos básicos"></div><div class="field"><label>Código interno</label><input id="kitCode" value="' + esc(kit.code || '') + '"></div><div class="field"><label>Estoque mínimo de kits</label><input id="kitMinimum" type="number" min="0" step="1" value="' + num(kit.minimumStock) + '"></div><div class="field"><label>Situação</label><select id="kitActive"><option value="true" ' + (kit.active !== false ? 'selected' : '') + '>Ativo</option><option value="false" ' + (kit.active === false ? 'selected' : '') + '>Arquivado</option></select></div></div>' +
-      '<div class="card" style="box-shadow:none;margin-top:8px"><div class="card-head"><div><h3>Composição do kit</h3><div class="muted" style="font-size:12px">Escolha o material, informe qualquer quantidade e selecione gramas ou quilogramas. O sistema converte automaticamente para a unidade do estoque.</div></div><button type="button" class="btn small primary" id="addKitComponentBtn">Adicionar material</button></div><div class="card-body"><div id="kitBuilderList" class="kit-builder-list"></div></div></div>' +
+      '<div class="card" style="box-shadow:none;margin-top:8px"><div class="card-head"><div><h3>Composição do kit</h3><div class="muted" style="font-size:12px">Escolha o produto já produzido e informe quanto dele entra em cada kit. A montagem reservará o saldo do produto acabado, sem descontar novamente os insumos.</div></div><button type="button" class="btn small primary" id="addKitComponentBtn">Adicionar produto</button></div><div class="card-body"><div id="kitBuilderList" class="kit-builder-list"></div></div></div>' +
       '<div class="field" style="margin-top:13px"><label>Observações</label><textarea id="kitNotes" placeholder="Descrição comercial, padrão de montagem ou embalagem">' + esc(kit.notes || '') + '</textarea></div>' +
       '<div class="form-actions"><button type="button" class="btn" data-close-modal>Cancelar</button><button class="btn primary">Salvar kit</button></div>' +
     '</form>');
@@ -7319,7 +7486,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
       var row = document.createElement('div');
       row.className = 'kit-builder-row';
       row.setAttribute('data-kit-component-row', '1');
-      row.innerHTML = '<div class="field kit-builder-material"><label>Material</label><select data-kit-component-item>' + pmgKitComponentOptions(selected) + '</select></div>' +
+      row.innerHTML = '<div class="field kit-builder-material"><label>Produto produzido</label><select data-kit-component-item>' + pmgKitComponentOptions(selected) + '</select></div>' +
         '<div class="field"><label>Quantidade por kit</label><input data-kit-component-qty type="number" min="0.001" step="0.001" value="' + (input.quantity || '') + '" required placeholder="Ex.: 100"></div>' +
         '<div class="field"><label>Unidade</label><select data-kit-component-input-unit>' + kitUnitOptions(item && item.unit, input.unit) + '</select></div>' +
         '<div class="kit-builder-unit" data-kit-component-unit></div>' +
@@ -7332,7 +7499,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
         unitSelect.innerHTML = kitUnitOptions(selectedItem ? selectedItem.unit : 'un.', previousUnit);
         var qty = num(row.querySelector('[data-kit-component-qty]').value);
         var converted = convertKitQuantityToStockUnit(qty, unitSelect.value, selectedItem ? selectedItem.unit : 'un.');
-        row.querySelector('[data-kit-component-unit]').innerHTML = '<span>Baixa no estoque<br><strong>' + formatQty(converted, 6) + ' ' + esc((selectedItem && selectedItem.unit) || 'un.') + '</strong></span>';
+        row.querySelector('[data-kit-component-unit]').innerHTML = '<span>Uso do lote produzido<br><strong>' + formatQty(converted, 6) + ' ' + esc((selectedItem && selectedItem.unit) || 'un.') + '</strong></span>';
       }
       row.querySelector('[data-kit-component-item]').onchange = refreshComponentConversion;
       row.querySelector('[data-kit-component-qty]').oninput = refreshComponentConversion;
@@ -7370,7 +7537,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
         }
       });
       if (invalid || !components.length) {
-        showToast('Informe ao menos um material válido, sem duplicidade.', 'error');
+        showToast('Informe ao menos um produto produzido válido, em gramas ou quilogramas, sem duplicidade.', 'error');
         return;
       }
       var payload = {
@@ -7393,7 +7560,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
   }
 
   function pmgKitOperationLabel(type) {
-    if (type === 'production') return 'Produção de kits';
+    if (type === 'production') return 'Montagem de kits';
     if (type === 'sale') return 'Saída / venda';
     if (type === 'adjustment_in') return 'Ajuste de entrada';
     return 'Ajuste de saída';
@@ -7407,9 +7574,11 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     }
     var selectedId = kitId && pmgKitById(kitId) ? kitId : activeKits[0].id;
     var type = presetType || 'production';
+    var clientOperationToken = uid();
+    var movementSubmitting = false;
     openModal('Movimentar kits', '<form id="kitMovementForm">' +
       '<div class="form-grid"><div class="field"><label>Kit</label><select id="kitMovementKit">' + activeKits.map(function (kit) { return '<option value="' + kit.id + '" ' + (kit.id === selectedId ? 'selected' : '') + '>' + esc(kit.name) + '</option>'; }).join('') + '</select></div>' +
-      '<div class="field"><label>Operação</label><select id="kitMovementType"><option value="production" ' + (type === 'production' ? 'selected' : '') + '>Produzir kits</option><option value="sale" ' + (type === 'sale' ? 'selected' : '') + '>Registrar saída / venda</option><option value="adjustment_in" ' + (type === 'adjustment_in' ? 'selected' : '') + '>Ajuste de entrada</option><option value="adjustment_out" ' + (type === 'adjustment_out' ? 'selected' : '') + '>Ajuste de saída</option></select></div>' +
+      '<div class="field"><label>Operação</label><select id="kitMovementType"><option value="production" ' + (type === 'production' ? 'selected' : '') + '>Montar kits</option><option value="sale" ' + (type === 'sale' ? 'selected' : '') + '>Registrar saída / venda</option><option value="adjustment_in" ' + (type === 'adjustment_in' ? 'selected' : '') + '>Ajuste de entrada</option><option value="adjustment_out" ' + (type === 'adjustment_out' ? 'selected' : '') + '>Ajuste de saída</option></select></div>' +
       '<div class="field"><label>Quantidade de kits</label><input id="kitMovementQty" type="number" min="1" step="1" required value="1"></div>' +
       '<div class="field"><label>Data</label><input id="kitMovementDate" type="date" required value="' + esc(kitReferenceDate || todayISO()) + '"></div>' +
       '<div class="field"><label>Responsável</label><select id="kitMovementEmployee">' + employeeOptions('', true) + '</select></div>' +
@@ -7429,14 +7598,15 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
       if (!kit) return;
       if (operation === 'production') {
         var max = pmgMaxBuildableKits(kit);
-        var requirements = kit.items.map(function (component) {
-          var item = pmgKitComponentItem(component);
-          var required = roundQty(num(component.quantityPerKit) * qty, 3);
-          var enough = item && num(item.quantity) + 0.000001 >= required;
-          return '<div class="component-pill"><span>' + esc((item && item.name) || component.materialNameSnapshot) + ' · ' + esc(kitComponentDisplay(component, item)) + ' por kit</span><strong class="' + (enough ? '' : 'badge alert') + '">Total: ' + formatQty(required, 6) + ' ' + esc((item && item.unit) || component.unitSnapshot || 'un.') + ' / estoque ' + (item ? formatQty(item.quantity, 3) : '0') + '</strong></div>';
+        var requirements = pmgKitProductionRequirements(kit, qty).map(function (requirement) {
+          var item = requirement.item;
+          var requiredKg = requirement.requiredQuantityKg;
+          var availableKg = requirement.availableFinishedKg;
+          var enough = availableKg + 0.000001 >= requiredKg;
+          return '<div class="component-pill"><span>' + esc(item.name) + ' · ' + esc(requirement.displayParts.join(' + ')) + ' por kit</span><strong class="' + (enough ? '' : 'badge alert') + '">Necessário: ' + formatQty(requiredKg, 3) + ' kg / produto acabado disponível ' + formatQty(Math.max(0, availableKg), 3) + ' kg</strong></div>';
         }).join('');
         preview.className = 'status-callout movement-preview ' + (qty > max ? 'alert' : 'ok');
-        preview.innerHTML = '<strong>Capacidade atual:</strong> até ' + max + ' kit(s).<div class="component-list">' + requirements + '</div>';
+        preview.innerHTML = '<strong>Montagem sem nova baixa de insumos.</strong> Capacidade atual: até ' + max + ' kit(s).<div class="component-list">' + requirements + '</div>';
       } else if (operation === 'sale' || operation === 'adjustment_out') {
         preview.className = 'status-callout movement-preview ' + (qty > stock ? 'alert' : 'ok');
         preview.innerHTML = '<strong>Estoque disponível:</strong> ' + formatQty(stock, 0) + ' kit(s). Após a saída: ' + formatQty(stock - qty, 0) + ' kit(s).';
@@ -7452,48 +7622,67 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
 
     $('#kitMovementForm').onsubmit = function (event) {
       event.preventDefault();
+      if (movementSubmitting) return;
+      if (state.kitMovements.some(function (movement) { return movement.clientOperationToken === clientOperationToken; })) {
+        showToast('Esta movimentação já foi registrada.', 'error');
+        return;
+      }
+
       var kit = pmgKitById($('#kitMovementKit').value);
       var operation = $('#kitMovementType').value;
       var qty = Math.round(num($('#kitMovementQty').value));
       var date = $('#kitMovementDate').value;
       var employeeId = $('#kitMovementEmployee').value;
       if (!kit || qty <= 0) return;
+
       var stock = pmgKitStock(kit.id);
       if ((operation === 'sale' || operation === 'adjustment_out') && qty > stock) {
         showToast('A saída é maior que o estoque disponível do kit.', 'error');
         return;
       }
-      var componentsConsumed = [];
+
+      var productionRequirements = operation === 'production' ? pmgKitProductionRequirements(kit, qty) : [];
       if (operation === 'production') {
-        var insufficient = kit.items.filter(function (component) {
-          var item = pmgKitComponentItem(component);
-          return !item || num(item.quantity) + 0.000001 < num(component.quantityPerKit) * qty;
+        var invalidComposition = !productionRequirements.length;
+        var insufficient = productionRequirements.filter(function (requirement) {
+          return num(requirement.availableFinishedKg) + 0.000001 < num(requirement.requiredQuantityKg);
         });
-        if (insufficient.length) {
-          showToast('Não há material suficiente para produzir essa quantidade de kits.', 'error');
+        if (invalidComposition) {
+          showToast('A composição do kit não possui produtos produzidos válidos em gramas ou quilogramas.', 'error');
           return;
         }
-        kit.items.forEach(function (component) {
-          var item = pmgKitComponentItem(component);
-          var required = roundQty(num(component.quantityPerKit) * qty, 3);
-          var inventoryMovement = addInventoryMovement({
-            item: item,
-            type: 'Consumo para produção de kit',
-            quantity: required,
-            direction: 'out',
-            date: date,
-            note: 'Componente do kit ' + kit.name,
-            source: 'Produção de kits',
-            employeeId: employeeId,
-            isConsumption: true
-          });
-          inventoryMovement.kitId = kit.id;
-          componentsConsumed.push({ itemId: item.id, materialNameSnapshot: item.name, quantity: required, unit: item.unit || 'un.', inventoryMovementId: inventoryMovement.id });
-        });
+        if (insufficient.length) {
+          showToast('O saldo de produto acabado é insuficiente. Conclua a produção do lote antes de montar o kit.', 'error');
+          return;
+        }
       }
+
+      movementSubmitting = true;
+      var submitButton = $('#kitMovementSubmit');
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = 'Registrando...';
+      }
+
+      var kitMovementId = uid();
+      var stockTransactionId = 'KIT-' + kitMovementId;
+      var componentsConsumed = operation === 'production' ? productionRequirements.map(function (requirement) {
+        return {
+          itemId: requirement.item.id,
+          materialNameSnapshot: requirement.item.name,
+          categorySnapshot: requirement.item.category || '',
+          quantity: requirement.requiredQuantity,
+          unit: requirement.unit || requirement.item.unit || 'kg',
+          quantityKg: requirement.requiredQuantityKg,
+          productKey: pmgFinishedGoodsKey(requirement.item.name, requirement.item.category || ''),
+          consumptionLayer: 'finished_goods',
+          stockTransactionId: stockTransactionId
+        };
+      }) : [];
+
       var direction = operation === 'production' || operation === 'adjustment_in' ? 'in' : 'out';
       state.kitMovements.unshift({
-        id: uid(),
+        id: kitMovementId,
         kitId: kit.id,
         kitNameSnapshot: kit.name,
         type: pmgKitOperationLabel(operation),
@@ -7506,16 +7695,30 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
         reference: $('#kitMovementReference').value.trim(),
         note: $('#kitMovementNote').value.trim(),
         reversed: false,
+        clientOperationToken: clientOperationToken,
+        stockTransactionId: stockTransactionId,
+        stockApplied: false,
+        consumptionLayer: operation === 'production' ? 'finished_goods' : 'kit_stock',
         componentsConsumed: componentsConsumed,
         createdAt: nowISO()
       });
+
       kitReferenceDate = date;
       persist().then(function () {
         closeModal();
         renderKits();
         renderInventory();
         renderDashboard();
-        showToast(pmgKitOperationLabel(operation) + ' registrada.');
+        showToast(operation === 'production' ? 'Kit montado com produto acabado. Nenhum insumo foi descontado novamente.' : pmgKitOperationLabel(operation) + ' registrada.');
+      }).catch(function (error) {
+        state.kitMovements = state.kitMovements.filter(function (movement) { return movement.id !== kitMovementId; });
+        movementSubmitting = false;
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = 'Salvar movimentação';
+        }
+        showToast('A movimentação não foi salva. Nenhum saldo foi alterado.', 'error');
+        if (window.console && console.error) console.error(error);
       });
     };
   }
@@ -7528,33 +7731,14 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
       showToast('Não é possível estornar esta entrada porque parte dos kits já saiu do estoque.', 'error');
       return;
     }
-    confirmAction('Estornar esta movimentação de kit? O saldo será recalculado e, se for uma produção, os materiais voltarão ao estoque.', function () {
-      if (movement.operationCode === 'production') {
-        movement.componentsConsumed.forEach(function (component) {
-          var item = state.inventory.find(function (inventoryItem) { return inventoryItem.id === component.itemId; });
-          if (!item) return;
-          var inventoryMovement = addInventoryMovement({
-            item: item,
-            type: 'Estorno de produção de kit',
-            quantity: num(component.quantity),
-            direction: 'in',
-            date: todayISO(),
-            note: 'Estorno do kit ' + movement.kitNameSnapshot,
-            source: 'Estorno de kits',
-            employeeId: movement.employeeId,
-            isConsumption: false
-          });
-          inventoryMovement.kitId = movement.kitId;
-          inventoryMovement.reversalOfKitMovementId = movement.id;
-        });
-      }
+    confirmAction('Estornar esta movimentação de kit? O saldo do kit será recalculado. Na montagem, somente o produto acabado reservado será liberado; os insumos não serão alterados.', function () {
       movement.reversed = true;
       movement.reversedAt = nowISO();
       return persist().then(function () {
         renderKits();
         renderInventory();
         renderDashboard();
-        showToast('Movimentação estornada.');
+        showToast('Movimentação estornada. O estoque de insumos permaneceu inalterado.');
       });
     }, 'Estornar');
   }
@@ -7569,34 +7753,34 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     var sortedKits = state.kits.slice().sort(function (a, b) { return (a.active === false) - (b.active === false) || String(a.name).localeCompare(String(b.name), 'pt-BR'); });
     var recentMovements = state.kitMovements.slice().sort(function (a, b) { return String(b.date).localeCompare(String(a.date)) || String(b.createdAt).localeCompare(String(a.createdAt)); }).slice(0, 80);
 
-    $('#kits').innerHTML = '<div class="section-head"><div><h2>Gestão e análise de kits</h2><p>Monte kits com materiais já cadastrados, controle o saldo disponível para venda e acompanhe produção e saídas por dia.</p></div><div class="section-actions"><button class="btn" id="kitAdjustBtn">Ajustar estoque</button><button class="btn" id="kitExitBtn">Registrar saída</button><button class="btn primary" id="kitProduceBtn">Produzir kits</button><button class="btn" id="addKitBtn">Criar kit</button></div></div>' +
-      '<div class="performance-toolbar"><div class="toolbar-group"><div class="field"><label>Data da análise</label><input id="kitReferenceDate" type="date" value="' + esc(date) + '"></div></div><span class="badge info">Materiais e estoque vinculados</span></div>' +
+    $('#kits').innerHTML = '<div class="section-head"><div><h2>Gestão e análise de kits</h2><p>Monte kits usando exclusivamente produtos já concluídos na produção, controle o saldo disponível para venda e acompanhe montagens e saídas por dia.</p></div><div class="section-actions"><button class="btn" id="kitAdjustBtn">Ajustar estoque</button><button class="btn" id="kitExitBtn">Registrar saída</button><button class="btn primary" id="kitProduceBtn">Montar kits</button><button class="btn" id="addKitBtn">Criar kit</button></div></div>' +
+      '<div class="performance-toolbar"><div class="toolbar-group"><div class="field"><label>Data da análise</label><input id="kitReferenceDate" type="date" value="' + esc(date) + '"></div></div><span class="badge info">Insumos baixados somente na produção · kit usa produto acabado</span></div>' +
       '<div class="operation-summary">' +
         '<div class="metric-card"><div class="metric-top"><span>Kits ativos</span><i class="metric-dot"></i></div><div class="metric-number">' + activeKits.length + '</div></div>' +
         '<div class="metric-card"><div class="metric-top"><span>Disponíveis para venda</span><i class="metric-dot"></i></div><div class="metric-number">' + formatQty(totalStock, 0) + '</div><div class="metric-foot">Saldo de todos os kits</div></div>' +
-        '<div class="metric-card"><div class="metric-top"><span>Produzidos no dia</span><i class="metric-dot"></i></div><div class="metric-number">' + formatQty(producedToday, 0) + '</div><div class="metric-foot">' + formatDate(date) + '</div></div>' +
+        '<div class="metric-card"><div class="metric-top"><span>Montados no dia</span><i class="metric-dot"></i></div><div class="metric-number">' + formatQty(producedToday, 0) + '</div><div class="metric-foot">' + formatDate(date) + '</div></div>' +
         '<div class="metric-card"><div class="metric-top"><span>Saídas no dia</span><i class="metric-dot"></i></div><div class="metric-number">' + formatQty(exitedToday, 0) + '</div><div class="metric-foot">Vendas e ajustes de saída</div></div>' +
         '<div class="metric-card"><div class="metric-top"><span>Abaixo do mínimo</span><i class="metric-dot"></i></div><div class="metric-number">' + lowStock + '</div></div>' +
       '</div>' +
       (sortedKits.length ? '<div class="kit-card-grid">' + sortedKits.map(function (kit) {
         var stock = pmgKitStock(kit.id);
-        var produced = pmgKitMovementsOn(kit.id, date, '', 'Produção de kits');
+        var produced = pmgKitMovementsOn(kit.id, date, '', 'production');
         var exits = pmgKitMovementsOn(kit.id, date, 'out', '');
         var maxBuild = pmgMaxBuildableKits(kit);
         var below = num(kit.minimumStock) > 0 && stock <= num(kit.minimumStock);
         return '<div class="kit-card ' + (below ? 'kit-stock-alert ' + (stock <= 0 ? 'critical' : '') : '') + '"><div class="kit-card-head"><div><h4>' + esc(kit.name) + '</h4><div class="muted" style="font-size:12px">' + esc(kit.code || 'Sem código') + '</div></div><span class="badge ' + (kit.active === false ? 'warning' : below ? 'alert' : 'ok') + '">' + (kit.active === false ? 'Arquivado' : below ? 'Estoque baixo' : 'Ativo') + '</span></div><div class="kit-card-body">' +
-          '<div class="kit-stats"><div class="mini-stat"><span>Disponível</span><strong>' + formatQty(stock, 0) + ' kits</strong></div><div class="mini-stat"><span>Produzido no dia</span><strong>' + formatQty(produced, 0) + '</strong></div><div class="mini-stat"><span>Saídas no dia</span><strong>' + formatQty(exits, 0) + '</strong></div><div class="mini-stat"><span>Máximo produzível</span><strong>' + formatQty(maxBuild, 0) + '</strong></div><div class="mini-stat"><span>Estoque mínimo</span><strong>' + formatQty(kit.minimumStock, 0) + '</strong></div><div class="mini-stat"><span>Gargalo</span><strong style="font-size:12px">' + esc(pmgKitBottleneck(kit)) + '</strong></div></div>' +
+          '<div class="kit-stats"><div class="mini-stat"><span>Disponível</span><strong>' + formatQty(stock, 0) + ' kits</strong></div><div class="mini-stat"><span>Montado no dia</span><strong>' + formatQty(produced, 0) + '</strong></div><div class="mini-stat"><span>Saídas no dia</span><strong>' + formatQty(exits, 0) + '</strong></div><div class="mini-stat"><span>Máximo montável</span><strong>' + formatQty(maxBuild, 0) + '</strong></div><div class="mini-stat"><span>Estoque mínimo</span><strong>' + formatQty(kit.minimumStock, 0) + '</strong></div><div class="mini-stat"><span>Gargalo</span><strong style="font-size:12px">' + esc(pmgKitBottleneck(kit)) + '</strong></div></div>' +
           '<div class="component-list">' + kit.items.map(function (component) {
             var item = pmgKitComponentItem(component);
             return '<div class="component-pill"><span>' + esc((item && item.name) || component.materialNameSnapshot) + '</span><strong>' + esc(kitComponentDisplay(component, item)) + '</strong></div>';
           }).join('') + '</div>' +
           (kit.notes ? '<div class="item-note">' + esc(kit.notes) + '</div>' : '') +
-          '<div class="kit-actions"><button class="btn small primary" data-kit-produce="' + kit.id + '">Produzir</button><button class="btn small" data-kit-exit="' + kit.id + '">Registrar saída</button><button class="btn small" data-kit-edit="' + kit.id + '">Editar</button><button class="btn small" data-kit-toggle="' + kit.id + '">' + (kit.active === false ? 'Ativar' : 'Arquivar') + '</button><button class="btn small danger" data-kit-delete="' + kit.id + '">Excluir</button></div>' +
+          '<div class="kit-actions"><button class="btn small primary" data-kit-produce="' + kit.id + '">Montar</button><button class="btn small" data-kit-exit="' + kit.id + '">Registrar saída</button><button class="btn small" data-kit-edit="' + kit.id + '">Editar</button><button class="btn small" data-kit-toggle="' + kit.id + '">' + (kit.active === false ? 'Ativar' : 'Arquivar') + '</button><button class="btn small danger" data-kit-delete="' + kit.id + '">Excluir</button></div>' +
         '</div></div>';
       }).join('') + '</div>' : '<div class="list-empty">Nenhum kit cadastrado.</div>') +
       '<div class="card" style="margin-top:16px"><div class="card-head"><h3>Análise diária por kit</h3><span class="badge info">' + formatDate(date) + '</span></div><div class="card-body">' +
-        (sortedKits.length ? '<div class="table-wrap"><table><thead><tr><th>Kit</th><th>Estoque atual</th><th>Produzido no dia</th><th>Saídas no dia</th><th>Máximo produzível</th><th>Gargalo</th></tr></thead><tbody>' + sortedKits.map(function (kit) {
-          return '<tr><td><strong>' + esc(kit.name) + '</strong></td><td><span class="badge ' + (pmgKitStock(kit.id) <= num(kit.minimumStock) && num(kit.minimumStock) > 0 ? 'alert' : 'ok') + '">' + formatQty(pmgKitStock(kit.id), 0) + ' kits</span></td><td>' + formatQty(pmgKitMovementsOn(kit.id, date, '', 'Produção de kits'), 0) + '</td><td>' + formatQty(pmgKitMovementsOn(kit.id, date, 'out', ''), 0) + '</td><td>' + formatQty(pmgMaxBuildableKits(kit), 0) + '</td><td>' + esc(pmgKitBottleneck(kit)) + '</td></tr>';
+        (sortedKits.length ? '<div class="table-wrap"><table><thead><tr><th>Kit</th><th>Estoque atual</th><th>Montado no dia</th><th>Saídas no dia</th><th>Máximo montável</th><th>Gargalo</th></tr></thead><tbody>' + sortedKits.map(function (kit) {
+          return '<tr><td><strong>' + esc(kit.name) + '</strong></td><td><span class="badge ' + (pmgKitStock(kit.id) <= num(kit.minimumStock) && num(kit.minimumStock) > 0 ? 'alert' : 'ok') + '">' + formatQty(pmgKitStock(kit.id), 0) + ' kits</span></td><td>' + formatQty(pmgKitMovementsOn(kit.id, date, '', 'production'), 0) + '</td><td>' + formatQty(pmgKitMovementsOn(kit.id, date, 'out', ''), 0) + '</td><td>' + formatQty(pmgMaxBuildableKits(kit), 0) + '</td><td>' + esc(pmgKitBottleneck(kit)) + '</td></tr>';
         }).join('') + '</tbody></table></div>' : '<div class="list-empty">Sem kits para analisar.</div>') +
       '</div></div>' +
       '<div class="card" style="margin-top:16px"><div class="card-head"><h3>Histórico de movimentações dos kits</h3><span class="badge">Últimos ' + recentMovements.length + ' registros</span></div><div class="card-body">' +
