@@ -1493,6 +1493,56 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     }));
     return _persist.apply(this, arguments);
   }
+
+  /* Persistência rápida: salva em segundo plano para a tela refletir alterações sem depender de F5. */
+  var pmgPersistTimer = null;
+  var pmgPersistChain = Promise.resolve();
+  var pmgPersistDirty = false;
+  var pmgPersistDelayMs = 80;
+  var pmgPersistOriginal = persist;
+  function pmgRunPersistNow() {
+    if (!state || !cryptoKey) return Promise.resolve();
+    state.meta.updatedAt = nowISO();
+    return pmgPersistOriginal().catch(function (error) {
+      if (window.console && console.error) console.error('Falha ao salvar os dados locais.', error);
+      try { showToast('A alteração apareceu na tela, mas não foi gravada no armazenamento local.', 'error'); } catch (toastError) {}
+      throw error;
+    });
+  }
+  function pmgSchedulePersist() {
+    if (!state || !cryptoKey) return Promise.resolve();
+    state.meta.updatedAt = nowISO();
+    pmgPersistDirty = true;
+    if (pmgPersistTimer) clearTimeout(pmgPersistTimer);
+    pmgPersistTimer = setTimeout(function () {
+      pmgPersistTimer = null;
+      if (!pmgPersistDirty) return;
+      pmgPersistDirty = false;
+      pmgPersistChain = pmgPersistChain.then(pmgRunPersistNow).catch(function () {});
+    }, pmgPersistDelayMs);
+    return Promise.resolve();
+  }
+  function pmgFlushPersist() {
+    if (pmgPersistTimer) {
+      clearTimeout(pmgPersistTimer);
+      pmgPersistTimer = null;
+      if (pmgPersistDirty) {
+        pmgPersistDirty = false;
+        pmgPersistChain = pmgPersistChain.then(pmgRunPersistNow).catch(function () {});
+      }
+    }
+    return pmgPersistChain;
+  }
+  persist = function persistFastUI() {
+    return pmgSchedulePersist();
+  };
+  window.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') pmgFlushPersist();
+  });
+  window.addEventListener('beforeunload', function () {
+    pmgFlushPersist();
+  });
+
   function showToast(message, type = '') {
     var el = document.createElement('div');
     el.className = `toast ${type}`;
@@ -3253,22 +3303,24 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     }();
   }
   function exportBackup() {
-    var payload = {
-      app: 'PEDE MAIS GRÃO — Gestão Rennan Cotta Pavão',
-      version: 2,
-      exportedAt: nowISO(),
-      salt: localStorage.getItem(STORAGE.SALT),
-      blob: localStorage.getItem(STORAGE.BLOB)
-    };
-    var blob = new Blob([JSON.stringify(payload, null, 2)], {
-      type: 'application/json'
+    pmgFlushPersist().then(function () {
+      var payload = {
+        app: 'PEDE MAIS GRÃO — Gestão Rennan Cotta Pavão',
+        version: 2,
+        exportedAt: nowISO(),
+        salt: localStorage.getItem(STORAGE.SALT),
+        blob: localStorage.getItem(STORAGE.BLOB)
+      };
+      var blob = new Blob([JSON.stringify(payload, null, 2)], {
+        type: 'application/json'
+      });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `backup-pede-mais-grao-${todayISO()}.rcbackup`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      showToast('Backup exportado.');
     });
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `backup-pede-mais-grao-${todayISO()}.rcbackup`;
-    a.click();
-    URL.revokeObjectURL(a.href);
-    showToast('Backup exportado.');
   }
   function importBackup() {
     return _importBackup.apply(this, arguments);
@@ -4698,6 +4750,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
               closeModal();
               renderInventory();
               renderDashboard();
+              requestAnimationFrame(function () { if (currentSection === 'inventory') renderInventory(); });
               showToast('Material e níveis salvos.');
             case 3:
               return _context43.a(2);
@@ -4757,6 +4810,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
               closeModal();
               renderInventory();
               renderDashboard();
+              requestAnimationFrame(function () { if (currentSection === 'inventory') renderInventory(); });
               showToast('Movimentação registrada.');
             case 3:
               return _context44.a(2);
@@ -4898,6 +4952,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
               closeModal();
               renderInventory();
               renderDashboard();
+              requestAnimationFrame(function () { if (currentSection === 'inventory') renderInventory(); });
               showToast('Compra salva.');
             case 2:
               return _context45.a(2);
@@ -4928,6 +4983,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
               closeModal();
               renderInventory();
               renderDashboard();
+              requestAnimationFrame(function () { if (currentSection === 'inventory') renderInventory(); });
               showToast('Compra recebida e estoque atualizado.');
             case 2:
               return _context46.a(2);
@@ -6670,6 +6726,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
               closeModal();
               renderInventory();
               renderDashboard();
+              requestAnimationFrame(function () { if (currentSection === 'inventory') renderInventory(); });
               showToast('Compra salva.');
             case 2:
               return _context65.a(2);
@@ -6778,7 +6835,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
   ensureShape = function ensureShapePMG(data) {
     var shaped = pmgBaseEnsureShape(data || {});
     var raw = data || {};
-    shaped.meta.schemaVersion = 10;
+    shaped.meta.schemaVersion = 11;
     shaped.autoBackupSlots = normalizeAutoBackupSlots(raw.autoBackupSlots || DEFAULT_AUTO_BACKUP_SLOTS);
     AUTO_BACKUP_SLOTS = shaped.autoBackupSlots.slice();
     shaped.companyGoals = Array.isArray(raw.companyGoals) ? raw.companyGoals.map(function (goal) {
@@ -7709,6 +7766,10 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
         renderKits();
         renderInventory();
         renderDashboard();
+        requestAnimationFrame(function () {
+          if (currentSection === 'kits') renderKits();
+          if (currentSection === 'inventory') renderInventory();
+        });
         showToast(operation === 'production' ? 'Kit montado com produto acabado. Nenhum insumo foi descontado novamente.' : pmgKitOperationLabel(operation) + ' registrada.');
       }).catch(function (error) {
         state.kitMovements = state.kitMovements.filter(function (movement) { return movement.id !== kitMovementId; });
