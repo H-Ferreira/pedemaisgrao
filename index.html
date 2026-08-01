@@ -7931,8 +7931,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
   STORAGE.DEVICE_ID = 'pmg_cloud_device_id_v2';
 
   var PMG_CLOUD_CHANNEL = 'pede-mais-grao-cloud-sync-v2';
-  var PMG_CLOUD_DEFAULT_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwKB6f2Ti4hGo0N5QGg_wYdFbiQQiztV_yarXQUBwAN0SUWQOvPz5iNvOfwr6PLs_of/exec';
-  var PMG_CLOUD_DEFAULT_TOKEN = 'Blade1595';
+  var PMG_CLOUD_ALLOWED_INTERVALS = [15, 30, 60, 120];
   var PMG_CLOUD_COLLECTIONS = [
     'tasks', 'checklist', 'inventory', 'inventoryMovements', 'inventoryAlerts',
     'purchases', 'production', 'dailyProductionPlans', 'machines', 'machineEvents',
@@ -7975,13 +7974,20 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     if (!state) return null;
     state.settings = state.settings || {};
     var current = state.settings.cloudSync || {};
+    var intervalSeconds = Number(current.intervalSeconds);
+    if (!intervalSeconds && Number(current.intervalMinutes) > 0) {
+      intervalSeconds = Number(current.intervalMinutes) * 60;
+    }
+    if (PMG_CLOUD_ALLOWED_INTERVALS.indexOf(intervalSeconds) === -1) {
+      intervalSeconds = 60;
+    }
     state.settings.cloudSync = {
-      endpoint: PMG_CLOUD_DEFAULT_ENDPOINT,
-      token: PMG_CLOUD_DEFAULT_TOKEN,
+      endpoint: String(current.endpoint || '').trim(),
+      token: String(current.token || ''),
       deviceName: String(current.deviceName || pmgCloudDefaultDeviceName()),
       mode: 'editor',
       autoSync: true,
-      intervalMinutes: 1,
+      intervalSeconds: intervalSeconds,
       dirty: current.dirty === true,
       lastServerRevision: Number(current.lastServerRevision) || 0,
       lastSyncedAt: current.lastSyncedAt || '',
@@ -8176,12 +8182,22 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
   }
 
   function pmgCloudValidateConfig(config) {
-    if (!config || !config.endpoint || !config.token) throw new Error('Informe a URL do Google Apps Script e a chave de sincronização.');
-    if (!/^https:\/\//i.test(config.endpoint)) throw new Error('A URL da nuvem precisa começar com https://.');
+    if (!config || !config.endpoint || !config.token) {
+      throw new Error('Informe a URL do Google Apps Script e a chave de sincronização.');
+    }
+    config.endpoint = String(config.endpoint || '').trim();
+    config.token = String(config.token || '');
+    config.deviceName = String(config.deviceName || pmgCloudDefaultDeviceName()).trim();
+    if (!/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec(?:[?#].*)?$/i.test(config.endpoint)) {
+      throw new Error('Use a URL publicada do Google Apps Script, começando com https://script.google.com/macros/s/ e terminando em /exec.');
+    }
+    if (PMG_CLOUD_ALLOWED_INTERVALS.indexOf(Number(config.intervalSeconds)) === -1) {
+      throw new Error('Selecione um intervalo de sincronização válido.');
+    }
   }
 
-  function pmgCloudRequest(payload) {
-    var config = pmgCloudConfig();
+  function pmgCloudRequest(payload, requestConfig) {
+    var config = requestConfig || pmgCloudConfig();
     pmgCloudValidateConfig(config);
     return new Promise(function (resolve, reject) {
       var requestId = 'pmg_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2);
@@ -8379,6 +8395,12 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     });
   }
 
+  function pmgCloudIntervalMs(config) {
+    var seconds = Number(config && config.intervalSeconds) || 60;
+    if (PMG_CLOUD_ALLOWED_INTERVALS.indexOf(seconds) === -1) seconds = 60;
+    return seconds * 1000;
+  }
+
   function pmgCloudSchedule(reason, delay) {
     if (!state || !pmgCloudConfigured()) return;
     var config = pmgCloudConfig();
@@ -8386,10 +8408,12 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     if (config.mode === 'viewer' || config.dirty) {
       clearTimeout(pmgCloudTimer);
       var minimumGap = Math.max(0, 15000 - (Date.now() - pmgCloudLastAttemptMs));
+      var configuredDelay = pmgCloudIntervalMs(config);
+      var requestedDelay = Math.max(0, Number(delay) || 0);
       pmgCloudTimer = setTimeout(function () {
         pmgCloudTimer = null;
         pmgCloudSyncNow({ silent: true, reason: reason || 'automática' });
-      }, Math.max(Number(delay) || 0, minimumGap));
+      }, Math.max(configuredDelay, requestedDelay, minimumGap));
     }
   }
 
@@ -8403,8 +8427,8 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     if (!config.autoSync || !pmgCloudConfigured()) return;
     pmgCloudInterval = setInterval(function () {
       pmgCloudSyncNow({ silent: true, reason: 'intervalo automático' });
-    }, Math.max(1, Number(config.intervalMinutes) || 2) * 60000);
-    pmgCloudSchedule('abertura do site', 1800);
+    }, pmgCloudIntervalMs(config));
+    pmgCloudSchedule('abertura do site', 0);
   }
 
   function pmgCloudStopScheduler() {
@@ -8435,92 +8459,129 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     button.title = config.lastStatus + (config.lastError ? ': ' + config.lastError : '');
   }
 
+  function pmgCloudReadFormConfig() {
+    var endpointField = document.getElementById('cloudEndpoint');
+    var tokenField = document.getElementById('cloudToken');
+    var intervalField = document.getElementById('cloudInterval');
+    return {
+      endpoint: endpointField ? endpointField.value.trim() : '',
+      token: tokenField ? tokenField.value : '',
+      deviceName: pmgCloudConfig().deviceName || pmgCloudDefaultDeviceName(),
+      mode: 'editor',
+      autoSync: true,
+      intervalSeconds: intervalField ? Number(intervalField.value) : 60
+    };
+  }
+
+  function pmgCloudFormMessage(message, isError) {
+    var output = document.getElementById('cloudConfigMessage');
+    if (!output) return;
+    output.textContent = message || '';
+    output.style.color = isError ? 'var(--danger)' : 'var(--success)';
+  }
+
+  function pmgCloudSaveDraft(draft) {
+    pmgCloudValidateConfig(draft);
+    var config = pmgCloudConfig();
+    var connectionChanged = config.endpoint !== draft.endpoint || config.token !== draft.token;
+    config.endpoint = draft.endpoint;
+    config.token = draft.token;
+    config.deviceName = config.deviceName || pmgCloudDefaultDeviceName();
+    config.mode = 'editor';
+    config.autoSync = true;
+    config.intervalSeconds = draft.intervalSeconds;
+    if (connectionChanged) {
+      config.lastServerRevision = 0;
+      config.lastSyncedAt = '';
+      config.lastError = '';
+      config.lastStatus = 'Conexão salva; sincronização pendente';
+      config.dirty = true;
+    } else if (!config.lastStatus || config.lastStatus === 'Ainda não configurada') {
+      config.lastStatus = 'Configuração salva';
+    }
+    return pmgCloudLocalPersist().then(function () {
+      pmgCloudStartScheduler();
+      return config;
+    });
+  }
+
+  function pmgCloudUseDraft(action) {
+    var draft = pmgCloudReadFormConfig();
+    try {
+      pmgCloudValidateConfig(draft);
+      return Promise.resolve(action(draft));
+    } catch (error) {
+      pmgCloudFormMessage(String(error.message || error), true);
+      return Promise.reject(error);
+    }
+  }
+
   function renderCloudSync() {
     var root = document.getElementById('cloudSync');
     if (!root || !state) return;
     var config = pmgCloudConfig();
     var cls = pmgCloudStatusClass(config);
-    var modeLabel = 'Editor sincronizado';
+    var interval = Number(config.intervalSeconds) || 60;
     root.innerHTML =
-      '<div class="section-head"><div><h2>Sincronização em nuvem</h2><p>O site continua funcionando offline. Quando houver internet, o Google Apps Script mantém uma cópia central no Google Drive e atualiza os aparelhos.</p></div></div>' +
+      '<div class="section-head"><div><h2>Sincronização em nuvem</h2><p>Informe a URL publicada do Google Apps Script, a senha de sincronização e o intervalo automático.</p></div></div>' +
       '<div class="cloud-status-grid">' +
         '<div class="cloud-status-card"><span>Situação</span><strong><i class="cloud-dot ' + cls + '"></i>' + esc(config.lastStatus) + '</strong></div>' +
-        '<div class="cloud-status-card"><span>Modo deste aparelho</span><strong>' + esc(modeLabel) + '</strong></div>' +
+        '<div class="cloud-status-card"><span>Sincronização automática</span><strong>Ativada</strong></div>' +
         '<div class="cloud-status-card"><span>Revisão da nuvem</span><strong>' + Number(config.lastServerRevision || 0) + '</strong></div>' +
         '<div class="cloud-status-card"><span>Última sincronização</span><strong>' + (config.lastSyncedAt ? esc(formatDateTime(config.lastSyncedAt)) : 'Ainda não realizada') + '</strong></div>' +
       '</div>' +
       (config.lastError ? '<div class="status-callout alert" style="margin-bottom:16px"><strong>Erro:</strong> ' + esc(config.lastError) + '</div>' : '') +
       '<div class="grid-2">' +
-        '<div class="card"><div class="card-head"><h3>Conexão</h3></div><div class="card-body">' +
+        '<div class="card"><div class="card-head"><h3>Configuração da conexão</h3></div><div class="card-body">' +
           '<form id="cloudConfigForm">' +
-            '<div class="field"><label>URL do Google Apps Script</label><input id="cloudEndpoint" type="url" required readonly autocomplete="off" value="' + esc(config.endpoint) + '"></div>' +
-            '<div class="field"><label>Conexão protegida</label><input id="cloudToken" type="password" required readonly autocomplete="off" value="' + esc(config.token) + '"></div>' +
-            '<div class="field"><label>Nome deste aparelho</label><input id="cloudDeviceName" required maxlength="60" value="' + esc(config.deviceName) + '"></div>' +
-            '<div class="form-grid">' +
-              '<div class="field"><label>Função deste aparelho</label><select id="cloudMode" disabled><option value="editor" selected>Editor sincronizado</option></select></div>' +
-              '<div class="field"><label>Sincronização automática</label><select id="cloudAuto" disabled><option value="true" selected>Ativada permanentemente</option></select></div>' +
-              '<div class="field"><label>Intervalo automático</label><select id="cloudInterval" disabled><option value="1" selected>1 minuto</option></select></div>' +
-            '</div>' +
-            '<div class="cloud-actions"><button class="btn primary" type="submit">Conexão automática ativa</button><button class="btn" type="button" id="cloudTestBtn">Testar conexão</button><button class="btn primary" type="button" id="cloudSyncNowBtn">Sincronizar agora</button></div>' +
+            '<div class="field"><label>URL publicada do Google Apps Script</label><input id="cloudEndpoint" type="url" required autocomplete="off" spellcheck="false" placeholder="https://script.google.com/macros/s/.../exec" value="' + esc(config.endpoint) + '"><div class="help">Use a URL da implantação terminada em <strong>/exec</strong>.</div></div>' +
+            '<div class="field"><label>Senha de sincronização</label><input id="cloudToken" type="password" required autocomplete="new-password" placeholder="A mesma senha definida no Apps Script" value="' + esc(config.token) + '"><div class="help">A senha permanece oculta e não existe botão para exibi-la.</div></div>' +
+            '<div class="field"><label>Intervalo automático</label><select id="cloudInterval"><option value="15"' + (interval === 15 ? ' selected' : '') + '>15 segundos</option><option value="30"' + (interval === 30 ? ' selected' : '') + '>30 segundos</option><option value="60"' + (interval === 60 ? ' selected' : '') + '>1 minuto</option><option value="120"' + (interval === 120 ? ' selected' : '') + '>2 minutos</option></select></div>' +
+            '<div id="cloudConfigMessage" class="help" style="min-height:20px;margin-bottom:8px"></div>' +
+            '<div class="cloud-actions"><button class="btn primary" type="submit">Salvar configuração</button><button class="btn" type="button" id="cloudTestBtn">Testar conexão</button><button class="btn primary" type="button" id="cloudSyncNowBtn">Salvar e sincronizar agora</button></div>' +
           '</form>' +
         '</div></div>' +
         '<div class="card"><div class="card-head"><h3>Funcionamento</h3></div><div class="card-body cloud-help">' +
-          '<div class="item"><div class="item-title">Edição em qualquer aparelho</div><div class="item-note">Todos os aparelhos podem incluir, alterar e excluir dados, mantendo o banco central atualizado.</div></div>' +
-          '<div class="item"><div class="item-title">Atualização automática</div><div class="item-note">Ao abrir o site, o aparelho recebe o banco central. Alterações feitas nele também são enviadas automaticamente.</div></div>' +
-          '<div class="item"><div class="item-title">Proteção local</div><div class="item-note">A senha, o tema e os horários de backup continuam específicos de cada navegador. A conexão com a nuvem já está incorporada nesta versão.</div></div>' +
-          '<div class="item"><div class="item-title">Conflitos</div><div class="item-note">O sistema usa revisão, data de alteração e registros de exclusão para evitar que uma cópia antiga restaure itens apagados.</div></div>' +
+          '<div class="item"><div class="item-title">Configuração no próprio site</div><div class="item-note">A URL, a senha e o intervalo são definidos nesta tela e ficam armazenados no banco local criptografado deste navegador.</div></div>' +
+          '<div class="item"><div class="item-title">Senha sempre oculta</div><div class="item-note">O campo da senha não mostra o conteúdo digitado e não possui botão para revelar.</div></div>' +
+          '<div class="item"><div class="item-title">Intervalo automático</div><div class="item-note">Escolha entre 15 segundos, 30 segundos, 1 minuto ou 2 minutos.</div></div>' +
+          '<div class="item"><div class="item-title">Novo aparelho</div><div class="item-note">Em cada novo aparelho, informe a mesma URL e a mesma senha do Google Apps Script.</div></div>' +
         '</div></div>' +
       '</div>';
 
     document.getElementById('cloudConfigForm').onsubmit = function (event) {
       event.preventDefault();
-      var previousEndpoint = config.endpoint;
-      var previousToken = config.token;
-      config.endpoint = PMG_CLOUD_DEFAULT_ENDPOINT;
-      config.token = PMG_CLOUD_DEFAULT_TOKEN;
-      config.deviceName = document.getElementById('cloudDeviceName').value.trim() || pmgCloudDefaultDeviceName();
-      config.mode = 'editor';
-      config.autoSync = true;
-      config.intervalMinutes = 1;
-      if (previousEndpoint !== config.endpoint || previousToken !== config.token) {
-        config.lastServerRevision = 0;
-        config.lastSyncedAt = '';
-        config.lastError = '';
-        config.lastStatus = 'Conexão salva; sincronização pendente';
-      }
-      pmgCloudLocalPersist().then(function () {
-        pmgCloudStartScheduler();
-        renderCloudSync();
-        showToast('Configuração da nuvem salva.');
-      });
+      pmgCloudUseDraft(function (draft) {
+        return pmgCloudSaveDraft(draft).then(function () {
+          pmgCloudFormMessage('Configuração salva.', false);
+          showToast('Configuração da nuvem salva.');
+          setTimeout(function () {
+            if (currentSection === 'cloudSync') renderCloudSync();
+          }, 700);
+        });
+      }).catch(function () {});
     };
 
     document.getElementById('cloudTestBtn').onclick = function () {
-      config.endpoint = PMG_CLOUD_DEFAULT_ENDPOINT;
-      config.token = PMG_CLOUD_DEFAULT_TOKEN;
-      config.deviceName = document.getElementById('cloudDeviceName').value.trim() || pmgCloudDefaultDeviceName();
-      pmgCloudSetStatus('Testando conexão…', null).then(function () {
-        return pmgCloudRequest({ action: 'ping' });
-      }).then(function () {
-        return pmgCloudSetStatus('Conexão confirmada', null);
-      }).then(function () {
-        showToast('Conexão com o Google confirmada.');
+      pmgCloudUseDraft(function (draft) {
+        pmgCloudFormMessage('Testando conexão...', false);
+        return pmgCloudRequest({ action: 'ping' }, draft).then(function () {
+          pmgCloudFormMessage('Conexão confirmada. Agora você pode salvar.', false);
+          showToast('Conexão com o Google confirmada.');
+        });
       }).catch(function (error) {
-        pmgCloudSetStatus('Falha no teste', error);
         showToast('Falha no teste: ' + String(error.message || error), 'error');
       });
     };
 
     document.getElementById('cloudSyncNowBtn').onclick = function () {
-      config.endpoint = PMG_CLOUD_DEFAULT_ENDPOINT;
-      config.token = PMG_CLOUD_DEFAULT_TOKEN;
-      config.deviceName = document.getElementById('cloudDeviceName').value.trim() || pmgCloudDefaultDeviceName();
-      config.mode = 'editor';
-      config.autoSync = true;
-      config.intervalMinutes = 1;
-      pmgCloudLocalPersist().then(function () {
-        pmgCloudStartScheduler();
-        return pmgCloudSyncNow({ silent: false, reason: 'sincronização manual' });
+      pmgCloudUseDraft(function (draft) {
+        return pmgCloudSaveDraft(draft).then(function () {
+          pmgCloudFormMessage('Configuração salva. Sincronizando...', false);
+          return pmgCloudSyncNow({ silent: false, reason: 'sincronização manual' });
+        });
+      }).catch(function (error) {
+        showToast('Não foi possível sincronizar: ' + String(error.message || error), 'error');
       });
     };
   }
