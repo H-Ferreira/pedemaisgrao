@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#2f7d4c" />
-  <title>PEDE MAIS GRÃO — Gestão Operacional V5</title>
+  <title>PEDE MAIS GRÃO — Gestão Operacional V5 · Sincronização automática</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%23fff8ec'/%3E%3Cpath d='M9 38C15 16 35 8 52 14C45 28 31 39 9 38Z' fill='%232f7d4c'/%3E%3Cpath d='M22 45C31 23 47 20 57 25C52 39 39 47 22 45Z' fill='%23f28c28' opacity='.92'/%3E%3Cpath d='M13 41C26 34 36 26 49 17' stroke='%231d5b37' stroke-width='3' fill='none'/%3E%3C/svg%3E" />
   <style>
     :root {
@@ -804,6 +804,45 @@
       .kit-builder-row .kit-builder-material { grid-column:1 / -1; }
     }
 
+
+    /* Sincronização local-first entre dispositivos */
+    .cloud-status-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .cloud-status-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 13px;
+      background: var(--surface);
+    }
+    .cloud-status-card span { display: block; color: var(--muted); font-size: 11px; }
+    .cloud-status-card strong { display: block; margin-top: 5px; font-size: 14px; }
+    .cloud-dot {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      margin-right: 7px;
+      border-radius: 50%;
+      background: var(--warning);
+      box-shadow: 0 0 0 4px var(--warning-soft);
+      vertical-align: 1px;
+    }
+    .cloud-dot.ok { background: var(--success); box-shadow: 0 0 0 4px var(--success-soft); }
+    .cloud-dot.alert { background: var(--danger); box-shadow: 0 0 0 4px var(--danger-soft); }
+    .cloud-dot.syncing { background: var(--info); box-shadow: 0 0 0 4px var(--info-soft); animation: cloudPulse 1s infinite alternate; }
+    @keyframes cloudPulse { from { opacity: .45; } to { opacity: 1; } }
+    .cloud-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    .cloud-help { display: grid; gap: 9px; }
+    .cloud-help .item { background: var(--surface-2); }
+    #cloudQuickBtn[data-cloud-state="ok"] { border-color: var(--success); color: var(--success); }
+    #cloudQuickBtn[data-cloud-state="alert"] { border-color: var(--danger); color: var(--danger); }
+    #cloudQuickBtn[data-cloud-state="syncing"] { border-color: var(--info); color: var(--info); }
+    @media (max-width: 900px) { .cloud-status-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    @media (max-width: 560px) { .cloud-status-grid { grid-template-columns: 1fr; } }
+
   </style>
 </head>
 <body>
@@ -891,8 +930,9 @@
       <div class="nav-label">Desenvolvimento</div>
       <button class="nav-btn" data-section="academy"><span class="nav-icon">07</span> Academia de gestão</button>
       <button class="nav-btn" data-section="backup"><span class="nav-icon">08</span> Backup e segurança</button>
-      <button class="nav-btn" data-section="settings"><span class="nav-icon">09</span> Configurações</button>
-      <button class="nav-btn" data-section="innovation"><span class="nav-icon">10</span> Inovação da aplicação</button>
+      <button class="nav-btn" data-section="cloudSync"><span class="nav-icon">09</span> Sincronização em nuvem</button>
+      <button class="nav-btn" data-section="settings"><span class="nav-icon">10</span> Configurações</button>
+      <button class="nav-btn" data-section="innovation"><span class="nav-icon">11</span> Inovação da aplicação</button>
 
       <div class="sidebar-footer">
         <button id="lockBtn" class="lock-btn">Bloquear agora</button>
@@ -911,6 +951,7 @@
         </div>
         <div class="topbar-actions">
           <button id="quickTaskBtn" class="btn primary"><span class="label-text">Nova tarefa</span><span class="hidden">+</span></button>
+          <button id="cloudQuickBtn" class="icon-btn" title="Abrir sincronização em nuvem" aria-label="Abrir sincronização em nuvem">☁</button>
           <button id="themeBtn" class="icon-btn" title="Alternar tema">◐</button>
         </div>
       </header>
@@ -928,6 +969,7 @@
         <section id="notes" class="section"></section>
         <section id="academy" class="section"></section>
         <section id="backup" class="section"></section>
+        <section id="cloudSync" class="section"></section>
         <section id="settings" class="section"></section>
         <section id="innovation" class="section"></section>
       </div>
@@ -7879,6 +7921,633 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     }; });
     $$('[data-kit-movement-reverse]').forEach(function (button) { button.onclick = function () { pmgReverseKitMovement(button.dataset.kitMovementReverse); }; });
   }
+
+
+  /* ======================================================================
+     SINCRONIZAÇÃO LOCAL-FIRST — GITHUB PAGES + GOOGLE APPS SCRIPT
+     Conexão automática incorporada para funcionar em qualquer aparelho.
+     ====================================================================== */
+  pageMeta.cloudSync = ['Sincronização em nuvem', 'Dados atualizados automaticamente em todos os aparelhos'];
+  STORAGE.DEVICE_ID = 'pmg_cloud_device_id_v2';
+
+  var PMG_CLOUD_CHANNEL = 'pede-mais-grao-cloud-sync-v2';
+  var PMG_CLOUD_DEFAULT_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwKB6f2Ti4hGo0N5QGg_wYdFbiQQiztV_yarXQUBwAN0SUWQOvPz5iNvOfwr6PLs_of/exec';
+  var PMG_CLOUD_DEFAULT_TOKEN = 'TROQUE-POR-UMA-CHAVE-LONGA-COM-40-OU-MAIS-CARACTERES';
+  var PMG_CLOUD_COLLECTIONS = [
+    'tasks', 'checklist', 'inventory', 'inventoryMovements', 'inventoryAlerts',
+    'purchases', 'production', 'dailyProductionPlans', 'machines', 'machineEvents',
+    'employees', 'notes', 'innovationNotes', 'companyGoals', 'kits', 'kitMovements'
+  ];
+  var pmgCloudTimer = null;
+  var pmgCloudInterval = null;
+  var pmgCloudBusy = false;
+  var pmgCloudQueued = false;
+  var pmgCloudLocalOnlyDepth = 0;
+  var pmgCloudStateRevision = 0;
+  var pmgCloudPreviousSnapshot = null;
+  var pmgCloudLastAttemptMs = 0;
+  var pmgCloudBasePersist = persist;
+  var pmgCloudBaseUnlockApp = unlockApp;
+  var pmgCloudBaseLockApp = lockApp;
+  var pmgCloudBaseRenderSection = renderSection;
+
+  function pmgCloudClone(value) {
+    if (value === undefined) return undefined;
+    return JSON.parse(JSON.stringify(value));
+  }
+
+  function pmgCloudDeviceId() {
+    var id = '';
+    try { id = localStorage.getItem(STORAGE.DEVICE_ID) || ''; } catch (error) {}
+    if (!id) {
+      id = 'device_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+      try { localStorage.setItem(STORAGE.DEVICE_ID, id); } catch (error2) {}
+    }
+    return id;
+  }
+
+  function pmgCloudDefaultDeviceName() {
+    var platform = navigator.platform || 'Computador';
+    return platform + ' · ' + pmgCloudDeviceId().slice(-8);
+  }
+
+  function pmgCloudConfig() {
+    if (!state) return null;
+    state.settings = state.settings || {};
+    var current = state.settings.cloudSync || {};
+    state.settings.cloudSync = {
+      endpoint: PMG_CLOUD_DEFAULT_ENDPOINT,
+      token: PMG_CLOUD_DEFAULT_TOKEN,
+      deviceName: String(current.deviceName || pmgCloudDefaultDeviceName()),
+      mode: 'editor',
+      autoSync: true,
+      intervalMinutes: 1,
+      dirty: current.dirty === true,
+      lastServerRevision: Number(current.lastServerRevision) || 0,
+      lastSyncedAt: current.lastSyncedAt || '',
+      lastAttemptAt: current.lastAttemptAt || '',
+      lastStatus: current.lastStatus || 'Ainda não configurada',
+      lastError: current.lastError || '',
+      localChangedAt: current.localChangedAt || ''
+    };
+    return state.settings.cloudSync;
+  }
+
+  function pmgCloudConfigured() {
+    var config = pmgCloudConfig();
+    return !!(config && config.endpoint && config.token);
+  }
+
+  function pmgCloudLocalPersist() {
+    if (!state || !cryptoKey) return Promise.resolve();
+    pmgCloudLocalOnlyDepth += 1;
+    try {
+      pmgCloudBasePersist();
+    } finally {
+      pmgCloudLocalOnlyDepth -= 1;
+    }
+    return typeof pmgFlushPersist === 'function' ? pmgFlushPersist() : Promise.resolve();
+  }
+
+  function pmgCloudBusinessState(source) {
+    var clean = pmgCloudClone(source || state || {});
+    if (!clean) return clean;
+    clean.settings = {};
+    delete clean.autoBackupSlots;
+    return clean;
+  }
+
+  function pmgCloudSnapshot(source) {
+    var business = pmgCloudBusinessState(source || state || {});
+    var snapshot = { collections: {}, learning: business.learning || {} };
+    PMG_CLOUD_COLLECTIONS.forEach(function (name) {
+      snapshot.collections[name] = Array.isArray(business[name]) ? pmgCloudClone(business[name]) : [];
+    });
+    return snapshot;
+  }
+
+  function pmgCloudComparable(value) {
+    return JSON.stringify(value, function (key, item) {
+      if (key === '_syncUpdatedAt' || key === 'syncMeta' || key === 'cloudSync') return undefined;
+      return item;
+    });
+  }
+
+  function pmgCloudEnsureMeta() {
+    state.syncMeta = state.syncMeta && typeof state.syncMeta === 'object' ? state.syncMeta : {};
+    state.syncMeta.tombstones = state.syncMeta.tombstones && typeof state.syncMeta.tombstones === 'object' ? state.syncMeta.tombstones : {};
+    PMG_CLOUD_COLLECTIONS.forEach(function (name) {
+      state.syncMeta.tombstones[name] = state.syncMeta.tombstones[name] && typeof state.syncMeta.tombstones[name] === 'object' ? state.syncMeta.tombstones[name] : {};
+    });
+    return state.syncMeta;
+  }
+
+  function pmgCloudPrepareLocalChange() {
+    if (!state || pmgCloudLocalOnlyDepth > 0) return false;
+    var previous = pmgCloudPreviousSnapshot;
+    var changed = false;
+    var stamp = nowISO();
+    var meta = pmgCloudEnsureMeta();
+
+    if (!previous) {
+      pmgCloudPreviousSnapshot = pmgCloudSnapshot(state);
+      return false;
+    }
+
+    PMG_CLOUD_COLLECTIONS.forEach(function (name) {
+      var oldList = previous.collections[name] || [];
+      var newList = Array.isArray(state[name]) ? state[name] : [];
+      var oldById = {};
+      var newById = {};
+      oldList.forEach(function (item) { if (item && item.id) oldById[item.id] = item; });
+      newList.forEach(function (item) {
+        if (!item || !item.id) return;
+        newById[item.id] = item;
+        var before = oldById[item.id];
+        if (!before || pmgCloudComparable(before) !== pmgCloudComparable(item)) {
+          item._syncUpdatedAt = stamp;
+          changed = true;
+        }
+      });
+      Object.keys(oldById).forEach(function (id) {
+        if (!newById[id]) {
+          meta.tombstones[name][id] = stamp;
+          changed = true;
+        }
+      });
+    });
+
+    var oldLearning = previous.learning || {};
+    var newLearning = state.learning || {};
+    if (pmgCloudComparable(oldLearning) !== pmgCloudComparable(newLearning)) {
+      newLearning._syncUpdatedAt = stamp;
+      state.learning = newLearning;
+      changed = true;
+    }
+
+    if (changed) {
+      var config = pmgCloudConfig();
+      config.dirty = true;
+      config.localChangedAt = stamp;
+      config.lastStatus = config.mode === 'viewer' ? 'Alteração apenas local; aparelho em modo de consulta' : 'Alterações aguardando envio';
+      config.lastError = '';
+      pmgCloudStateRevision += 1;
+    }
+    pmgCloudPreviousSnapshot = pmgCloudSnapshot(state);
+    return changed;
+  }
+
+  persist = function persistWithCloudSync() {
+    var changed = pmgCloudPrepareLocalChange();
+    var result = pmgCloudBasePersist.apply(this, arguments);
+    if (changed) pmgCloudSchedule('alteração local', 5000);
+    pmgCloudUpdateQuickButton();
+    return result;
+  };
+
+  function pmgCloudRecordTimestamp(record, fallback) {
+    if (!record) return String(fallback || '');
+    return String(record._syncUpdatedAt || record.updatedAt || record.completedAt || record.createdAt || record.date || fallback || '');
+  }
+
+  function pmgCloudMergeTombstones(localState, remoteState) {
+    var output = {};
+    var local = localState && localState.syncMeta && localState.syncMeta.tombstones || {};
+    var remote = remoteState && remoteState.syncMeta && remoteState.syncMeta.tombstones || {};
+    PMG_CLOUD_COLLECTIONS.forEach(function (name) {
+      output[name] = {};
+      var a = local[name] || {};
+      var b = remote[name] || {};
+      Object.keys(a).concat(Object.keys(b)).forEach(function (id) {
+        var at = String(a[id] || '');
+        var bt = String(b[id] || '');
+        output[name][id] = at >= bt ? at : bt;
+      });
+    });
+    return output;
+  }
+
+  function pmgCloudMergeCollection(localList, remoteList, tombstones, localFallback, remoteFallback) {
+    var localMap = {};
+    var remoteMap = {};
+    (Array.isArray(localList) ? localList : []).forEach(function (item) { if (item && item.id) localMap[item.id] = item; });
+    (Array.isArray(remoteList) ? remoteList : []).forEach(function (item) { if (item && item.id) remoteMap[item.id] = item; });
+    var ids = {};
+    Object.keys(localMap).forEach(function (id) { ids[id] = true; });
+    Object.keys(remoteMap).forEach(function (id) { ids[id] = true; });
+    var merged = [];
+    Object.keys(ids).forEach(function (id) {
+      var localItem = localMap[id];
+      var remoteItem = remoteMap[id];
+      var selected = localItem || remoteItem;
+      if (localItem && remoteItem) {
+        selected = pmgCloudRecordTimestamp(localItem, localFallback) >= pmgCloudRecordTimestamp(remoteItem, remoteFallback) ? localItem : remoteItem;
+      }
+      var selectedAt = pmgCloudRecordTimestamp(selected, selected === localItem ? localFallback : remoteFallback);
+      var deletedAt = String((tombstones || {})[id] || '');
+      if (!deletedAt || selectedAt > deletedAt) merged.push(pmgCloudClone(selected));
+    });
+    return merged;
+  }
+
+  function pmgCloudMergeStates(localRaw, remoteRaw) {
+    var localState = ensureShape(pmgCloudClone(localRaw || initialState()));
+    var remoteState = ensureShape(pmgCloudClone(remoteRaw || initialState()));
+    var localUpdated = String(localState.meta && localState.meta.updatedAt || '');
+    var remoteUpdated = String(remoteState.meta && remoteState.meta.updatedAt || '');
+    var merged = pmgCloudClone(remoteUpdated >= localUpdated ? remoteState : localState);
+    var tombstones = pmgCloudMergeTombstones(localState, remoteState);
+    PMG_CLOUD_COLLECTIONS.forEach(function (name) {
+      merged[name] = pmgCloudMergeCollection(localState[name], remoteState[name], tombstones[name], localUpdated, remoteUpdated);
+    });
+    merged.syncMeta = merged.syncMeta || {};
+    merged.syncMeta.tombstones = tombstones;
+
+    var localLearning = localState.learning || {};
+    var remoteLearning = remoteState.learning || {};
+    var localLearningAt = String(localLearning._syncUpdatedAt || localUpdated);
+    var remoteLearningAt = String(remoteLearning._syncUpdatedAt || remoteUpdated);
+    merged.learning = pmgCloudClone(localLearningAt >= remoteLearningAt ? localLearning : remoteLearning);
+    merged.meta = merged.meta || {};
+    merged.meta.owner = 'Rennan Cotta Pavão';
+    merged.meta.company = 'PEDE MAIS GRÃO';
+    merged.meta.updatedAt = localUpdated >= remoteUpdated ? localUpdated : remoteUpdated;
+    return ensureShape(merged);
+  }
+
+  function pmgCloudValidateConfig(config) {
+    if (!config || !config.endpoint || !config.token) throw new Error('Informe a URL do Google Apps Script e a chave de sincronização.');
+    if (!/^https:\/\//i.test(config.endpoint)) throw new Error('A URL da nuvem precisa começar com https://.');
+  }
+
+  function pmgCloudRequest(payload) {
+    var config = pmgCloudConfig();
+    pmgCloudValidateConfig(config);
+    return new Promise(function (resolve, reject) {
+      var requestId = 'pmg_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2);
+      var iframe = document.createElement('iframe');
+      var form = document.createElement('form');
+      var timer = null;
+      iframe.name = 'pmg-cloud-frame-' + requestId;
+      iframe.style.display = 'none';
+      form.method = 'POST';
+      form.action = config.endpoint;
+      form.target = iframe.name;
+      form.style.display = 'none';
+
+      function addField(name, value) {
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = name;
+        input.value = value;
+        form.appendChild(input);
+      }
+      function cleanup() {
+        clearTimeout(timer);
+        window.removeEventListener('message', onMessage, false);
+        if (form.parentNode) form.parentNode.removeChild(form);
+        setTimeout(function () { if (iframe.parentNode) iframe.parentNode.removeChild(iframe); }, 300);
+      }
+      function onMessage(event) {
+        var message = event && event.data;
+        if (!message || message.channel !== PMG_CLOUD_CHANNEL || message.requestId !== requestId) return;
+        cleanup();
+        if (message.result && message.result.ok) resolve(message.result);
+        else reject(new Error(message.result && message.result.error || 'A nuvem recusou a solicitação.'));
+      }
+
+      payload.token = config.token;
+      payload.deviceId = pmgCloudDeviceId();
+      payload.deviceName = config.deviceName;
+      addField('requestId', requestId);
+      addField('request', JSON.stringify(payload));
+      window.addEventListener('message', onMessage, false);
+      document.body.appendChild(iframe);
+      document.body.appendChild(form);
+      timer = setTimeout(function () {
+        cleanup();
+        reject(new Error('A nuvem não respondeu em 60 segundos. Confira a implantação do Apps Script e a internet.'));
+      }, 60000);
+      try { form.submit(); } catch (error) { cleanup(); reject(error); }
+    });
+  }
+
+  function pmgCloudSetStatus(status, error) {
+    var config = pmgCloudConfig();
+    if (!config) return Promise.resolve();
+    config.lastStatus = status;
+    config.lastError = error ? String(error.message || error) : '';
+    config.lastAttemptAt = nowISO();
+    pmgCloudUpdateQuickButton();
+    return pmgCloudLocalPersist().then(function () {
+      if (currentSection === 'cloudSync') renderCloudSync();
+    });
+  }
+
+  function pmgCloudApplyState(remoteState, revision, statusText, keepDirty) {
+    var localSettings = pmgCloudClone(state.settings || {});
+    var localSlots = Array.isArray(state.autoBackupSlots) ? state.autoBackupSlots.slice() : null;
+    state = ensureShape(pmgCloudClone(remoteState));
+    state.settings = localSettings;
+    if (localSlots) {
+      state.autoBackupSlots = localSlots;
+      AUTO_BACKUP_SLOTS = localSlots.slice();
+    }
+    var config = pmgCloudConfig();
+    config.lastServerRevision = Number(revision) || 0;
+    config.lastSyncedAt = nowISO();
+    config.lastAttemptAt = config.lastSyncedAt;
+    config.lastStatus = statusText || 'Sincronizado';
+    config.lastError = '';
+    config.dirty = keepDirty === true;
+    pmgCloudPreviousSnapshot = pmgCloudSnapshot(state);
+    return pmgCloudLocalPersist().then(function () {
+      renderAll();
+      pmgCloudUpdateQuickButton();
+    });
+  }
+
+  function pmgCloudPushState(uploadState, baseRevision, capturedRevision, retryCount) {
+    return pmgCloudRequest({
+      action: 'push',
+      baseRevision: Number(baseRevision) || 0,
+      schemaVersion: state && state.meta && state.meta.schemaVersion || 0,
+      state: pmgCloudBusinessState(uploadState)
+    }).then(function (response) {
+      if (response.conflict) {
+        if ((retryCount || 0) >= 1 || !response.state) throw new Error('A nuvem mudou durante a sincronização. Tente novamente.');
+        var nextMerged = pmgCloudMergeStates(uploadState, response.state);
+        return pmgCloudPushState(nextMerged, response.revision, capturedRevision, (retryCount || 0) + 1);
+      }
+      var changedDuringRequest = pmgCloudStateRevision !== capturedRevision;
+      if (changedDuringRequest) {
+        var config = pmgCloudConfig();
+        config.lastServerRevision = Number(response.revision) || 0;
+        config.lastSyncedAt = nowISO();
+        config.lastStatus = 'Alterações recentes preservadas; novo envio agendado';
+        config.lastError = '';
+        config.dirty = true;
+        pmgCloudQueued = true;
+        return pmgCloudLocalPersist();
+      }
+      return pmgCloudApplyState(uploadState, response.revision, 'Sincronizado', false);
+    });
+  }
+
+  function pmgCloudSyncNow(options) {
+    options = options || {};
+    var silent = options.silent === true;
+    var reason = options.reason || 'manual';
+    if (!state || !cryptoKey) return Promise.resolve(false);
+    if (!pmgCloudConfigured()) {
+      if (!silent) navigate('cloudSync');
+      return Promise.resolve(false);
+    }
+    if (pmgCloudBusy) {
+      pmgCloudQueued = true;
+      return Promise.resolve(false);
+    }
+    if (navigator.onLine === false) {
+      return pmgCloudSetStatus('Sem conexão; nova tentativa automática', new Error('Este aparelho está sem internet.')).then(function () { return false; });
+    }
+
+    pmgCloudBusy = true;
+    pmgCloudLastAttemptMs = Date.now();
+    var config = pmgCloudConfig();
+    config.lastStatus = 'Sincronizando…';
+    config.lastError = '';
+    config.lastAttemptAt = nowISO();
+    pmgCloudUpdateQuickButton();
+    var capturedRevision = pmgCloudStateRevision;
+    var localStateCopy = pmgCloudBusinessState(state);
+
+    return pmgCloudLocalPersist().then(function () {
+      return pmgCloudRequest({ action: 'pull', reason: reason });
+    }).then(function (remote) {
+      if (pmgCloudStateRevision !== capturedRevision) {
+        pmgCloudQueued = true;
+        return pmgCloudSetStatus('Alterações locais preservadas; nova sincronização agendada', null);
+      }
+
+      config = pmgCloudConfig();
+      if (config.mode === 'viewer') {
+        if (!remote.exists || !remote.state) {
+          return pmgCloudSetStatus('A nuvem ainda não possui dados', null);
+        }
+        return pmgCloudApplyState(remote.state, remote.revision, 'Dados recebidos da nuvem', false);
+      }
+
+      if (!remote.exists || !remote.state) {
+        return pmgCloudPushState(localStateCopy, 0, capturedRevision, 0);
+      }
+
+      if (!config.dirty) {
+        if (Number(remote.revision) !== Number(config.lastServerRevision)) {
+          return pmgCloudApplyState(remote.state, remote.revision, 'Dados atualizados pela nuvem', false);
+        }
+        config.lastSyncedAt = nowISO();
+        config.lastStatus = 'Sincronizado';
+        config.lastError = '';
+        return pmgCloudLocalPersist();
+      }
+
+      var upload = Number(config.lastServerRevision) === Number(remote.revision)
+        ? localStateCopy
+        : pmgCloudMergeStates(localStateCopy, remote.state);
+      return pmgCloudPushState(upload, remote.revision, capturedRevision, 0);
+    }).then(function () {
+      if (!silent) showToast('Sincronização concluída.');
+      return true;
+    }).catch(function (error) {
+      if (window.console && console.warn) console.warn('Falha na sincronização PEDE MAIS GRÃO:', error);
+      return pmgCloudSetStatus(navigator.onLine === false ? 'Sem conexão' : 'Erro na sincronização', error).then(function () {
+        if (!silent) showToast('Não foi possível sincronizar: ' + String(error.message || error), 'error');
+        return false;
+      });
+    }).then(function (result) {
+      pmgCloudBusy = false;
+      pmgCloudUpdateQuickButton();
+      if (pmgCloudQueued) {
+        pmgCloudQueued = false;
+        pmgCloudSchedule('alterações acumuladas', 1200);
+      }
+      return result;
+    }, function (error) {
+      pmgCloudBusy = false;
+      pmgCloudUpdateQuickButton();
+      throw error;
+    });
+  }
+
+  function pmgCloudSchedule(reason, delay) {
+    if (!state || !pmgCloudConfigured()) return;
+    var config = pmgCloudConfig();
+    if (!config.autoSync) return;
+    if (config.mode === 'viewer' || config.dirty) {
+      clearTimeout(pmgCloudTimer);
+      var minimumGap = Math.max(0, 15000 - (Date.now() - pmgCloudLastAttemptMs));
+      pmgCloudTimer = setTimeout(function () {
+        pmgCloudTimer = null;
+        pmgCloudSyncNow({ silent: true, reason: reason || 'automática' });
+      }, Math.max(Number(delay) || 0, minimumGap));
+    }
+  }
+
+  function pmgCloudStartScheduler() {
+    clearTimeout(pmgCloudTimer);
+    clearInterval(pmgCloudInterval);
+    if (!state) return;
+    var config = pmgCloudConfig();
+    pmgCloudPreviousSnapshot = pmgCloudSnapshot(state);
+    pmgCloudUpdateQuickButton();
+    if (!config.autoSync || !pmgCloudConfigured()) return;
+    pmgCloudInterval = setInterval(function () {
+      pmgCloudSyncNow({ silent: true, reason: 'intervalo automático' });
+    }, Math.max(1, Number(config.intervalMinutes) || 2) * 60000);
+    pmgCloudSchedule('abertura do site', 1800);
+  }
+
+  function pmgCloudStopScheduler() {
+    clearTimeout(pmgCloudTimer);
+    clearInterval(pmgCloudInterval);
+    pmgCloudTimer = null;
+    pmgCloudInterval = null;
+  }
+
+  function pmgCloudStatusClass(config) {
+    if (pmgCloudBusy || config.lastStatus === 'Sincronizando…') return 'syncing';
+    if (config.lastError) return 'alert';
+    if (config.lastSyncedAt && !config.dirty) return 'ok';
+    return 'warning';
+  }
+
+  function pmgCloudUpdateQuickButton() {
+    var button = document.getElementById('cloudQuickBtn');
+    if (!button) return;
+    if (!state) {
+      button.setAttribute('data-cloud-state', 'warning');
+      button.title = 'Abrir sincronização em nuvem';
+      return;
+    }
+    var config = pmgCloudConfig();
+    var cls = pmgCloudStatusClass(config);
+    button.setAttribute('data-cloud-state', cls);
+    button.title = config.lastStatus + (config.lastError ? ': ' + config.lastError : '');
+  }
+
+  function renderCloudSync() {
+    var root = document.getElementById('cloudSync');
+    if (!root || !state) return;
+    var config = pmgCloudConfig();
+    var cls = pmgCloudStatusClass(config);
+    var modeLabel = 'Editor sincronizado';
+    root.innerHTML =
+      '<div class="section-head"><div><h2>Sincronização em nuvem</h2><p>O site continua funcionando offline. Quando houver internet, o Google Apps Script mantém uma cópia central no Google Drive e atualiza os aparelhos.</p></div></div>' +
+      '<div class="cloud-status-grid">' +
+        '<div class="cloud-status-card"><span>Situação</span><strong><i class="cloud-dot ' + cls + '"></i>' + esc(config.lastStatus) + '</strong></div>' +
+        '<div class="cloud-status-card"><span>Modo deste aparelho</span><strong>' + esc(modeLabel) + '</strong></div>' +
+        '<div class="cloud-status-card"><span>Revisão da nuvem</span><strong>' + Number(config.lastServerRevision || 0) + '</strong></div>' +
+        '<div class="cloud-status-card"><span>Última sincronização</span><strong>' + (config.lastSyncedAt ? esc(formatDateTime(config.lastSyncedAt)) : 'Ainda não realizada') + '</strong></div>' +
+      '</div>' +
+      (config.lastError ? '<div class="status-callout alert" style="margin-bottom:16px"><strong>Erro:</strong> ' + esc(config.lastError) + '</div>' : '') +
+      '<div class="grid-2">' +
+        '<div class="card"><div class="card-head"><h3>Conexão</h3></div><div class="card-body">' +
+          '<form id="cloudConfigForm">' +
+            '<div class="field"><label>URL do Google Apps Script</label><input id="cloudEndpoint" type="url" required readonly autocomplete="off" value="' + esc(config.endpoint) + '"></div>' +
+            '<div class="field"><label>Conexão protegida</label><input id="cloudToken" type="password" required readonly autocomplete="off" value="' + esc(config.token) + '"></div>' +
+            '<div class="field"><label>Nome deste aparelho</label><input id="cloudDeviceName" required maxlength="60" value="' + esc(config.deviceName) + '"></div>' +
+            '<div class="form-grid">' +
+              '<div class="field"><label>Função deste aparelho</label><select id="cloudMode" disabled><option value="editor" selected>Editor sincronizado</option></select></div>' +
+              '<div class="field"><label>Sincronização automática</label><select id="cloudAuto" disabled><option value="true" selected>Ativada permanentemente</option></select></div>' +
+              '<div class="field"><label>Intervalo automático</label><select id="cloudInterval" disabled><option value="1" selected>1 minuto</option></select></div>' +
+            '</div>' +
+            '<div class="cloud-actions"><button class="btn primary" type="submit">Conexão automática ativa</button><button class="btn" type="button" id="cloudTestBtn">Testar conexão</button><button class="btn primary" type="button" id="cloudSyncNowBtn">Sincronizar agora</button></div>' +
+          '</form>' +
+        '</div></div>' +
+        '<div class="card"><div class="card-head"><h3>Funcionamento</h3></div><div class="card-body cloud-help">' +
+          '<div class="item"><div class="item-title">Edição em qualquer aparelho</div><div class="item-note">Todos os aparelhos podem incluir, alterar e excluir dados, mantendo o banco central atualizado.</div></div>' +
+          '<div class="item"><div class="item-title">Atualização automática</div><div class="item-note">Ao abrir o site, o aparelho recebe o banco central. Alterações feitas nele também são enviadas automaticamente.</div></div>' +
+          '<div class="item"><div class="item-title">Proteção local</div><div class="item-note">A senha, o tema e os horários de backup continuam específicos de cada navegador. A conexão com a nuvem já está incorporada nesta versão.</div></div>' +
+          '<div class="item"><div class="item-title">Conflitos</div><div class="item-note">O sistema usa revisão, data de alteração e registros de exclusão para evitar que uma cópia antiga restaure itens apagados.</div></div>' +
+        '</div></div>' +
+      '</div>';
+
+    document.getElementById('cloudConfigForm').onsubmit = function (event) {
+      event.preventDefault();
+      var previousEndpoint = config.endpoint;
+      var previousToken = config.token;
+      config.endpoint = PMG_CLOUD_DEFAULT_ENDPOINT;
+      config.token = PMG_CLOUD_DEFAULT_TOKEN;
+      config.deviceName = document.getElementById('cloudDeviceName').value.trim() || pmgCloudDefaultDeviceName();
+      config.mode = 'editor';
+      config.autoSync = true;
+      config.intervalMinutes = 1;
+      if (previousEndpoint !== config.endpoint || previousToken !== config.token) {
+        config.lastServerRevision = 0;
+        config.lastSyncedAt = '';
+        config.lastError = '';
+        config.lastStatus = 'Conexão salva; sincronização pendente';
+      }
+      pmgCloudLocalPersist().then(function () {
+        pmgCloudStartScheduler();
+        renderCloudSync();
+        showToast('Configuração da nuvem salva.');
+      });
+    };
+
+    document.getElementById('cloudTestBtn').onclick = function () {
+      config.endpoint = PMG_CLOUD_DEFAULT_ENDPOINT;
+      config.token = PMG_CLOUD_DEFAULT_TOKEN;
+      config.deviceName = document.getElementById('cloudDeviceName').value.trim() || pmgCloudDefaultDeviceName();
+      pmgCloudSetStatus('Testando conexão…', null).then(function () {
+        return pmgCloudRequest({ action: 'ping' });
+      }).then(function () {
+        return pmgCloudSetStatus('Conexão confirmada', null);
+      }).then(function () {
+        showToast('Conexão com o Google confirmada.');
+      }).catch(function (error) {
+        pmgCloudSetStatus('Falha no teste', error);
+        showToast('Falha no teste: ' + String(error.message || error), 'error');
+      });
+    };
+
+    document.getElementById('cloudSyncNowBtn').onclick = function () {
+      config.endpoint = PMG_CLOUD_DEFAULT_ENDPOINT;
+      config.token = PMG_CLOUD_DEFAULT_TOKEN;
+      config.deviceName = document.getElementById('cloudDeviceName').value.trim() || pmgCloudDefaultDeviceName();
+      config.mode = 'editor';
+      config.autoSync = true;
+      config.intervalMinutes = 1;
+      pmgCloudLocalPersist().then(function () {
+        pmgCloudStartScheduler();
+        return pmgCloudSyncNow({ silent: false, reason: 'sincronização manual' });
+      });
+    };
+  }
+
+  renderSection = function renderSectionWithCloud(section) {
+    if (section === 'cloudSync') return renderCloudSync();
+    return pmgCloudBaseRenderSection(section);
+  };
+
+  unlockApp = function unlockAppWithCloud() {
+    pmgCloudLocalOnlyDepth += 1;
+    try { pmgCloudBaseUnlockApp(); } finally { pmgCloudLocalOnlyDepth -= 1; }
+    pmgCloudPreviousSnapshot = pmgCloudSnapshot(state);
+    pmgCloudStartScheduler();
+  };
+
+  lockApp = function lockAppWithCloud() {
+    pmgCloudStopScheduler();
+    return pmgCloudBaseLockApp();
+  };
+
+  document.getElementById('cloudQuickBtn').onclick = function () { navigate('cloudSync'); };
+  window.addEventListener('online', function () { pmgCloudSchedule('internet restabelecida', 500); });
+  window.addEventListener('focus', function () { pmgCloudSchedule('retorno ao site', 900); });
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') pmgCloudSchedule('aba novamente visível', 900);
+  });
 
 
   (function startApplication() {
