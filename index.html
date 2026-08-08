@@ -8025,23 +8025,21 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     if (!state) return null;
     state.settings = state.settings || {};
     var current = state.settings.cloudSync || {};
-    var savedToken = String(current.token || PMG_CLOUD_DEFAULT_TOKEN);
-    var hadLegacyPlaceholder = savedToken === PMG_CLOUD_LEGACY_PLACEHOLDER;
-    if (hadLegacyPlaceholder) savedToken = PMG_CLOUD_DEFAULT_TOKEN;
+    var connectionChanged = String(current.endpoint || '') !== PMG_CLOUD_DEFAULT_ENDPOINT || String(current.token || '') !== PMG_CLOUD_DEFAULT_TOKEN;
     var savedInterval = [1, 2, 5, 10].includes(Number(current.intervalMinutes)) ? Number(current.intervalMinutes) : 2;
     state.settings.cloudSync = {
-      endpoint: String(current.endpoint || PMG_CLOUD_DEFAULT_ENDPOINT),
-      token: savedToken,
+      endpoint: PMG_CLOUD_DEFAULT_ENDPOINT,
+      token: PMG_CLOUD_DEFAULT_TOKEN,
       deviceName: String(current.deviceName || pmgCloudDefaultDeviceName()),
       mode: 'editor',
       autoSync: current.autoSync !== false,
       intervalMinutes: savedInterval,
-      dirty: current.dirty === true,
-      lastServerRevision: Number(current.lastServerRevision) || 0,
-      lastSyncedAt: current.lastSyncedAt || '',
+      dirty: connectionChanged || current.dirty === true,
+      lastServerRevision: connectionChanged ? 0 : (Number(current.lastServerRevision) || 0),
+      lastSyncedAt: connectionChanged ? '' : (current.lastSyncedAt || ''),
       lastAttemptAt: current.lastAttemptAt || '',
-      lastStatus: savedToken ? (current.lastStatus || 'Sincronização pendente') : 'Informe a chave de sincronização',
-      lastError: savedToken && !hadLegacyPlaceholder ? (current.lastError || '') : '',
+      lastStatus: connectionChanged ? 'Nova conexão incorporada; sincronização pendente' : (current.lastStatus || 'Sincronização pendente'),
+      lastError: connectionChanged ? '' : (current.lastError || ''),
       localChangedAt: current.localChangedAt || ''
     };
     return state.settings.cloudSync;
@@ -8510,8 +8508,8 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
       '<div class="grid-2">' +
       '<div class="card"><div class="card-head"><h3>Conexão</h3></div><div class="card-body">' +
           '<form id="cloudConfigForm">' +
-            '<div class="field"><label>URL do Google Apps Script</label><input id="cloudEndpoint" type="url" required autocomplete="url" value="' + esc(config.endpoint) + '"></div>' +
-            '<div class="field"><label>Chave de sincronização</label><input id="cloudToken" type="text" required minlength="20" autocomplete="off" value="' + esc(config.token) + '"><div class="goal-type-help">A conexão já vem incorporada ao site e funcionará em qualquer aparelho.</div></div>' +
+            '<div class="field"><label>URL do Google Apps Script</label><input id="cloudEndpoint" type="url" required readonly value="' + esc(config.endpoint) + '"></div>' +
+            '<div class="field"><label>Chave de sincronização</label><input id="cloudToken" type="text" required readonly value="' + esc(config.token) + '"><div class="goal-type-help">A conexão já vem incorporada ao site e funcionará em qualquer aparelho, inclusive nos navegadores que guardavam a chave antiga.</div></div>' +
             '<div class="field"><label>Nome deste aparelho</label><input id="cloudDeviceName" required maxlength="60" value="' + esc(config.deviceName) + '"></div>' +
             '<div class="form-grid">' +
               '<div class="field"><label>Função deste aparelho</label><select id="cloudMode" disabled><option value="editor" selected>Editor sincronizado</option></select></div>' +
