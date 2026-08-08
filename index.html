@@ -7981,7 +7981,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
 
   var PMG_CLOUD_CHANNEL = 'pede-mais-grao-cloud-sync-v2';
   var PMG_CLOUD_DEFAULT_ENDPOINT = 'https://script.google.com/macros/s/AKfycbySGz7IVDfwjEjWhdBNgwKaJpEQtZT9l8BIJ5TH9shaQ6HWk8eo15ugtwP_wUQtp3HTmQ/exec';
-  var PMG_CLOUD_DEFAULT_TOKEN = '';
+  var PMG_CLOUD_DEFAULT_TOKEN = '4bf3d2a8a65f4069868ffcc1100830ac0232f75c06c94ddfa3465b92b42e7420';
   var PMG_CLOUD_LEGACY_PLACEHOLDER = 'TROQUE-POR-UMA-CHAVE-LONGA-COM-40-OU-MAIS-CARACTERES';
   var PMG_CLOUD_COLLECTIONS = [
     'tasks', 'checklist', 'inventory', 'inventoryMovements', 'inventoryAlerts',
@@ -8025,9 +8025,9 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     if (!state) return null;
     state.settings = state.settings || {};
     var current = state.settings.cloudSync || {};
-    var savedToken = String(current.token || '');
+    var savedToken = String(current.token || PMG_CLOUD_DEFAULT_TOKEN);
     var hadLegacyPlaceholder = savedToken === PMG_CLOUD_LEGACY_PLACEHOLDER;
-    if (hadLegacyPlaceholder) savedToken = '';
+    if (hadLegacyPlaceholder) savedToken = PMG_CLOUD_DEFAULT_TOKEN;
     var savedInterval = [1, 2, 5, 10].includes(Number(current.intervalMinutes)) ? Number(current.intervalMinutes) : 2;
     state.settings.cloudSync = {
       endpoint: String(current.endpoint || PMG_CLOUD_DEFAULT_ENDPOINT),
@@ -8441,14 +8441,12 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     if (!state || !pmgCloudConfigured()) return;
     var config = pmgCloudConfig();
     if (!config.autoSync) return;
-    if (config.mode === 'viewer' || config.dirty) {
-      clearTimeout(pmgCloudTimer);
-      var minimumGap = Math.max(0, 15000 - (Date.now() - pmgCloudLastAttemptMs));
-      pmgCloudTimer = setTimeout(function () {
-        pmgCloudTimer = null;
-        pmgCloudSyncNow({ silent: true, reason: reason || 'automática' });
-      }, Math.max(Number(delay) || 0, minimumGap));
-    }
+    clearTimeout(pmgCloudTimer);
+    var minimumGap = Math.max(0, 15000 - (Date.now() - pmgCloudLastAttemptMs));
+    pmgCloudTimer = setTimeout(function () {
+      pmgCloudTimer = null;
+      pmgCloudSyncNow({ silent: true, reason: reason || 'automática' });
+    }, Math.max(Number(delay) || 0, minimumGap));
   }
 
   function pmgCloudStartScheduler() {
@@ -8513,7 +8511,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
       '<div class="card"><div class="card-head"><h3>Conexão</h3></div><div class="card-body">' +
           '<form id="cloudConfigForm">' +
             '<div class="field"><label>URL do Google Apps Script</label><input id="cloudEndpoint" type="url" required autocomplete="url" value="' + esc(config.endpoint) + '"></div>' +
-            '<div class="field"><label>Chave de sincronização</label><input id="cloudToken" type="password" required minlength="20" autocomplete="new-password" placeholder="Cole a chave configurada no Apps Script" value="' + esc(config.token) + '"><div class="goal-type-help">A chave não é enviada para os outros aparelhos nem gravada no GitHub. Configure-a uma vez em cada navegador.</div></div>' +
+            '<div class="field"><label>Chave de sincronização</label><input id="cloudToken" type="text" required minlength="20" autocomplete="off" value="' + esc(config.token) + '"><div class="goal-type-help">A conexão já vem incorporada ao site e funcionará em qualquer aparelho.</div></div>' +
             '<div class="field"><label>Nome deste aparelho</label><input id="cloudDeviceName" required maxlength="60" value="' + esc(config.deviceName) + '"></div>' +
             '<div class="form-grid">' +
               '<div class="field"><label>Função deste aparelho</label><select id="cloudMode" disabled><option value="editor" selected>Editor sincronizado</option></select></div>' +
@@ -8526,7 +8524,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
         '<div class="card"><div class="card-head"><h3>Funcionamento</h3></div><div class="card-body cloud-help">' +
           '<div class="item"><div class="item-title">Edição em qualquer aparelho</div><div class="item-note">Todos os aparelhos podem incluir, alterar e excluir dados, mantendo o banco central atualizado.</div></div>' +
           '<div class="item"><div class="item-title">Atualização automática</div><div class="item-note">Ao abrir o site, o aparelho recebe o banco central. Alterações feitas nele também são enviadas automaticamente.</div></div>' +
-          '<div class="item"><div class="item-title">Proteção local</div><div class="item-note">A senha, o tema, a chave da nuvem e os horários de backup continuam específicos de cada navegador.</div></div>' +
+          '<div class="item"><div class="item-title">Conexão incorporada</div><div class="item-note">O endereço e a chave de sincronização já acompanham o site publicado. A senha, o tema e os horários de backup continuam específicos de cada navegador.</div></div>' +
           '<div class="item"><div class="item-title">Conflitos</div><div class="item-note">O sistema usa revisão, data de alteração e registros de exclusão para evitar que uma cópia antiga restaure itens apagados.</div></div>' +
         '</div></div>' +
       '</div>';
