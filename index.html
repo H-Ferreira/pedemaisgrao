@@ -1,4 +1,4 @@
-<!-- Versão de compatibilidade para Windows 7: Chrome 49+/Firefox 52+; recomendado Chrome 109 ou Firefox 115 ESR. Internet Explorer não é suportado. -->
+<!-- Requer navegador moderno com Web Crypto; recomendado Chrome/Edge 109+ ou Firefox 115 ESR. -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#2f7d4c" />
-  <title>PEDE MAIS GRÃO — Gestão Operacional V5 · Sincronização automática</title>
+  <title>PEDE MAIS GRÃO — Central Operacional</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%23fff8ec'/%3E%3Cpath d='M9 38C15 16 35 8 52 14C45 28 31 39 9 38Z' fill='%232f7d4c'/%3E%3Cpath d='M22 45C31 23 47 20 57 25C52 39 39 47 22 45Z' fill='%23f28c28' opacity='.92'/%3E%3Cpath d='M13 41C26 34 36 26 49 17' stroke='%231d5b37' stroke-width='3' fill='none'/%3E%3C/svg%3E" />
   <style>
     :root {
@@ -843,6 +843,68 @@
     @media (max-width: 900px) { .cloud-status-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
     @media (max-width: 560px) { .cloud-status-grid { grid-template-columns: 1fr; } }
 
+    /* Confirmação de gravação e painel compacto de backups */
+    .save-status {
+      min-width: 126px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+    .save-status::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+    }
+    .save-status[data-state="saving"]::before { background: var(--info); animation: cloudPulse 1s infinite alternate; }
+    .save-status[data-state="saved"]::before { background: var(--success); }
+    .save-status[data-state="error"] { color: var(--danger); border-color: var(--danger); }
+    .save-status[data-state="error"]::before { background: var(--danger); }
+    .backup-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .backup-panel {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--surface);
+      overflow: hidden;
+    }
+    .backup-panel > summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 15px 16px;
+      cursor: pointer;
+      font-weight: 800;
+      list-style: none;
+    }
+    .backup-panel > summary::-webkit-details-marker { display: none; }
+    .backup-panel > summary::after { content: '+'; color: var(--primary); font-size: 20px; }
+    .backup-panel[open] > summary::after { content: '−'; }
+    .backup-panel-body { padding: 0 16px 16px; border-top: 1px solid var(--line); }
+    .backup-history-list { max-height: 430px; overflow: auto; padding-right: 4px; }
+    .backup-toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+    .backup-toolbar .field { margin-bottom: 0; }
+    button:disabled, input:disabled, select:disabled { cursor: not-allowed; opacity: .62; }
+    @media (max-width: 860px) {
+      .backup-summary { grid-template-columns: 1fr; }
+      .save-status { min-width: 0; padding: 8px; }
+      .save-status .save-status-text { display: none; }
+    }
+
   </style>
 </head>
 <body>
@@ -863,7 +925,7 @@
       <div class="auth-body">
         <div id="setupPanel" class="hidden">
           <h2 style="margin-top:0">Primeiro acesso</h2>
-          <p class="muted">Cadastre uma senha para proteger os dados deste backup neste navegador.</p>
+          <p class="muted">Cadastre uma senha para proteger os dados locais neste navegador.</p>
           <form id="setupForm">
             <div class="field">
               <label for="setupPassword">Nova senha</label>
@@ -876,12 +938,12 @@
             <button class="btn primary full" type="submit">Criar acesso protegido</button>
             <div id="setupError" class="auth-error"></div>
           </form>
-          <div class="auth-note">O backup já está incorporado nesta cópia. A senha não é salva em texto e os dados passam a ficar criptografados neste navegador. Em caso de esquecimento, a redefinição exige a senha do programador.</div>
+          <div class="auth-note">Quando não houver dados locais nem um backup inicial disponível, esta área cria uma base nova e criptografada. Guarde a senha: não existe senha mestra incorporada ao site.</div>
         </div>
 
         <div id="loginPanel" class="hidden">
           <h2 style="margin-top:0">Acessar central</h2>
-          <p class="muted">Digite a senha cadastrada neste navegador.</p>
+          <p class="muted">Digite a senha deste navegador ou do backup inicial carregado.</p>
           <form id="loginForm">
             <div class="field">
               <label for="loginPassword">Senha</label>
@@ -890,7 +952,7 @@
             <button class="btn primary full" type="submit">Entrar</button>
             <div id="loginError" class="auth-error"></div>
           </form>
-          <button id="forgotBtn" class="btn full" type="button" style="margin-top:8px">Esqueci a senha</button>
+          <button id="forgotBtn" class="btn full" type="button" style="margin-top:8px">Orientações para recuperar o acesso</button>
           <div class="auth-note">Ao atualizar a página, o acesso e a área atual serão mantidos sem exibir novamente esta tela. A senha será solicitada somente ao clicar em “Bloquear agora” ou ao abrir o site em uma nova sessão do navegador.</div>
         </div>
       </div>
@@ -951,6 +1013,7 @@
         </div>
         <div class="topbar-actions">
           <button id="quickTaskBtn" class="btn primary"><span class="label-text">Nova tarefa</span><span class="hidden">+</span></button>
+          <div id="saveStatus" class="save-status" data-state="saved" role="status" aria-live="polite"><span class="save-status-text">Dados protegidos</span></div>
           <button id="cloudQuickBtn" class="icon-btn" title="Abrir sincronização em nuvem" aria-label="Abrir sincronização em nuvem">☁</button>
           <button id="themeBtn" class="icon-btn" title="Alternar tema">◐</button>
         </div>
@@ -1099,7 +1162,8 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
       element.scrollIntoView(true);
     }
   }
-  var PROGRAMMER_PASSWORD = '1144866';
+  /* Não existe senha mestra no arquivo publicado. */
+  var PROGRAMMER_PASSWORD = '';
   var DEFAULT_AUTO_BACKUP_SLOTS = ['10:00', '13:00', '17:00'];
   var AUTO_BACKUP_SLOTS = DEFAULT_AUTO_BACKUP_SLOTS.slice();
   var STORAGE = {
@@ -1466,74 +1530,24 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     return _decryptState.apply(this, arguments);
   }
   function ensureRecoveryKey() {
-    return _ensureRecoveryKey.apply(this, arguments);
-  }
-  function _ensureRecoveryKey() {
-    _ensureRecoveryKey = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee71() {
-      var saltB64, salt;
-      return _regenerator().w(function (_context71) {
-        while (1) switch (_context71.n) {
-          case 0:
-            saltB64 = localStorage.getItem(STORAGE.RECOVERY_SALT);
-            if (!saltB64) {
-              salt = crypto.getRandomValues(new Uint8Array(16));
-              saltB64 = bytesToB64(salt);
-              localStorage.setItem(STORAGE.RECOVERY_SALT, saltB64);
-            }
-            if (recoveryKey) {
-              _context71.n = 2;
-              break;
-            }
-            _context71.n = 1;
-            return deriveKey(PROGRAMMER_PASSWORD, b64ToBytes(saltB64));
-          case 1:
-            recoveryKey = _context71.v;
-          case 2:
-            return _context71.a(2, recoveryKey);
-        }
-      }, _callee71);
-    }));
-    return _ensureRecoveryKey.apply(this, arguments);
+    /* A antiga recuperação usava uma senha fixa visível no código público.
+       Ela foi desativada; o backup exportado e a senha do usuário são a recuperação segura. */
+    recoveryKey = null;
+    return Promise.resolve(null);
   }
   function persist() {
-    return _persist.apply(this, arguments);
-  }
-  function _persist() {
-    _persist = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee72() {
-      var programmerKey, _t0, _t1, _t10, _t11;
-      return _regenerator().w(function (_context72) {
-        while (1) switch (_context72.n) {
-          case 0:
-            if (!(!state || !cryptoKey)) {
-              _context72.n = 1;
-              break;
-            }
-            return _context72.a(2);
-          case 1:
-            state.meta.updatedAt = nowISO();
-            _t0 = localStorage;
-            _t1 = STORAGE.BLOB;
-            _context72.n = 2;
-            return encryptState(state, cryptoKey);
-          case 2:
-            _t0.setItem.call(_t0, _t1, _context72.v);
-            localStorage.setItem(STORAGE.VERSION, '2');
-            _context72.n = 3;
-            return ensureRecoveryKey();
-          case 3:
-            programmerKey = _context72.v;
-            _t10 = localStorage;
-            _t11 = STORAGE.RECOVERY_BLOB;
-            _context72.n = 4;
-            return encryptState(state, programmerKey);
-          case 4:
-            _t10.setItem.call(_t10, _t11, _context72.v);
-          case 5:
-            return _context72.a(2);
-        }
-      }, _callee72);
-    }));
-    return _persist.apply(this, arguments);
+    if (!state || !cryptoKey) return Promise.resolve();
+    var stamp = nowISO();
+    state.meta = state.meta || {};
+    state.meta.updatedAt = stamp;
+    /* Congela uma única fotografia da alteração. Isso evita versões diferentes
+       quando o usuário continua trabalhando durante a criptografia assíncrona. */
+    var snapshot = JSON.parse(JSON.stringify(state));
+    return encryptState(snapshot, cryptoKey).then(function (encrypted) {
+      localStorage.setItem(STORAGE.BLOB, encrypted);
+      localStorage.setItem(STORAGE.VERSION, '3');
+      return stamp;
+    });
   }
 
   /* Persistência rápida: salva em segundo plano para a tela refletir alterações sem depender de F5. */
@@ -1544,8 +1558,13 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
   var pmgPersistOriginal = persist;
   function pmgRunPersistNow() {
     if (!state || !cryptoKey) return Promise.resolve();
+    pmgSetSaveStatus('saving', 'Salvando…');
     state.meta.updatedAt = nowISO();
-    return pmgPersistOriginal().catch(function (error) {
+    return pmgPersistOriginal().then(function (result) {
+      pmgSetSaveStatus('saved', 'Salvo neste aparelho');
+      return result;
+    }).catch(function (error) {
+      pmgSetSaveStatus('error', 'Falha ao salvar');
       if (window.console && console.error) console.error('Falha ao salvar os dados locais.', error);
       try { showToast('A alteração apareceu na tela, mas não foi gravada no armazenamento local.', 'error'); } catch (toastError) {}
       throw error;
@@ -1555,6 +1574,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     if (!state || !cryptoKey) return Promise.resolve();
     state.meta.updatedAt = nowISO();
     pmgPersistDirty = true;
+    pmgSetSaveStatus('saving', 'Salvando…');
     if (pmgPersistTimer) clearTimeout(pmgPersistTimer);
     pmgPersistTimer = setTimeout(function () {
       pmgPersistTimer = null;
@@ -1578,6 +1598,14 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
   persist = function persistFastUI() {
     return pmgSchedulePersist();
   };
+  function pmgSetSaveStatus(status, message) {
+    var element = document.getElementById('saveStatus');
+    if (!element) return;
+    element.setAttribute('data-state', status || 'saved');
+    element.title = message || '';
+    var text = element.querySelector('.save-status-text');
+    if (text) text.textContent = message || 'Dados protegidos';
+  }
   window.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'hidden') pmgFlushPersist();
   });
@@ -1605,6 +1633,24 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
   function closeModal() {
     $('#modalRoot').innerHTML = '';
   }
+  /* Evita que um clique duplo crie dois registros enquanto a gravação é concluída. */
+  document.addEventListener('submit', function (event) {
+    var form = event.target;
+    if (!form || form.tagName !== 'FORM') return;
+    if (form.getAttribute('data-pmg-submitting') === 'true') {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      return;
+    }
+    form.setAttribute('data-pmg-submitting', 'true');
+    var buttons = form.querySelectorAll('button[type="submit"], button:not([type])');
+    Array.prototype.forEach.call(buttons, function (button) { button.disabled = true; });
+    setTimeout(function () {
+      if (!form || !form.parentNode) return;
+      form.removeAttribute('data-pmg-submitting');
+      Array.prototype.forEach.call(buttons, function (button) { button.disabled = false; });
+    }, 1000);
+  }, true);
   function confirmAction(message, onConfirm, confirmLabel = 'Confirmar') {
     openModal('Confirmação', `
         <p style="line-height:1.55">${esc(message)}</p>
@@ -1748,17 +1794,12 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
   }());
   $('#forgotBtn').addEventListener('click', openPasswordRecoveryModal);
   function openPasswordRecoveryModal() {
-    openModal('Redefinir senha', `
-        <form id="recoveryForm">
-          <p class="muted" style="margin-top:0">A redefinição preserva os dados e exige a senha fixa do programador.</p>
-          <div class="field"><label>Senha do programador</label><input id="programmerPassword" type="password" required autocomplete="off"></div>
-          <div class="field"><label>Nova senha de acesso</label><input id="recoveryNewPassword" type="password" minlength="6" required></div>
-          <div class="field"><label>Confirmar nova senha</label><input id="recoveryConfirmPassword" type="password" minlength="6" required></div>
-          <div id="recoveryError" class="auth-error"></div>
-          <div class="form-actions"><button type="button" class="btn" data-close-modal>Cancelar</button><button class="btn primary">Redefinir senha</button></div>
-        </form>`, 'small');
+    openModal('Recuperar o acesso', `
+        <div class="status-callout" style="margin-top:0"><strong>Não existe senha mestra.</strong> Ela foi removida porque qualquer senha fixa ficaria visível no código publicado.</div>
+        <p class="muted">Tente a senha usada para gerar o último backup. Se os dados também estiverem abertos em outro aparelho, exporte um backup por ele antes de limpar ou substituir qualquer informação.</p>
+        <p class="muted">O arquivo <strong>backup-pede-mais-grao-2026-08-08.rcbackup</strong> continua preservado junto do site e pode iniciar um navegador novo com a senha correspondente.</p>
+        <div class="form-actions"><button type="button" class="btn primary" data-close-modal>Entendi</button></div>`, 'small');
     $$('[data-close-modal]').forEach(b => b.onclick = closeModal);
-    $('#recoveryForm').onsubmit = recoverPassword;
   }
   function recoverPassword(_x9) {
     return _recoverPassword.apply(this, arguments);
@@ -3016,13 +3057,35 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
   }
   function getAutoBackups() {
     try {
-      return JSON.parse(localStorage.getItem(STORAGE.AUTO_BACKUPS) || '[]');
+      var parsed = JSON.parse(localStorage.getItem(STORAGE.AUTO_BACKUPS) || '[]');
+      return Array.isArray(parsed) ? parsed.filter(function (item) {
+        return item && item.id && item.salt && item.blob;
+      }) : [];
     } catch (_unused) {
       return [];
     }
   }
+  function backupPreferences() {
+    if (!state) return { enabled: true, retention: 4 };
+    var current = state.backupSettings && typeof state.backupSettings === 'object' ? state.backupSettings : {};
+    var retention = [3, 4, 5, 7].includes(Number(current.retention)) ? Number(current.retention) : 4;
+    state.backupSettings = { enabled: current.enabled !== false, retention: retention };
+    return state.backupSettings;
+  }
   function saveAutoBackups(items) {
-    localStorage.setItem(STORAGE.AUTO_BACKUPS, JSON.stringify(items.slice(-60)));
+    var limit = backupPreferences().retention;
+    var trimmed = (Array.isArray(items) ? items : []).slice(-limit);
+    /* Se o navegador estiver perto do limite, descarta somente as cópias automáticas
+       mais antigas. O banco atual e o backup manual nunca são tocados aqui. */
+    while (true) {
+      try {
+        localStorage.setItem(STORAGE.AUTO_BACKUPS, JSON.stringify(trimmed));
+        return trimmed;
+      } catch (error) {
+        if (!trimmed.length) throw error;
+        trimmed.shift();
+      }
+    }
   }
   function normalizeAutoBackupSlots(slots) {
     var list = Array.isArray(slots) ? slots : [];
@@ -3041,6 +3104,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     }).sort();
   }
   function configuredAutoBackupSlots() {
+    if (!backupPreferences().enabled) return [];
     if (state && Array.isArray(state.autoBackupSlots)) {
       AUTO_BACKUP_SLOTS = normalizeAutoBackupSlots(state.autoBackupSlots);
     }
@@ -3051,144 +3115,129 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     return 'Horários ativos: ' + slots.map(function (slot) { return slot + 'h'; }).join(', ') + '.';
   }
 
-  function createAutoBackup(_x16) {
-    return _createAutoBackup.apply(this, arguments);
-  }
-  function _createAutoBackup() {
-    _createAutoBackup = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee74(slot, force = false) {
-      var date, id, items, backup;
-      return _regenerator().w(function (_context74) {
-        while (1) switch (_context74.n) {
-          case 0:
-            if (!(!state || !cryptoKey)) {
-              _context74.n = 1;
-              break;
-            }
-            return _context74.a(2);
-          case 1:
-            _context74.n = 2;
-            return persist();
-          case 2:
-            date = todayISO();
-            id = `${date}-${slot}`;
-            items = getAutoBackups();
-            if (!(!force && items.some(b => b.id === id))) {
-              _context74.n = 3;
-              break;
-            }
-            return _context74.a(2);
-          case 3:
-            backup = {
-              id: force ? `${id}-${Date.now()}` : id,
-              scheduledFor: `${date} ${slot}`,
-              createdAt: nowISO(),
-              salt: localStorage.getItem(STORAGE.SALT),
-              blob: localStorage.getItem(STORAGE.BLOB)
-            };
-            items.push(backup);
-            saveAutoBackups(items);
-            if (currentSection === 'backup') renderBackup();
-            showToast(`Backup automático criptografado de ${slot} concluído.`);
-          case 4:
-            return _context74.a(2);
-        }
-      }, _callee74);
-    }));
-    return _createAutoBackup.apply(this, arguments);
+  function createAutoBackup(slot, force) {
+    if (!state || !cryptoKey) return Promise.resolve(false);
+    var manual = force === true || slot === 'manual';
+    var date = todayISO();
+    var baseId = date + '-' + slot;
+    var items = getAutoBackups();
+    if (!manual && items.some(function (item) { return item.id === baseId; })) return Promise.resolve(false);
+
+    /* persist() agenda a gravação rápida da interface; flush garante que o backup
+       copie exatamente a alteração mais recente, não o blob anterior. */
+    persist();
+    return pmgFlushPersist().then(function () {
+      var salt = localStorage.getItem(STORAGE.SALT);
+      var blob = localStorage.getItem(STORAGE.BLOB);
+      if (!salt || !blob) throw new Error('Os dados atuais ainda não estão disponíveis para backup.');
+      var backup = {
+        id: manual ? baseId + '-' + Date.now() : baseId,
+        scheduledFor: manual ? date + ' manual' : date + ' ' + slot,
+        createdAt: nowISO(),
+        salt: salt,
+        blob: blob
+      };
+      items.push(backup);
+      var saved = saveAutoBackups(items);
+      if (!saved.some(function (item) { return item.id === backup.id; })) throw new Error('Espaço insuficiente para guardar a nova cópia automática.');
+      if (currentSection === 'backup') renderBackup();
+      showToast(manual ? 'Backup criptografado criado.' : 'Backup automático de ' + slot + ' concluído.');
+      return true;
+    }).catch(function (error) {
+      if (window.console && console.error) console.error('Falha ao criar backup automático.', error);
+      showToast('Não foi possível criar o backup automático. Exporte um backup manual.', 'error');
+      return false;
+    });
   }
   function runDueAutoBackups() {
-    return _runDueAutoBackups.apply(this, arguments);
-  }
-  function _runDueAutoBackups() {
-    _runDueAutoBackups = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee75() {
-      var now, currentMinutes, _iterator14, _step14, slot, _slot$split$map, _slot$split$map2, h, m, _t14;
-      return _regenerator().w(function (_context75) {
-        while (1) switch (_context75.p = _context75.n) {
-          case 0:
-            if (state) {
-              _context75.n = 1;
-              break;
-            }
-            return _context75.a(2);
-          case 1:
-            now = new Date();
-            currentMinutes = now.getHours() * 60 + now.getMinutes();
-            _iterator14 = _createForOfIteratorHelper(configuredAutoBackupSlots());
-            _context75.p = 2;
-            _iterator14.s();
-          case 3:
-            if ((_step14 = _iterator14.n()).done) {
-              _context75.n = 5;
-              break;
-            }
-            slot = _step14.value;
-            _slot$split$map = slot.split(':').map(Number), _slot$split$map2 = _slicedToArray(_slot$split$map, 2), h = _slot$split$map2[0], m = _slot$split$map2[1];
-            if (!(currentMinutes >= h * 60 + m)) {
-              _context75.n = 4;
-              break;
-            }
-            _context75.n = 4;
-            return createAutoBackup(slot);
-          case 4:
-            _context75.n = 3;
-            break;
-          case 5:
-            _context75.n = 7;
-            break;
-          case 6:
-            _context75.p = 6;
-            _t14 = _context75.v;
-            _iterator14.e(_t14);
-          case 7:
-            _context75.p = 7;
-            _iterator14.f();
-            return _context75.f(7);
-          case 8:
-            return _context75.a(2);
-        }
-      }, _callee75, null, [[2, 6, 7, 8]]);
-    }));
-    return _runDueAutoBackups.apply(this, arguments);
+    if (!state || !backupPreferences().enabled) return Promise.resolve(false);
+    var now = new Date();
+    var currentMinutes = now.getHours() * 60 + now.getMinutes();
+    var date = todayISO();
+    var existing = getAutoBackups();
+    var due = configuredAutoBackupSlots().filter(function (slot) {
+      var parts = slot.split(':').map(Number);
+      return currentMinutes >= parts[0] * 60 + parts[1] && !existing.some(function (item) {
+        return item.id === date + '-' + slot;
+      });
+    });
+    /* Ao abrir o site depois de vários horários vencidos, uma única cópia atual
+       é mais útil e evita guardar três arquivos idênticos. */
+    return due.length ? createAutoBackup(due[due.length - 1], false) : Promise.resolve(false);
   }
   function startAutoBackupScheduler() {
     clearInterval(autoBackupTimer);
     runDueAutoBackups();
     autoBackupTimer = setInterval(runDueAutoBackups, 30000);
   }
+  function nextAutoBackupLabel(slots) {
+    if (!backupPreferences().enabled) return 'Pausado';
+    if (!slots.length) return 'Sem horário';
+    var now = new Date();
+    var minutes = now.getHours() * 60 + now.getMinutes();
+    var next = slots.find(function (slot) {
+      var parts = slot.split(':').map(Number);
+      return parts[0] * 60 + parts[1] > minutes;
+    });
+    return next ? 'Hoje, ' + next + 'h' : 'Amanhã, ' + slots[0] + 'h';
+  }
   function renderBackup() {
     var backups = getAutoBackups().slice().reverse();
-    var slots = configuredAutoBackupSlots();
+    var prefs = backupPreferences();
+    var storedSlots = normalizeAutoBackupSlots(Array.isArray(state.autoBackupSlots) ? state.autoBackupSlots : AUTO_BACKUP_SLOTS);
+    var slots = prefs.enabled ? storedSlots : [];
+    var latest = backups[0];
     $('#backup').innerHTML = `
-        <div class="section-head"><div><h2>Backup e segurança</h2><p>Os dados ficam criptografados neste navegador e são preservados após fechar ou recarregar a página.</p></div></div>
+        <div class="section-head"><div><h2>Backup e segurança</h2><p>Os dados são criptografados e gravados neste aparelho. Exporte uma cópia para ter proteção fora do navegador.</p></div></div>
+        <div class="backup-summary">
+          <div class="mini-stat"><span>Backup automático</span><strong>${prefs.enabled && storedSlots.length ? 'Ativado' : 'Pausado'}</strong></div>
+          <div class="mini-stat"><span>Próxima cópia</span><strong>${esc(nextAutoBackupLabel(storedSlots))}</strong></div>
+          <div class="mini-stat"><span>Cópias neste aparelho</span><strong>${backups.length} de ${prefs.retention}</strong></div>
+        </div>
         <div class="grid-2">
-          <div class="card"><div class="card-head"><h3>Exportar backup</h3></div><div class="card-body"><p class="muted">Gera um arquivo criptografado. Para abrir em outro navegador, será necessária a senha correspondente.</p><button class="btn primary" id="exportBackupBtn">Baixar backup criptografado</button></div></div>
-          <div class="card"><div class="card-head"><h3>Importar backup</h3></div><div class="card-body"><p class="muted">Substitui os dados locais pelos dados do arquivo selecionado.</p><input id="backupFile" type="file" accept=".rcbackup,.json"><button class="btn" id="importBackupBtn" style="margin-top:10px">Importar arquivo</button></div></div>
+          <div class="card"><div class="card-head"><h3>Cópia fora do navegador</h3></div><div class="card-body"><p class="muted">Baixe um arquivo criptografado com tudo que está consolidado agora.</p><button class="btn primary" id="exportBackupBtn">Baixar backup atualizado</button></div></div>
+          <div class="card"><div class="card-head"><h3>Restaurar arquivo</h3></div><div class="card-body"><p class="muted">O arquivo é validado antes de substituir os dados atuais.</p><input id="backupFile" type="file" accept=".rcbackup,.json"><button class="btn" id="importBackupBtn" style="margin-top:10px">Validar e importar</button></div></div>
         </div>
         <div class="card" style="margin-top:16px">
-          <div class="card-head"><div><h3>Horários do backup automático</h3><div class="muted" style="font-size:12px;margin-top:4px">${esc(autoBackupSlotsLabel(slots))} Os backups são gerados enquanto o site estiver aberto; horários já vencidos são processados ao abrir a página.</div></div></div>
+          <div class="card-head"><div><h3>Rotina automática</h3><div class="muted" style="font-size:12px;margin-top:4px">Se o site estiver fechado no horário, uma única cópia atual será criada na próxima abertura.</div></div><button class="btn small" id="createAutoBackupNow">Criar cópia agora</button></div>
           <div class="card-body">
-            <form id="autoBackupScheduleForm" class="toolbar" style="align-items:end;margin-bottom:14px">
+            <div class="backup-toolbar" style="margin-bottom:14px">
+              <div class="field"><label>Automação</label><select id="autoBackupEnabled"><option value="true" ${prefs.enabled ? 'selected' : ''}>Ativada</option><option value="false" ${!prefs.enabled ? 'selected' : ''}>Pausada</option></select></div>
+              <div class="field"><label>Manter no aparelho</label><select id="autoBackupRetention">${[3, 4, 5, 7].map(function (value) { return `<option value="${value}" ${prefs.retention === value ? 'selected' : ''}>${value} cópias</option>`; }).join('')}</select></div>
+            </div>
+            <form id="autoBackupScheduleForm" class="backup-toolbar" style="margin-bottom:14px">
               <div class="field" style="min-width:180px"><label>Novo horário</label><input id="autoBackupScheduleTime" type="time" required step="60"></div>
               <button class="btn primary" type="submit">Adicionar horário</button>
             </form>
-            <div id="autoBackupScheduleList" class="list">${slots.length ? slots.map(slot => `<div class="item"><div class="item-row"><div><div class="item-title">${esc(slot)}h</div><div class="item-meta"><span class="badge ok">Backup automático ativo</span></div></div><div class="item-actions"><button class="btn small danger" data-backup-slot-delete="${esc(slot)}">Excluir horário</button></div></div></div>`).join('') : '<div class="list-empty">Nenhum horário configurado. Você ainda pode criar ou baixar backups manualmente.</div>'}</div>
+            <div id="autoBackupScheduleList" class="list">${storedSlots.length ? storedSlots.map(slot => `<div class="item"><div class="item-row"><div><div class="item-title">${esc(slot)}h</div><div class="item-meta"><span class="badge ${prefs.enabled ? 'ok' : ''}">${prefs.enabled ? 'Ativo' : 'Pausado'}</span></div></div><div class="item-actions"><button class="btn small danger" data-backup-slot-delete="${esc(slot)}">Excluir</button></div></div></div>`).join('') : '<div class="list-empty">Nenhum horário configurado. O backup manual continua disponível.</div>'}</div>
           </div>
         </div>
-        <div class="card" style="margin-top:16px">
-          <div class="card-head"><div><h3>Backups automáticos criptografados</h3><div class="muted" style="font-size:12px;margin-top:4px">Histórico dos backups gerados nos horários escolhidos.</div></div><button class="btn small" id="createAutoBackupNow">Criar agora</button></div>
-          <div class="card-body"><div class="list">${backups.length ? backups.slice(0, 15).map(b => `<div class="item"><div class="item-row"><div><div class="item-title">Backup ${esc(b.scheduledFor || '')}</div><div class="item-meta"><span class="badge">Gerado: ${formatDateTime(b.createdAt)}</span></div></div><div class="item-actions"><button class="btn small" data-auto-download="${esc(b.id)}">Baixar</button><button class="btn small" data-auto-restore="${esc(b.id)}">Restaurar</button><button class="btn small danger" data-auto-delete="${esc(b.id)}">Excluir</button></div></div></div>`).join('') : '<div class="list-empty">Nenhum backup automático registrado ainda.</div>'}</div></div>
-        </div>
-        <div class="card" style="margin-top:16px"><div class="card-head"><h3>Informações locais</h3></div><div class="card-body"><div class="grid-3"><div class="mini-stat"><span>Criado em</span><strong>${formatDateTime(state.meta.createdAt)}</strong></div><div class="mini-stat"><span>Última alteração</span><strong>${formatDateTime(state.meta.updatedAt)}</strong></div><div class="mini-stat"><span>Registros totais</span><strong>${state.tasks.length + state.inventory.length + state.production.length + state.employees.length + state.notes.length + state.innovationNotes.length}</strong></div></div></div></div>
-        <div class="danger-zone" style="margin-top:16px"><h3 style="margin-top:0">Atenção</h3><p>Apagar todos os dados locais exige a senha de acesso cadastrada. A exclusão individual continua disponível com confirmação.</p><button class="btn danger" id="wipeDataBtn">Apagar todos os dados locais</button></div>`;
+        <details class="backup-panel" style="margin-top:16px">
+          <summary><span>Histórico criptografado (${backups.length})</span><span class="muted">${latest ? 'Último: ' + esc(formatDateTime(latest.createdAt)) : 'Nenhuma cópia'}</span></summary>
+          <div class="backup-panel-body"><div class="list backup-history-list">${backups.length ? backups.map(b => `<div class="item"><div class="item-row"><div><div class="item-title">${String(b.scheduledFor || '').includes('manual') ? 'Cópia manual' : 'Cópia de ' + esc(String(b.scheduledFor || '').split(' ').pop())}</div><div class="item-meta"><span class="badge">${formatDateTime(b.createdAt)}</span><span class="badge">${Math.max(1, Math.round(String(b.blob || '').length / 1024))} KB</span></div></div><div class="item-actions"><button class="btn small" data-auto-download="${esc(b.id)}">Baixar</button><button class="btn small" data-auto-restore="${esc(b.id)}">Restaurar</button><button class="btn small danger" data-auto-delete="${esc(b.id)}">Excluir</button></div></div></div>`).join('') : '<div class="list-empty">Nenhuma cópia automática registrada.</div>'}</div></div>
+        </details>
+        <details class="backup-panel" style="margin-top:12px">
+          <summary><span>Informações e opções avançadas</span><span class="muted">Dados locais</span></summary>
+          <div class="backup-panel-body"><div class="grid-3" style="margin-top:16px"><div class="mini-stat"><span>Criado em</span><strong>${formatDateTime(state.meta.createdAt)}</strong></div><div class="mini-stat"><span>Última alteração</span><strong>${formatDateTime(state.meta.updatedAt)}</strong></div><div class="mini-stat"><span>Registros principais</span><strong>${state.tasks.length + state.inventory.length + state.production.length + state.employees.length + state.notes.length + state.innovationNotes.length}</strong></div></div><div class="danger-zone" style="margin-top:16px"><h3 style="margin-top:0">Apagar este aparelho</h3><p>Remove os registros, os backups e a senha somente deste navegador.</p><button class="btn danger" id="wipeDataBtn">Apagar todos os dados locais</button></div></div>
+        </details>`;
     $('#exportBackupBtn').onclick = exportBackup;
     $('#importBackupBtn').onclick = importBackup;
     $('#createAutoBackupNow').onclick = () => createAutoBackup('manual', true);
     $('#wipeDataBtn').onclick = openWipeDataModal;
+    $('#autoBackupEnabled').onchange = function () {
+      prefs.enabled = $('#autoBackupEnabled').value === 'true';
+      persist().then(function () { startAutoBackupScheduler(); renderBackup(); showToast(prefs.enabled ? 'Backup automático ativado.' : 'Backup automático pausado.'); });
+    };
+    $('#autoBackupRetention').onchange = function () {
+      prefs.retention = Number($('#autoBackupRetention').value) || 4;
+      saveAutoBackups(getAutoBackups());
+      persist().then(function () { renderBackup(); showToast('Quantidade de cópias ajustada.'); });
+    };
     $('#autoBackupScheduleForm').onsubmit = function (event) {
       event.preventDefault();
       var value = $('#autoBackupScheduleTime').value;
-      var updated = normalizeAutoBackupSlots(slots.concat([value]));
-      if (!value || updated.length === slots.length) {
+      var updated = normalizeAutoBackupSlots(storedSlots.concat([value]));
+      if (!value || updated.length === storedSlots.length) {
         showToast(value ? 'Este horário já está configurado.' : 'Informe um horário válido.', 'error');
         return;
       }
@@ -3204,7 +3253,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
       button.onclick = function () {
         var slot = button.dataset.backupSlotDelete;
         confirmAction('Excluir o horário ' + slot + 'h do backup automático?', function () {
-          state.autoBackupSlots = slots.filter(function (value) { return value !== slot; });
+          state.autoBackupSlots = storedSlots.filter(function (value) { return value !== slot; });
           AUTO_BACKUP_SLOTS = state.autoBackupSlots.slice();
           return persist().then(function () {
             startAutoBackupScheduler();
@@ -7931,7 +7980,9 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
   STORAGE.DEVICE_ID = 'pmg_cloud_device_id_v2';
 
   var PMG_CLOUD_CHANNEL = 'pede-mais-grao-cloud-sync-v2';
-  var PMG_CLOUD_ALLOWED_INTERVALS = [15, 30, 60, 120];
+  var PMG_CLOUD_DEFAULT_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwKB6f2Ti4hGo0N5QGg_wYdFbiQQiztV_yarXQUBwAN0SUWQOvPz5iNvOfwr6PLs_of/exec';
+  var PMG_CLOUD_DEFAULT_TOKEN = '';
+  var PMG_CLOUD_LEGACY_PLACEHOLDER = 'TROQUE-POR-UMA-CHAVE-LONGA-COM-40-OU-MAIS-CARACTERES';
   var PMG_CLOUD_COLLECTIONS = [
     'tasks', 'checklist', 'inventory', 'inventoryMovements', 'inventoryAlerts',
     'purchases', 'production', 'dailyProductionPlans', 'machines', 'machineEvents',
@@ -7974,26 +8025,23 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     if (!state) return null;
     state.settings = state.settings || {};
     var current = state.settings.cloudSync || {};
-    var intervalSeconds = Number(current.intervalSeconds);
-    if (!intervalSeconds && Number(current.intervalMinutes) > 0) {
-      intervalSeconds = Number(current.intervalMinutes) * 60;
-    }
-    if (PMG_CLOUD_ALLOWED_INTERVALS.indexOf(intervalSeconds) === -1) {
-      intervalSeconds = 60;
-    }
+    var savedToken = String(current.token || '');
+    var hadLegacyPlaceholder = savedToken === PMG_CLOUD_LEGACY_PLACEHOLDER;
+    if (hadLegacyPlaceholder) savedToken = '';
+    var savedInterval = [1, 2, 5, 10].includes(Number(current.intervalMinutes)) ? Number(current.intervalMinutes) : 2;
     state.settings.cloudSync = {
-      endpoint: String(current.endpoint || '').trim(),
-      token: String(current.token || ''),
+      endpoint: String(current.endpoint || PMG_CLOUD_DEFAULT_ENDPOINT),
+      token: savedToken,
       deviceName: String(current.deviceName || pmgCloudDefaultDeviceName()),
       mode: 'editor',
-      autoSync: true,
-      intervalSeconds: intervalSeconds,
+      autoSync: current.autoSync !== false,
+      intervalMinutes: savedInterval,
       dirty: current.dirty === true,
       lastServerRevision: Number(current.lastServerRevision) || 0,
       lastSyncedAt: current.lastSyncedAt || '',
       lastAttemptAt: current.lastAttemptAt || '',
-      lastStatus: current.lastStatus || 'Ainda não configurada',
-      lastError: current.lastError || '',
+      lastStatus: savedToken ? (current.lastStatus || 'Sincronização pendente') : 'Informe a chave de sincronização',
+      lastError: savedToken && !hadLegacyPlaceholder ? (current.lastError || '') : '',
       localChangedAt: current.localChangedAt || ''
     };
     return state.settings.cloudSync;
@@ -8001,7 +8049,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
 
   function pmgCloudConfigured() {
     var config = pmgCloudConfig();
-    return !!(config && config.endpoint && config.token);
+    return !!(config && config.endpoint && config.token && config.token.length >= 20 && config.token !== PMG_CLOUD_LEGACY_PLACEHOLDER);
   }
 
   function pmgCloudLocalPersist() {
@@ -8020,6 +8068,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     if (!clean) return clean;
     clean.settings = {};
     delete clean.autoBackupSlots;
+    delete clean.backupSettings;
     return clean;
   }
 
@@ -8182,22 +8231,13 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
   }
 
   function pmgCloudValidateConfig(config) {
-    if (!config || !config.endpoint || !config.token) {
-      throw new Error('Informe a URL do Google Apps Script e a chave de sincronização.');
-    }
-    config.endpoint = String(config.endpoint || '').trim();
-    config.token = String(config.token || '');
-    config.deviceName = String(config.deviceName || pmgCloudDefaultDeviceName()).trim();
-    if (!/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec(?:[?#].*)?$/i.test(config.endpoint)) {
-      throw new Error('Use a URL publicada do Google Apps Script, começando com https://script.google.com/macros/s/ e terminando em /exec.');
-    }
-    if (PMG_CLOUD_ALLOWED_INTERVALS.indexOf(Number(config.intervalSeconds)) === -1) {
-      throw new Error('Selecione um intervalo de sincronização válido.');
-    }
+    if (!config || !config.endpoint || !config.token) throw new Error('Informe a URL do Google Apps Script e a chave de sincronização.');
+    if (!/^https:\/\//i.test(config.endpoint)) throw new Error('A URL da nuvem precisa começar com https://.');
+    if (config.token === PMG_CLOUD_LEGACY_PLACEHOLDER || config.token.length < 20) throw new Error('Informe a chave real configurada no Google Apps Script.');
   }
 
-  function pmgCloudRequest(payload, requestConfig) {
-    var config = requestConfig || pmgCloudConfig();
+  function pmgCloudRequest(payload) {
+    var config = pmgCloudConfig();
     pmgCloudValidateConfig(config);
     return new Promise(function (resolve, reject) {
       var requestId = 'pmg_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2);
@@ -8263,12 +8303,14 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
   function pmgCloudApplyState(remoteState, revision, statusText, keepDirty) {
     var localSettings = pmgCloudClone(state.settings || {});
     var localSlots = Array.isArray(state.autoBackupSlots) ? state.autoBackupSlots.slice() : null;
+    var localBackupSettings = pmgCloudClone(state.backupSettings || null);
     state = ensureShape(pmgCloudClone(remoteState));
     state.settings = localSettings;
     if (localSlots) {
       state.autoBackupSlots = localSlots;
       AUTO_BACKUP_SLOTS = localSlots.slice();
     }
+    if (localBackupSettings) state.backupSettings = localBackupSettings;
     var config = pmgCloudConfig();
     config.lastServerRevision = Number(revision) || 0;
     config.lastSyncedAt = nowISO();
@@ -8395,12 +8437,6 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     });
   }
 
-  function pmgCloudIntervalMs(config) {
-    var seconds = Number(config && config.intervalSeconds) || 60;
-    if (PMG_CLOUD_ALLOWED_INTERVALS.indexOf(seconds) === -1) seconds = 60;
-    return seconds * 1000;
-  }
-
   function pmgCloudSchedule(reason, delay) {
     if (!state || !pmgCloudConfigured()) return;
     var config = pmgCloudConfig();
@@ -8408,12 +8444,10 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     if (config.mode === 'viewer' || config.dirty) {
       clearTimeout(pmgCloudTimer);
       var minimumGap = Math.max(0, 15000 - (Date.now() - pmgCloudLastAttemptMs));
-      var configuredDelay = pmgCloudIntervalMs(config);
-      var requestedDelay = Math.max(0, Number(delay) || 0);
       pmgCloudTimer = setTimeout(function () {
         pmgCloudTimer = null;
         pmgCloudSyncNow({ silent: true, reason: reason || 'automática' });
-      }, Math.max(configuredDelay, requestedDelay, minimumGap));
+      }, Math.max(Number(delay) || 0, minimumGap));
     }
   }
 
@@ -8427,8 +8461,8 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     if (!config.autoSync || !pmgCloudConfigured()) return;
     pmgCloudInterval = setInterval(function () {
       pmgCloudSyncNow({ silent: true, reason: 'intervalo automático' });
-    }, pmgCloudIntervalMs(config));
-    pmgCloudSchedule('abertura do site', 0);
+    }, Math.max(1, Number(config.intervalMinutes) || 2) * 60000);
+    pmgCloudSchedule('abertura do site', 1800);
   }
 
   function pmgCloudStopScheduler() {
@@ -8459,129 +8493,100 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     button.title = config.lastStatus + (config.lastError ? ': ' + config.lastError : '');
   }
 
-  function pmgCloudReadFormConfig() {
-    var endpointField = document.getElementById('cloudEndpoint');
-    var tokenField = document.getElementById('cloudToken');
-    var intervalField = document.getElementById('cloudInterval');
-    return {
-      endpoint: endpointField ? endpointField.value.trim() : '',
-      token: tokenField ? tokenField.value : '',
-      deviceName: pmgCloudConfig().deviceName || pmgCloudDefaultDeviceName(),
-      mode: 'editor',
-      autoSync: true,
-      intervalSeconds: intervalField ? Number(intervalField.value) : 60
-    };
-  }
-
-  function pmgCloudFormMessage(message, isError) {
-    var output = document.getElementById('cloudConfigMessage');
-    if (!output) return;
-    output.textContent = message || '';
-    output.style.color = isError ? 'var(--danger)' : 'var(--success)';
-  }
-
-  function pmgCloudSaveDraft(draft) {
-    pmgCloudValidateConfig(draft);
-    var config = pmgCloudConfig();
-    var connectionChanged = config.endpoint !== draft.endpoint || config.token !== draft.token;
-    config.endpoint = draft.endpoint;
-    config.token = draft.token;
-    config.deviceName = config.deviceName || pmgCloudDefaultDeviceName();
-    config.mode = 'editor';
-    config.autoSync = true;
-    config.intervalSeconds = draft.intervalSeconds;
-    if (connectionChanged) {
-      config.lastServerRevision = 0;
-      config.lastSyncedAt = '';
-      config.lastError = '';
-      config.lastStatus = 'Conexão salva; sincronização pendente';
-      config.dirty = true;
-    } else if (!config.lastStatus || config.lastStatus === 'Ainda não configurada') {
-      config.lastStatus = 'Configuração salva';
-    }
-    return pmgCloudLocalPersist().then(function () {
-      pmgCloudStartScheduler();
-      return config;
-    });
-  }
-
-  function pmgCloudUseDraft(action) {
-    var draft = pmgCloudReadFormConfig();
-    try {
-      pmgCloudValidateConfig(draft);
-      return Promise.resolve(action(draft));
-    } catch (error) {
-      pmgCloudFormMessage(String(error.message || error), true);
-      return Promise.reject(error);
-    }
-  }
-
   function renderCloudSync() {
     var root = document.getElementById('cloudSync');
     if (!root || !state) return;
     var config = pmgCloudConfig();
     var cls = pmgCloudStatusClass(config);
-    var interval = Number(config.intervalSeconds) || 60;
+    var modeLabel = 'Editor sincronizado';
     root.innerHTML =
-      '<div class="section-head"><div><h2>Sincronização em nuvem</h2><p>Informe a URL publicada do Google Apps Script, a senha de sincronização e o intervalo automático.</p></div></div>' +
+      '<div class="section-head"><div><h2>Sincronização em nuvem</h2><p>O site continua funcionando offline. Quando houver internet, o Google Apps Script mantém uma cópia central no Google Drive e atualiza os aparelhos.</p></div></div>' +
       '<div class="cloud-status-grid">' +
         '<div class="cloud-status-card"><span>Situação</span><strong><i class="cloud-dot ' + cls + '"></i>' + esc(config.lastStatus) + '</strong></div>' +
-        '<div class="cloud-status-card"><span>Sincronização automática</span><strong>Ativada</strong></div>' +
+        '<div class="cloud-status-card"><span>Modo deste aparelho</span><strong>' + esc(modeLabel) + '</strong></div>' +
         '<div class="cloud-status-card"><span>Revisão da nuvem</span><strong>' + Number(config.lastServerRevision || 0) + '</strong></div>' +
         '<div class="cloud-status-card"><span>Última sincronização</span><strong>' + (config.lastSyncedAt ? esc(formatDateTime(config.lastSyncedAt)) : 'Ainda não realizada') + '</strong></div>' +
       '</div>' +
+      (!pmgCloudConfigured() ? '<div class="status-callout" style="margin-bottom:16px"><strong>Configuração necessária:</strong> o endereço está ativo, mas a chave de exemplo da versão anterior foi rejeitada pelo Google. Informe abaixo a chave real definida no Apps Script. Ela ficará apenas neste navegador, dentro dos dados criptografados.</div>' : '') +
       (config.lastError ? '<div class="status-callout alert" style="margin-bottom:16px"><strong>Erro:</strong> ' + esc(config.lastError) + '</div>' : '') +
       '<div class="grid-2">' +
-        '<div class="card"><div class="card-head"><h3>Configuração da conexão</h3></div><div class="card-body">' +
+      '<div class="card"><div class="card-head"><h3>Conexão</h3></div><div class="card-body">' +
           '<form id="cloudConfigForm">' +
-            '<div class="field"><label>URL publicada do Google Apps Script</label><input id="cloudEndpoint" type="url" required autocomplete="off" spellcheck="false" placeholder="https://script.google.com/macros/s/.../exec" value="' + esc(config.endpoint) + '"><div class="help">Use a URL da implantação terminada em <strong>/exec</strong>.</div></div>' +
-            '<div class="field"><label>Senha de sincronização</label><input id="cloudToken" type="password" required autocomplete="new-password" placeholder="A mesma senha definida no Apps Script" value="' + esc(config.token) + '"><div class="help">A senha permanece oculta e não existe botão para exibi-la.</div></div>' +
-            '<div class="field"><label>Intervalo automático</label><select id="cloudInterval"><option value="15"' + (interval === 15 ? ' selected' : '') + '>15 segundos</option><option value="30"' + (interval === 30 ? ' selected' : '') + '>30 segundos</option><option value="60"' + (interval === 60 ? ' selected' : '') + '>1 minuto</option><option value="120"' + (interval === 120 ? ' selected' : '') + '>2 minutos</option></select></div>' +
-            '<div id="cloudConfigMessage" class="help" style="min-height:20px;margin-bottom:8px"></div>' +
-            '<div class="cloud-actions"><button class="btn primary" type="submit">Salvar configuração</button><button class="btn" type="button" id="cloudTestBtn">Testar conexão</button><button class="btn primary" type="button" id="cloudSyncNowBtn">Salvar e sincronizar agora</button></div>' +
+            '<div class="field"><label>URL do Google Apps Script</label><input id="cloudEndpoint" type="url" required autocomplete="url" value="' + esc(config.endpoint) + '"></div>' +
+            '<div class="field"><label>Chave de sincronização</label><input id="cloudToken" type="password" required minlength="20" autocomplete="new-password" placeholder="Cole a chave configurada no Apps Script" value="' + esc(config.token) + '"><div class="goal-type-help">A chave não é enviada para os outros aparelhos nem gravada no GitHub. Configure-a uma vez em cada navegador.</div></div>' +
+            '<div class="field"><label>Nome deste aparelho</label><input id="cloudDeviceName" required maxlength="60" value="' + esc(config.deviceName) + '"></div>' +
+            '<div class="form-grid">' +
+              '<div class="field"><label>Função deste aparelho</label><select id="cloudMode" disabled><option value="editor" selected>Editor sincronizado</option></select></div>' +
+              '<div class="field"><label>Sincronização automática</label><select id="cloudAuto"><option value="true" ' + (config.autoSync ? 'selected' : '') + '>Ativada</option><option value="false" ' + (!config.autoSync ? 'selected' : '') + '>Somente manual</option></select></div>' +
+              '<div class="field"><label>Buscar atualizações a cada</label><select id="cloudInterval">' + [1, 2, 5, 10].map(function (value) { return '<option value="' + value + '" ' + (Number(config.intervalMinutes) === value ? 'selected' : '') + '>' + value + (value === 1 ? ' minuto' : ' minutos') + '</option>'; }).join('') + '</select></div>' +
+            '</div>' +
+            '<div class="cloud-actions"><button class="btn primary" type="submit">Salvar conexão</button><button class="btn" type="button" id="cloudTestBtn">Testar conexão</button><button class="btn primary" type="button" id="cloudSyncNowBtn" ' + (!pmgCloudConfigured() ? 'disabled' : '') + '>Sincronizar agora</button></div>' +
           '</form>' +
         '</div></div>' +
         '<div class="card"><div class="card-head"><h3>Funcionamento</h3></div><div class="card-body cloud-help">' +
-          '<div class="item"><div class="item-title">Configuração no próprio site</div><div class="item-note">A URL, a senha e o intervalo são definidos nesta tela e ficam armazenados no banco local criptografado deste navegador.</div></div>' +
-          '<div class="item"><div class="item-title">Senha sempre oculta</div><div class="item-note">O campo da senha não mostra o conteúdo digitado e não possui botão para revelar.</div></div>' +
-          '<div class="item"><div class="item-title">Intervalo automático</div><div class="item-note">Escolha entre 15 segundos, 30 segundos, 1 minuto ou 2 minutos.</div></div>' +
-          '<div class="item"><div class="item-title">Novo aparelho</div><div class="item-note">Em cada novo aparelho, informe a mesma URL e a mesma senha do Google Apps Script.</div></div>' +
+          '<div class="item"><div class="item-title">Edição em qualquer aparelho</div><div class="item-note">Todos os aparelhos podem incluir, alterar e excluir dados, mantendo o banco central atualizado.</div></div>' +
+          '<div class="item"><div class="item-title">Atualização automática</div><div class="item-note">Ao abrir o site, o aparelho recebe o banco central. Alterações feitas nele também são enviadas automaticamente.</div></div>' +
+          '<div class="item"><div class="item-title">Proteção local</div><div class="item-note">A senha, o tema, a chave da nuvem e os horários de backup continuam específicos de cada navegador.</div></div>' +
+          '<div class="item"><div class="item-title">Conflitos</div><div class="item-note">O sistema usa revisão, data de alteração e registros de exclusão para evitar que uma cópia antiga restaure itens apagados.</div></div>' +
         '</div></div>' +
       '</div>';
 
     document.getElementById('cloudConfigForm').onsubmit = function (event) {
       event.preventDefault();
-      pmgCloudUseDraft(function (draft) {
-        return pmgCloudSaveDraft(draft).then(function () {
-          pmgCloudFormMessage('Configuração salva.', false);
-          showToast('Configuração da nuvem salva.');
-          setTimeout(function () {
-            if (currentSection === 'cloudSync') renderCloudSync();
-          }, 700);
-        });
-      }).catch(function () {});
+      var previousEndpoint = config.endpoint;
+      var previousToken = config.token;
+      config.endpoint = document.getElementById('cloudEndpoint').value.trim();
+      config.token = document.getElementById('cloudToken').value.trim();
+      config.deviceName = document.getElementById('cloudDeviceName').value.trim() || pmgCloudDefaultDeviceName();
+      config.mode = 'editor';
+      config.autoSync = document.getElementById('cloudAuto').value === 'true';
+      config.intervalMinutes = Number(document.getElementById('cloudInterval').value) || 2;
+      try {
+        pmgCloudValidateConfig(config);
+      } catch (error) {
+        showToast(String(error.message || error), 'error');
+        return;
+      }
+      if (previousEndpoint !== config.endpoint || previousToken !== config.token) {
+        config.lastServerRevision = 0;
+        config.lastSyncedAt = '';
+        config.lastError = '';
+        config.lastStatus = 'Conexão salva; sincronização pendente';
+        config.dirty = true;
+      }
+      pmgCloudLocalPersist().then(function () {
+        pmgCloudStartScheduler();
+        renderCloudSync();
+        showToast('Conexão salva neste aparelho.');
+      });
     };
 
     document.getElementById('cloudTestBtn').onclick = function () {
-      pmgCloudUseDraft(function (draft) {
-        pmgCloudFormMessage('Testando conexão...', false);
-        return pmgCloudRequest({ action: 'ping' }, draft).then(function () {
-          pmgCloudFormMessage('Conexão confirmada. Agora você pode salvar.', false);
-          showToast('Conexão com o Google confirmada.');
-        });
+      config.endpoint = document.getElementById('cloudEndpoint').value.trim();
+      config.token = document.getElementById('cloudToken').value.trim();
+      config.deviceName = document.getElementById('cloudDeviceName').value.trim() || pmgCloudDefaultDeviceName();
+      try {
+        pmgCloudValidateConfig(config);
+      } catch (error) {
+        showToast(String(error.message || error), 'error');
+        return;
+      }
+      pmgCloudSetStatus('Testando conexão…', null).then(function () {
+        return pmgCloudRequest({ action: 'ping' });
+      }).then(function () {
+        return pmgCloudSetStatus('Conexão confirmada', null);
+      }).then(function () {
+        showToast('Conexão com o Google confirmada.');
       }).catch(function (error) {
+        pmgCloudSetStatus('Falha no teste', error);
         showToast('Falha no teste: ' + String(error.message || error), 'error');
       });
     };
 
     document.getElementById('cloudSyncNowBtn').onclick = function () {
-      pmgCloudUseDraft(function (draft) {
-        return pmgCloudSaveDraft(draft).then(function () {
-          pmgCloudFormMessage('Configuração salva. Sincronizando...', false);
-          return pmgCloudSyncNow({ silent: false, reason: 'sincronização manual' });
-        });
-      }).catch(function (error) {
-        showToast('Não foi possível sincronizar: ' + String(error.message || error), 'error');
+      pmgCloudLocalPersist().then(function () {
+        pmgCloudStartScheduler();
+        return pmgCloudSyncNow({ silent: false, reason: 'sincronização manual' });
       });
     };
   }
@@ -8610,18 +8615,45 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     if (document.visibilityState === 'visible') pmgCloudSchedule('aba novamente visível', 900);
   });
 
+  function pmgInstallInitialBackup() {
+    try {
+      if (localStorage.getItem(STORAGE.SALT) && localStorage.getItem(STORAGE.BLOB)) return Promise.resolve(false);
+    } catch (error) {
+      return Promise.resolve(false);
+    }
+    if (typeof fetch !== 'function') return Promise.resolve(false);
+    return fetch('./backup-pede-mais-grao-2026-08-08.rcbackup', { cache: 'no-store' }).then(function (response) {
+      if (!response.ok) throw new Error('Backup inicial não encontrado.');
+      return response.json();
+    }).then(function (backup) {
+      if (!backup || Number(backup.version) !== 2 || !backup.salt || !backup.blob) throw new Error('Backup inicial inválido.');
+      var envelope = JSON.parse(backup.blob);
+      if (!envelope.iv || !envelope.cipher) throw new Error('Conteúdo do backup inicial inválido.');
+      localStorage.setItem(STORAGE.SALT, backup.salt);
+      localStorage.setItem(STORAGE.BLOB, backup.blob);
+      localStorage.setItem(STORAGE.VERSION, String(backup.version));
+      var loginText = document.querySelector('#loginPanel .muted');
+      if (loginText) loginText.textContent = 'O backup de 08/08/2026 foi carregado. Digite a senha usada para criá-lo.';
+      return true;
+    }).catch(function (error) {
+      if (window.console && console.warn) console.warn('O backup inicial não pôde ser carregado; será usado o fluxo de primeiro acesso.', error);
+      return false;
+    });
+  }
 
   (function startApplication() {
-    var hasActiveSession = false;
-    try {
-      hasActiveSession = !!sessionStorage.getItem(SESSION.KEY);
-    } catch (err) {}
-    if (!hasActiveSession) {
-      showAuthScreen();
-      return;
-    }
-    tryRestoreActiveSession().then(function (restored) {
-      if (!restored) showAuthScreen();
+    pmgInstallInitialBackup().then(function () {
+      var hasActiveSession = false;
+      try {
+        hasActiveSession = !!sessionStorage.getItem(SESSION.KEY);
+      } catch (err) {}
+      if (!hasActiveSession) {
+        showAuthScreen();
+        return;
+      }
+      tryRestoreActiveSession().then(function (restored) {
+        if (!restored) showAuthScreen();
+      });
     });
   }());
 })();
