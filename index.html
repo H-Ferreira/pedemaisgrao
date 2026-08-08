@@ -6,8 +6,17 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#2f7d4c" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Pede Mais Grão" />
+  <meta name="application-name" content="Pede Mais Grão" />
+  <meta name="format-detection" content="telephone=no" />
   <title>PEDE MAIS GRÃO — Central Operacional</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%23fff8ec'/%3E%3Cpath d='M9 38C15 16 35 8 52 14C45 28 31 39 9 38Z' fill='%232f7d4c'/%3E%3Cpath d='M22 45C31 23 47 20 57 25C52 39 39 47 22 45Z' fill='%23f28c28' opacity='.92'/%3E%3Cpath d='M13 41C26 34 36 26 49 17' stroke='%231d5b37' stroke-width='3' fill='none'/%3E%3C/svg%3E" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png" />
   <style>
     :root {
       --bg: #f7f4ec;
@@ -905,6 +914,163 @@
       .save-status .save-status-text { display: none; }
     }
 
+    /* Aplicativo instalável e experiência móvel */
+    html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+    body { min-height: 100dvh; -webkit-tap-highlight-color: transparent; }
+    .app-shell, .main, .content, .section, .card, .card-body, .grid-2, .grid-3 { min-width: 0; }
+    .quick-task-icon { display: none; font-size: 22px; line-height: 1; }
+    .table-wrap { max-width: 100%; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
+
+    .pwa-install-banner {
+      position: fixed;
+      left: 50%;
+      bottom: max(14px, env(safe-area-inset-bottom));
+      z-index: 70;
+      width: min(620px, calc(100% - 24px));
+      transform: translateX(-50%);
+      display: grid;
+      grid-template-columns: 52px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 42px 13px 13px;
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: 18px;
+      background: #173f2d;
+      color: #fff;
+      box-shadow: 0 20px 54px rgba(7, 27, 17, .34);
+    }
+    .pwa-install-icon {
+      width: 52px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      border-radius: 15px;
+      background: #fff8ec;
+      color: #2f7d4c;
+      font-size: 18px;
+      font-weight: 950;
+      letter-spacing: -.06em;
+    }
+    .pwa-install-copy { min-width: 0; }
+    .pwa-install-copy strong { display: block; font-size: 15px; }
+    .pwa-install-copy span { display: block; margin-top: 3px; color: #d9eee0; font-size: 12px; line-height: 1.35; }
+    .pwa-install-action {
+      min-height: 44px;
+      padding: 9px 15px;
+      border: 0;
+      border-radius: 12px;
+      background: #f28c28;
+      color: #182126;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .pwa-install-close {
+      position: absolute;
+      top: 7px;
+      right: 7px;
+      width: 30px;
+      height: 30px;
+      border: 0;
+      border-radius: 9px;
+      background: rgba(255,255,255,.10);
+      color: #fff;
+      font-size: 18px;
+      line-height: 1;
+    }
+    .pwa-install-guide {
+      display: none;
+      grid-column: 1 / -1;
+      margin: 0;
+      padding: 10px 12px;
+      border-radius: 11px;
+      background: rgba(255,255,255,.10);
+      color: #f4fff6;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .pwa-install-banner.show-guide .pwa-install-guide { display: block; }
+    body.pwa-install-offer .content { padding-bottom: 132px; }
+    body.pwa-install-offer .auth-screen { padding-bottom: calc(132px + env(safe-area-inset-bottom)); }
+
+    @media (display-mode: standalone) {
+      .pwa-install-banner { display: none !important; }
+      .topbar { padding-top: env(safe-area-inset-top); }
+      .sidebar { padding-top: calc(20px + env(safe-area-inset-top)); }
+    }
+
+    @media (max-width: 920px) {
+      .sidebar {
+        width: min(86vw, 320px);
+        padding-bottom: calc(20px + env(safe-area-inset-bottom));
+      }
+    }
+
+    @media (max-width: 700px) {
+      button, .btn, .icon-btn, input, select { min-height: 44px; }
+      input, select, textarea { font-size: 16px; }
+      .content { padding: 14px 12px; }
+      .topbar {
+        height: auto;
+        min-height: 64px;
+        padding: 8px 10px;
+        padding-top: max(8px, env(safe-area-inset-top));
+        gap: 7px;
+      }
+      .topbar-left { min-width: 0; flex: 1 1 auto; gap: 7px; }
+      .topbar-actions { flex: 0 0 auto; gap: 5px; }
+      .top-title { min-width: 0; }
+      .top-title h2 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 16px; }
+      .menu-toggle, .icon-btn, #quickTaskBtn, .save-status { width: 42px; min-width: 42px; padding: 8px; }
+      .quick-task-label { display: none; }
+      .quick-task-icon { display: inline; }
+      .hero { padding: 19px 16px; border-radius: 18px; }
+      .hero h3 { font-size: 25px; }
+      .hero-actions .btn { flex: 1 1 140px; }
+      .section-head { gap: 12px; margin-bottom: 14px; }
+      .section-head h2 { font-size: 23px; }
+      .section-actions { width: 100%; }
+      .section-actions .btn { flex: 1 1 145px; }
+      .toolbar { align-items: stretch; }
+      .toolbar .field, .toolbar .search, .search { min-width: 0; width: 100%; flex: 1 1 100%; }
+      .card-head { align-items: flex-start; flex-wrap: wrap; padding: 14px; }
+      .card-body { padding: 14px; }
+      .item-row { display: grid; grid-template-columns: minmax(0,1fr); }
+      .item-actions { justify-content: stretch; width: 100%; }
+      .item-actions .btn { flex: 1 1 120px; }
+      .form-actions, .cloud-actions { display: grid; grid-template-columns: 1fr; }
+      .form-actions .btn, .cloud-actions .btn { width: 100%; }
+      .machine-grid, .care-checklist, .material-control-grid, .operation-summary { grid-template-columns: minmax(0,1fr); }
+      .kanban { scroll-snap-type: x proximity; }
+      .kanban-col { min-width: min(82vw, 310px); scroll-snap-align: start; }
+      .toast-stack { left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); }
+      .toast { min-width: 0; width: 100%; }
+      .modal-head { padding: 14px; }
+      .modal-body { padding: 14px; }
+      .auth-screen { padding: 12px; padding-top: max(12px, env(safe-area-inset-top)); }
+      .auth-top, .auth-body { padding: 19px 17px; }
+      .auth-top h1 { font-size: 23px; }
+      th, td { padding: 10px; }
+    }
+
+    @media (max-width: 480px) {
+      .topbar-actions #themeBtn { display: none; }
+      .employee-summary, .stock-levels, .goal-numbers, .machine-dates,
+      .company-goal-stats, .kit-stats { grid-template-columns: 1fr; }
+      .kit-builder-row { grid-template-columns: 1fr; }
+      .kit-builder-row .kit-builder-material { grid-column: auto; }
+      .pwa-install-banner {
+        grid-template-columns: 46px minmax(0,1fr);
+        gap: 10px;
+        padding: 11px 39px 11px 11px;
+        border-radius: 16px;
+      }
+      .pwa-install-icon { width: 46px; height: 46px; border-radius: 13px; font-size: 16px; }
+      .pwa-install-action { grid-column: 1 / -1; width: 100%; }
+      .pwa-install-guide { padding: 9px 10px; }
+      body.pwa-install-offer .content { padding-bottom: 174px; }
+      body.pwa-install-offer .auth-screen { padding-bottom: calc(174px + env(safe-area-inset-bottom)); }
+    }
+
   </style>
 </head>
 <body>
@@ -1012,7 +1178,7 @@
           </div>
         </div>
         <div class="topbar-actions">
-          <button id="quickTaskBtn" class="btn primary"><span class="label-text">Nova tarefa</span><span class="hidden">+</span></button>
+          <button id="quickTaskBtn" class="btn primary" aria-label="Criar nova tarefa"><span class="label-text quick-task-label">Nova tarefa</span><span class="quick-task-icon" aria-hidden="true">+</span></button>
           <div id="saveStatus" class="save-status" data-state="saved" role="status" aria-live="polite"><span class="save-status-text">Dados protegidos</span></div>
           <button id="cloudQuickBtn" class="icon-btn" title="Abrir sincronização em nuvem" aria-label="Abrir sincronização em nuvem">☁</button>
           <button id="themeBtn" class="icon-btn" title="Alternar tema">◐</button>
@@ -1038,6 +1204,17 @@
       </div>
     </main>
   </div>
+
+  <aside id="installBanner" class="pwa-install-banner hidden" aria-label="Instalar o aplicativo no celular" aria-live="polite">
+    <div class="pwa-install-icon" aria-hidden="true">PMG</div>
+    <div class="pwa-install-copy">
+      <strong>Instale o PEDE MAIS GRÃO</strong>
+      <span id="installBannerText">Tenha acesso rápido, tela cheia e funcionamento offline.</span>
+    </div>
+    <button id="installBannerBtn" class="pwa-install-action" type="button">Instalar</button>
+    <button id="installBannerClose" class="pwa-install-close" type="button" aria-label="Fechar aviso de instalação">×</button>
+    <p id="installGuide" class="pwa-install-guide"></p>
+  </aside>
 
   <div id="modalRoot"></div>
   <div id="toastStack" class="toast-stack"></div>
@@ -8653,6 +8830,104 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
     });
   }());
 })();
+
+  (function initInstallableApp() {
+    var banner = document.getElementById('installBanner');
+    var installButton = document.getElementById('installBannerBtn');
+    var closeButton = document.getElementById('installBannerClose');
+    var bannerText = document.getElementById('installBannerText');
+    var guide = document.getElementById('installGuide');
+    var deferredInstallPrompt = null;
+    var userAgent = navigator.userAgent || '';
+    var isAppleMobile = /iPhone|iPad|iPod/i.test(userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    var isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(userAgent) || window.matchMedia('(max-width: 920px)').matches;
+
+    function isInstalled() {
+      return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+    }
+
+    function wasDismissedThisSession() {
+      try { return sessionStorage.getItem('pmg_install_banner_dismissed') === '1'; } catch (error) { return false; }
+    }
+
+    function hideInstallOffer() {
+      banner.classList.add('hidden');
+      banner.classList.remove('show-guide');
+      document.body.classList.remove('pwa-install-offer');
+    }
+
+    function showInstallOffer() {
+      if (isInstalled() || wasDismissedThisSession() || (!isMobile && !deferredInstallPrompt)) {
+        hideInstallOffer();
+        return;
+      }
+      if (isAppleMobile) {
+        bannerText.textContent = 'Instale pelo Safari e abra o sistema como um aplicativo.';
+        installButton.textContent = 'Ver como instalar';
+      } else if (deferredInstallPrompt) {
+        bannerText.textContent = 'Acesso rápido, tela cheia e funcionamento offline.';
+        installButton.textContent = 'Instalar agora';
+      } else {
+        bannerText.textContent = 'Adicione o sistema à tela inicial do celular.';
+        installButton.textContent = 'Como instalar';
+      }
+      banner.classList.remove('hidden');
+      document.body.classList.add('pwa-install-offer');
+    }
+
+    function showManualInstructions() {
+      if (isAppleMobile) {
+        guide.textContent = 'No Safari, toque no botão Compartilhar, escolha “Adicionar à Tela de Início”, ative “Abrir como App” e toque em Adicionar.';
+      } else {
+        guide.textContent = 'Abra o menu do navegador, toque em “Instalar aplicativo” ou “Adicionar à tela inicial” e confirme a instalação.';
+      }
+      banner.classList.add('show-guide');
+      installButton.textContent = 'Instruções abertas';
+    }
+
+    window.addEventListener('beforeinstallprompt', function (event) {
+      event.preventDefault();
+      deferredInstallPrompt = event;
+      showInstallOffer();
+    });
+
+    window.addEventListener('appinstalled', function () {
+      deferredInstallPrompt = null;
+      hideInstallOffer();
+    });
+
+    installButton.addEventListener('click', function () {
+      if (!deferredInstallPrompt) {
+        showManualInstructions();
+        return;
+      }
+      var promptEvent = deferredInstallPrompt;
+      deferredInstallPrompt = null;
+      promptEvent.prompt();
+      Promise.resolve(promptEvent.userChoice).then(function (choice) {
+        if (choice && choice.outcome === 'accepted') {
+          hideInstallOffer();
+        } else {
+          showInstallOffer();
+        }
+      });
+    });
+
+    closeButton.addEventListener('click', function () {
+      try { sessionStorage.setItem('pmg_install_banner_dismissed', '1'); } catch (error) {}
+      hideInstallOffer();
+    });
+
+    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('./service-worker.js', { scope: './' }).catch(function (error) {
+          if (window.console && console.warn) console.warn('Não foi possível ativar o funcionamento offline.', error);
+        });
+      });
+    }
+
+    setTimeout(showInstallOffer, 250);
+  }());
 
   
   </script>
